@@ -43,12 +43,6 @@ export class AsyncJob extends Construct {
         TABLE_NAME: storage.table.tableName,
         EVENT_HTTP_ENDPOINT: workerBus.httpEndpoint,
       },
-      // Allow a small amount of parallelism so that one user's large batch
-      // deletion does not head-of-line block another user's job for a long
-      // time. Deletion is idempotent (already-deleted items are no-ops) and the
-      // per-batch size is capped on the caller side, so a low ceiling keeps any
-      // DynamoDB pressure / abuse surface bounded while removing the HOL stall.
-      reservedConcurrentExecutions: 3,
     });
 
     storage.table.grantReadWriteData(handler);
