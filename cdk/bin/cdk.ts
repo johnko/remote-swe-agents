@@ -63,11 +63,11 @@ const props: MainStackProps = {
 
   // === GitHub Integration (optional) ===
   // Option A: GitHub App
-  // github: {
-  //   privateKeyParameterName: `/remote-swe/${targetEnv}/github/app-private-key`,
-  //   appId: process.env.GITHUB_APP_ID!,
-  //   installationId: process.env.GITHUB_INSTALLATION_ID!,
-  // },
+  github: {
+    privateKeyParameterName: `/remote-swe/${targetEnv}/github/app-private-key`,
+    appId: process.env.GITHUB_APP_ID!,
+    installationId: process.env.GITHUB_INSTALLATION_ID!,
+  },
   // Option B: Personal Access Token
   // github: {
   //   personalAccessTokenParameterName: `/remote-swe/${targetEnv}/github/personal-access-token`,
