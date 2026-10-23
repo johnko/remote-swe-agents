@@ -335,8 +335,8 @@ export const modelConfigs: Record<ModelType, z.infer<typeof modelConfigSchema>> 
   'gpt-oss-120b': {
     name: 'GPT OSS 120B',
     modelId: 'gpt-oss-120b',
-    maxOutputTokens: 4_096,
-    maxInputTokens: 4_096,
+    maxOutputTokens: 131_072,
+    maxInputTokens: 131_072,
     cacheSupport: [],
     reasoningSupport: false,
     toolChoiceSupport: ['auto'],
