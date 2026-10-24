@@ -150,7 +150,7 @@ const createPullRequest = async (
   let defaultBase = baseBranch;
   if (!defaultBase) {
     try {
-      defaultBase = await execute(`git rev-parse origin/HEAD | sed 's|.*/||'`, gitDirectoryPath);
+      defaultBase = await execute(`git symbolic-ref refs/remotes/origin/HEAD | sed 's|.*/||'`, gitDirectoryPath);
     } catch {
       defaultBase = 'main'; // fallback
     }
