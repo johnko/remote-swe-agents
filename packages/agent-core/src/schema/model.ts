@@ -219,7 +219,7 @@ export const modelConfigs: Record<ModelType, z.infer<typeof modelConfigSchema>> 
   },
   'sonnet4.5': {
     name: 'Claude Sonnet 4.5',
-    modelId: 'anthropic.claude-sonnet-4-5-20250929-v1:0',
+    modelId: 'anthropic.claude-sonnet-4-20250514-v1:0',
     maxOutputTokens: 64_000,
     maxInputTokens: 200_000,
     cacheSupport: ['system', 'message', 'tool'],
@@ -231,7 +231,7 @@ export const modelConfigs: Record<ModelType, z.infer<typeof modelConfigSchema>> 
   },
   'sonnet4.5-long-context-mode': {
     name: 'Claude Sonnet 4.5 (Long Context)',
-    modelId: 'anthropic.claude-sonnet-4-5-20250929-v1:0',
+    modelId: 'anthropic.claude-sonnet-4-20250514-v1:0',
     maxOutputTokens: 64_000,
     maxInputTokens: 1_000_000,
     cacheSupport: ['system', 'message', 'tool'],
