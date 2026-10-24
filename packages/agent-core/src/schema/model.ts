@@ -257,7 +257,6 @@ export const modelConfigs: Record<ModelType, z.infer<typeof modelConfigSchema>> 
     reasoningSupport: true,
     toolChoiceSupport: ['any', 'auto', 'tool'],
     interleavedThinkingSupport: true,
-    isHidden: true,
     supportedCriProfiles: ['global', 'us', 'eu', 'jp', 'au'],
     pricing: { input: 0.003, output: 0.015, cacheRead: 0.0003, cacheWrite: 0.00375 },
   },
@@ -270,7 +269,6 @@ export const modelConfigs: Record<ModelType, z.infer<typeof modelConfigSchema>> 
     reasoningSupport: true,
     toolChoiceSupport: ['any', 'auto', 'tool'],
     interleavedThinkingSupport: true,
-    isHidden: true,
     supportedCriProfiles: ['global', 'us', 'eu', 'jp', 'au'],
     additionalRequestFields: { anthropic_beta: ['context-1m-2025-08-07'] },
     pricing: {
