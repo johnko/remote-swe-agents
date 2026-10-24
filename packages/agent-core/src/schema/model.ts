@@ -50,6 +50,7 @@ export const modelTypeList = [
   'sonnet3.5v1',
   'haiku3.5',
   'nova-pro',
+  'gpt-oss-120b',
 ] as const;
 export const modelTypeSchema = z.enum(modelTypeList);
 export type ModelType = z.infer<typeof modelTypeSchema>;
@@ -330,6 +331,17 @@ export const modelConfigs: Record<ModelType, z.infer<typeof modelConfigSchema>> 
     toolChoiceSupport: ['auto'],
     supportedCriProfiles: ['us', 'apac'],
     pricing: { input: 0.0008, output: 0.0032, cacheRead: 0.0002, cacheWrite: 0.0008 },
+  },
+  'gpt-oss-120b': {
+    name: 'GPT OSS 120B',
+    modelId: 'gpt-oss-120b',
+    maxOutputTokens: 131_072,
+    maxInputTokens: 131_072,
+    cacheSupport: [],
+    reasoningSupport: false,
+    toolChoiceSupport: ['auto'],
+    supportedCriProfiles: ['us'],
+    pricing: { input: 0.003, output: 0.015, cacheRead: 0.0003, cacheWrite: 0.00375 },
   },
   opus4: {
     name: 'Claude 4 Opus',
