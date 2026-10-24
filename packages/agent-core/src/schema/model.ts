@@ -77,6 +77,11 @@ const modelConfigSchema = z.object({
   // "This model does not support assistant message prefill"). When false, a
   // trailing assistant message is stripped from the request before invoke.
   assistantPrefillSupport: z.boolean().optional(),
+  // Whether the model supports CRI (Cross-Region Inference) profile prefixes.
+  // CRI prefixes are region-specific and used by Anthropic and Bedrock models.
+  // OpenAI models do not support CRI prefixes, so this should be false for them.
+  // Default: true (for backward compatibility with existing models).
+  supportsCriProfiles: z.boolean().optional(),
   supportedCriProfiles: z.array(criRegionSchema),
   additionalRequestFields: z.record(z.string(), z.unknown()).optional(),
   pricing: z.object({
@@ -340,6 +345,7 @@ export const modelConfigs: Record<ModelType, z.infer<typeof modelConfigSchema>> 
     cacheSupport: [],
     reasoningSupport: false,
     toolChoiceSupport: ['auto'],
+    supportsCriProfiles: false,
     supportedCriProfiles: ['us'],
     pricing: { input: 0.003, output: 0.015, cacheRead: 0.0003, cacheWrite: 0.00375 },
   },

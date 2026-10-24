@@ -299,8 +299,9 @@ const chooseModelAndRegion = (modelType: ModelType) => {
   if (region == 'au') awsRegion = 'ap-southeast-2';
   let modelId = modelConfigs[modelType].modelId;
   const supportedRegions = modelConfigs[modelType].supportedCriProfiles;
-  if (supportedRegions.includes(region)) {
-    // if the model supports the chosen region, use region-prefixed modelId (CRI profile)
+  const supportsCriProfiles = modelConfigs[modelType].supportsCriProfiles ?? true; // Default to true for backward compatibility
+  if (supportsCriProfiles && supportedRegions.includes(region)) {
+    // if the model supports CRI profiles and the chosen region, use region-prefixed modelId (CRI profile)
     modelId = `${region}.${modelId}`;
   }
   return {
