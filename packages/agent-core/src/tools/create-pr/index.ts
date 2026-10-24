@@ -1,6 +1,4 @@
 import { z } from 'zod';
-import { writeFileSync } from 'fs';
-import { join } from 'path';
 import { executeCommand } from '../command-execution';
 import { ToolDefinition, zodToJsonSchemaBody } from '../../private/common/lib';
 import { PutCommand, QueryCommand } from '@aws-sdk/lib-dynamodb';
@@ -140,24 +138,53 @@ const createPullRequest = async (
     }
   }
 
-  // Create markdown file in /tmp to avoid escape issues
-  const tempFile = join('/tmp', `pr-description-${Date.now()}.md`);
-  writeFileSync(tempFile, finalDescription);
+  // Get repo info for REST API call
+  const repoUrlMatch = await execute('git config --get remote.origin.url', gitDirectoryPath);
+  const repoMatch = repoUrlMatch.match(/github\.com[:/]([^/]+)\/([^/.]+)/);
+  if (!repoMatch) {
+    throw new Error('Could not parse repository from remote.origin.url');
+  }
+  const [, owner, repo] = repoMatch;
 
+  // Get the default branch if no base branch specified
+  let defaultBase = baseBranch;
+  if (!defaultBase) {
+    try {
+      defaultBase = await execute(`git rev-parse origin/HEAD | sed 's|.*/||'`, gitDirectoryPath);
+    } catch {
+      defaultBase = 'main'; // fallback
+    }
+  }
+
+  // Create pull request using GitHub REST API
+  // This works better with GitHub App authentication on forked repos
   try {
-    // Create pull request using gh CLI with optional base branch
-    const baseBranchOption = baseBranch ? ` --base "${baseBranch}"` : '';
-    const prUrl = await execute(
-      `gh pr create --title "${title}" --body-file "${tempFile}"${baseBranchOption}`,
+    const prPayload = {
+      title,
+      body: finalDescription,
+      head: branchName,
+      base: defaultBase,
+    };
+
+    // Use gh api to make REST API call to create PR
+    // Note: passing JSON via stdin with heredoc to avoid shell escaping issues
+    const prResponse = await execute(
+      `gh api repos/${owner}/${repo}/pulls --input - <<'PAYLOAD_EOF'\n${JSON.stringify(prPayload)}\nPAYLOAD_EOF`,
       gitDirectoryPath
     );
+
+    // Parse the URL from the response
+    const prData = JSON.parse(prResponse);
+    const prUrl = prData.html_url;
+
+    if (!prUrl) {
+      throw new Error('No PR URL in response');
+    }
 
     // Store PR record in DynamoDB
     await storePRRecord(workerId, prUrl, branchName);
 
-    return `Pull request created successfully: ${prUrl}
-Suggestion: When you successfully created a PR, make sure you report its URL to the user. Also check the CI status by using ${ciTool.name} tool and fix the code until all of the CI steps pass.
-`.trim();
+    return `Pull request created successfully: ${prUrl}\nSuggestion: When you successfully created a PR, make sure you report its URL to the user. Also check the CI status by using ${ciTool.name} tool and fix the code until all of the CI steps pass.\n`.trim();
   } catch (error) {
     throw new Error(`Failed to create pull request: ${(error as Error).message}`);
   }
@@ -169,13 +196,12 @@ export const createPRTool: ToolDefinition<z.infer<typeof inputSchema>> = {
   name,
   handler: createPullRequest,
   schema: inputSchema,
-  toolSpec: async () => ({
+  toolSpec: async () => (({
     name,
     description:
-      `Create a new pull request of your branch to the upstream. This tool automatically pushes your current branch to the remote repository before creating the PR. Make sure to commit your changes before running this tool. This tool tracks PRs created in the session and prevents duplicate PRs unless forced. When your PR is linked to an issue, always provide the issue id as well.
-    `.trim(),
+      `Create a new pull request of your branch to the upstream. This tool automatically pushes your current branch to the remote repository before creating the PR. Make sure to commit your changes before running this tool. This tool tracks PRs created in the session and prevents duplicate PRs unless forced. When your PR is linked to an issue, always provide the issue id as well.\n    `.trim(),
     inputSchema: {
       json: zodToJsonSchemaBody(inputSchema),
     },
-  }),
+  }) as any),
 };
