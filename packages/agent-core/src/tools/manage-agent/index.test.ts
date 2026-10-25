@@ -4,12 +4,10 @@ const mockGetCustomAgent = vi.fn();
 const mockUpdateCustomAgent = vi.fn();
 const mockCreateCustomAgent = vi.fn();
 const mockDeleteCustomAgent = vi.fn();
-const mockGetCustomAgents = vi.fn();
 const mockSavePendingCreateAgent = vi.fn();
 
 vi.mock('../../lib/custom-agent', () => ({
   getCustomAgent: (...args: any[]) => mockGetCustomAgent(...args),
-  getCustomAgents: (...args: any[]) => mockGetCustomAgents(...args),
   createCustomAgent: (...args: any[]) => mockCreateCustomAgent(...args),
   updateCustomAgent: (...args: any[]) => mockUpdateCustomAgent(...args),
   deleteCustomAgent: (...args: any[]) => mockDeleteCustomAgent(...args),

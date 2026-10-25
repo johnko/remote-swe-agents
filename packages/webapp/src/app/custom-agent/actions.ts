@@ -8,7 +8,7 @@ import {
   updateCustomAgent,
   deleteCustomAgent,
   getCustomAgent,
-  getCustomAgents,
+  getAllCustomAgents,
   getCustomAgentsPage,
 } from '@remote-swe-agents/agent-core/lib';
 import { revalidatePath } from 'next/cache';
@@ -61,7 +61,7 @@ export const deleteCustomAgentAction = authActionClient
       // become invisible orphans (the list page shows top-level agents only).
       // Delete leaves first so a partial failure never leaves children behind
       // without their parent.
-      const allAgents = await getCustomAgents();
+      const allAgents = await getAllCustomAgents();
       const idsToDelete = [id];
       for (let i = 0; i < idsToDelete.length; i++) {
         const parentId = idsToDelete[i];

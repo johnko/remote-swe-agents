@@ -27,26 +27,6 @@ export const getCustomAgent = async (customAgentId: string | undefined): Promise
   return res.Item as CustomAgent | undefined;
 };
 
-export const getCustomAgents = async (limit: number = 50): Promise<CustomAgent[]> => {
-  const res = await ddb.send(
-    new QueryCommand({
-      TableName,
-      KeyConditionExpression: 'PK = :pk',
-      ExpressionAttributeValues: {
-        ':pk': 'custom-agent',
-      },
-      ScanIndexForward: false, // DESC order
-      Limit: limit,
-    })
-  );
-  const agents = ((res.Items as CustomAgent[]) ?? []).map((agent) => ({
-    ...agent,
-    mcpConfig: JSON.stringify(JSON.parse(agent.mcpConfig), undefined, 2),
-  })) satisfies CustomAgent[];
-
-  return agents;
-};
-
 export const getAllCustomAgents = async (): Promise<CustomAgent[]> => {
   const allAgents: CustomAgent[] = [];
 
