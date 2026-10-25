@@ -8,6 +8,7 @@ import {
   deleteCustomAgent,
   getCustomAgent,
   getCustomAgents,
+  getCustomAgentsPage,
 } from '@remote-swe-agents/agent-core/lib';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
@@ -111,3 +112,18 @@ export const duplicateCustomAgentAction = authActionClient
       throw new Error('Failed to duplicate custom agent');
     }
   });
+
+export const getCustomAgentsPageAction = authActionClient.action(async ({ _parsedInput }) => {
+  try {
+    const startKey = _parsedInput?.lastEvaluatedKey as Record<string, any> | undefined;
+    const result = await getCustomAgentsPage(50, startKey);
+    return {
+      success: true,
+      agents: result.agents,
+      lastEvaluatedKey: result.lastEvaluatedKey,
+    };
+  } catch (error) {
+    console.error('Error fetching custom agents page:', error);
+    throw new Error('Failed to fetch custom agents');
+  }
+});
