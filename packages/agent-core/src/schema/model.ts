@@ -54,6 +54,7 @@ export const modelTypeList = [
   'haiku3.5',
   'nova-pro',
   'gpt-oss-120b',
+  'gpt-oss-20b',
 ] as const;
 export const modelTypeSchema = z.enum(modelTypeList);
 export type ModelType = z.infer<typeof modelTypeSchema>;
@@ -383,6 +384,18 @@ export const modelConfigs: Record<ModelType, z.infer<typeof modelConfigSchema>> 
   'gpt-oss-120b': {
     name: 'GPT OSS 120B',
     modelId: 'openai.gpt-oss-120b-1:0',
+    maxOutputTokens: 131_072,
+    maxInputTokens: 131_072,
+    cacheSupport: [],
+    reasoningSupport: false,
+    toolChoiceSupport: ['auto'],
+    supportsCriProfiles: false,
+    supportedCriProfiles: ['us'],
+    pricing: { input: 0.003, output: 0.015, cacheRead: 0.0003, cacheWrite: 0.00375 },
+  },
+  'gpt-oss-20b': {
+    name: 'GPT OSS 20B',
+    modelId: 'openai.gpt-oss-20b-1:0',
     maxOutputTokens: 131_072,
     maxInputTokens: 131_072,
     cacheSupport: [],
