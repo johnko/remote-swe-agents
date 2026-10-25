@@ -1,7 +1,6 @@
 import { z } from 'zod';
 import { ToolDefinition, zodToJsonSchemaBody } from '../../private/common/lib';
 import {
-  getCustomAgents,
   getAllCustomAgents,
   getCustomAgent,
   createCustomAgent,

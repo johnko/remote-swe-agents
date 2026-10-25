@@ -4,7 +4,7 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeftIcon } from 'lucide-react';
 import { optionalTools } from '@remote-swe-agents/agent-core/tools';
-import { getCustomAgent, getCustomAgents, getSessions } from '@remote-swe-agents/agent-core/lib';
+import { getCustomAgent, getAllCustomAgents, getSessions } from '@remote-swe-agents/agent-core/lib';
 import AgentIconPreview from '../components/AgentIconPreview';
 import AgentBadges from '../components/AgentBadges';
 import AgentDetailCard from './components/AgentDetailCard';
@@ -29,7 +29,7 @@ export default async function CustomAgentDetailPage({ params }: { params: Promis
       }))
     ),
     getCustomAgent(agentId),
-    getCustomAgents(),
+    getAllCustomAgents(),
     getSessions(RECENT_SESSIONS_SCAN_LIMIT),
   ]);
 

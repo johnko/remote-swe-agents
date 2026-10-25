@@ -8,22 +8,13 @@ import {
   updateCustomAgent,
   deleteCustomAgent,
   getCustomAgent,
-  getCustomAgents,
-  getCustomAgentsPage,
+  getAllCustomAgents,
 } from '@remote-swe-agents/agent-core/lib';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 
 const AGENT_NAME_MAX_LENGTH = 100;
-
-const getCustomAgentsPageSchema = z.object({
-  limit: z.number().optional(),
-  // DynamoDB ExclusiveStartKey has PK (string) and SK (string), plus type attributes
-  lastEvaluatedKey: z
-    .record(z.string(), z.union([z.string(), z.number(), z.boolean()]))
-    .optional(),
-});
 
 export const upsertCustomAgentAction = authActionClient
   .inputSchema(upsertCustomAgentSchema)
@@ -61,7 +52,7 @@ export const deleteCustomAgentAction = authActionClient
       // become invisible orphans (the list page shows top-level agents only).
       // Delete leaves first so a partial failure never leaves children behind
       // without their parent.
-      const allAgents = await getCustomAgents();
+      const allAgents = await getAllCustomAgents();
       const idsToDelete = [id];
       for (let i = 0; i < idsToDelete.length; i++) {
         const parentId = idsToDelete[i];
@@ -119,27 +110,5 @@ export const duplicateCustomAgentAction = authActionClient
     } catch (error) {
       console.error('Error duplicating custom agent:', error);
       throw new Error('Failed to duplicate custom agent');
-    }
-  });
-
-export const getCustomAgentsPageAction = authActionClient
-  .inputSchema(getCustomAgentsPageSchema)
-  .action(async ({ parsedInput }) => {
-    try {
-      const { limit = 50, lastEvaluatedKey } = parsedInput;
-      // Defense-in-depth: Backend also validates MAX_PAGE_SIZE, but clamp here for early rejection
-      const validatedLimit = Math.min(Math.max(1, limit), 100);
-
-      const result = await getCustomAgentsPage(validatedLimit, lastEvaluatedKey, true);
-      return {
-        success: true,
-        agents: result.agents,
-        lastEvaluatedKey: result.lastEvaluatedKey,
-        total: result.total,
-      };
-    } catch (error) {
-      console.error('Error fetching custom agents page:', error);
-      // Don't expose internal error details to client
-      throw new Error('Failed to fetch custom agents');
     }
   });
