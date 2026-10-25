@@ -127,10 +127,7 @@ export const getCustomAgentsPageAction = authActionClient
   .action(async ({ parsedInput }) => {
     try {
       const { limit = 50, lastEvaluatedKey } = parsedInput;
-<<<<<<< HEAD
       // Defense-in-depth: Backend also validates MAX_PAGE_SIZE, but clamp here for early rejection
-=======
->>>>>>> 0571525 (fix: add input schema to getCustomAgentsPageAction)
       const validatedLimit = Math.min(Math.max(1, limit), 100);
 
       const result = await getCustomAgentsPage(validatedLimit, lastEvaluatedKey, true);
