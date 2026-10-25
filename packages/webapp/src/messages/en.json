@@ -397,7 +397,9 @@
     "description": "Create and manage custom AI agents with specific behaviors and capabilities",
     "list": {
       "title": "Created Custom Agents",
-      "description": "List of custom AI agents that have been created"
+      "description": "List of custom AI agents that have been created",
+      "loadMore": "Load More",
+      "loading": "Loading..."
     },
     "create": {
       "title": "Create Custom Agent",

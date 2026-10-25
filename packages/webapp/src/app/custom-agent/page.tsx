@@ -6,22 +6,23 @@ import CustomAgentList from './components/CustomAgentList';
 import DeleteSuccessToast from './components/DeleteSuccessToast';
 import PreferenceSection from '../preferences/components/PreferenceSection';
 import { optionalTools } from '@remote-swe-agents/agent-core/tools';
-import { getCustomAgents } from '@remote-swe-agents/agent-core/lib';
+import { getCustomAgentsPage } from '@remote-swe-agents/agent-core/lib';
 
 export const dynamic = 'force-dynamic';
 
 export default async function CustomAgentPage() {
   const t = await getTranslations('customAgent');
-  const [availableTools, customAgents] = await Promise.all([
+  const [availableTools, paginatedResult] = await Promise.all([
     Promise.all(
       optionalTools.map(async (tool) => ({
         name: tool.name,
         description: (await tool.toolSpec()).description?.trim() ?? '',
       }))
     ),
-    getCustomAgents(),
+    getCustomAgentsPage(50, undefined, true),
   ]);
 
+  const customAgents = paginatedResult.agents;
   const topLevelAgents = customAgents.filter((agent) => !agent.parentAgentId);
   const subAgentCounts = Object.fromEntries(
     topLevelAgents.map((agent) => [agent.SK, customAgents.filter((a) => a.parentAgentId === agent.SK).length])
@@ -43,7 +44,11 @@ export default async function CustomAgentPage() {
         <div className="space-y-6">
           {topLevelAgents.length > 0 && (
             <PreferenceSection title={t('list.title')} description={t('list.description')}>
-              <CustomAgentList agents={topLevelAgents} subAgentCounts={subAgentCounts} />
+              <CustomAgentList
+                agents={topLevelAgents}
+                subAgentCounts={subAgentCounts}
+                initialLastEvaluatedKey={paginatedResult.lastEvaluatedKey}
+              />
             </PreferenceSection>
           )}
 
