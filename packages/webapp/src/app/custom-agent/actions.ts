@@ -19,7 +19,10 @@ const AGENT_NAME_MAX_LENGTH = 100;
 
 const getCustomAgentsPageSchema = z.object({
   limit: z.number().optional(),
-  lastEvaluatedKey: z.record(z.any()).optional(),
+  // DynamoDB ExclusiveStartKey has PK (string) and SK (string), plus type attributes
+  lastEvaluatedKey: z
+    .record(z.string(), z.union([z.string(), z.number(), z.boolean()]))
+    .optional(),
 });
 
 export const upsertCustomAgentAction = authActionClient
@@ -124,6 +127,7 @@ export const getCustomAgentsPageAction = authActionClient
   .action(async ({ parsedInput }) => {
     try {
       const { limit = 50, lastEvaluatedKey } = parsedInput;
+      // Defense-in-depth: Backend also validates MAX_PAGE_SIZE, but clamp here for early rejection
       const validatedLimit = Math.min(Math.max(1, limit), 100);
 
       const result = await getCustomAgentsPage(validatedLimit, lastEvaluatedKey, true);
