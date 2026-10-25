@@ -47,6 +47,28 @@ export const getCustomAgents = async (limit: number = 50): Promise<CustomAgent[]
   return agents;
 };
 
+export const getAllCustomAgents = async (): Promise<CustomAgent[]> => {
+  const allAgents: CustomAgent[] = [];
+  let exclusiveStartKey: Record<string, any> | undefined;
+
+  // Paginate through all agents
+  while (true) {
+    const result = await getCustomAgentsPage(50, exclusiveStartKey, false); // Don't pretty-print for internal use
+    allAgents.push(...result.agents);
+
+    if (!result.lastEvaluatedKey) {
+      break;
+    }
+    exclusiveStartKey = result.lastEvaluatedKey;
+  }
+
+  // Pretty-print mcpConfig for display
+  return allAgents.map((agent) => ({
+    ...agent,
+    mcpConfig: JSON.stringify(JSON.parse(agent.mcpConfig), undefined, 2),
+  }));
+};
+
 const getCustomAgentsCount = async (): Promise<number> => {
   const res = await ddb.send(
     new QueryCommand({

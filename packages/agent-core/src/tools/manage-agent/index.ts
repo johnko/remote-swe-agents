@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { ToolDefinition, zodToJsonSchemaBody } from '../../private/common/lib';
 import {
   getCustomAgents,
+  getAllCustomAgents,
   getCustomAgent,
   createCustomAgent,
   updateCustomAgent,
@@ -128,7 +129,7 @@ const agentManagementDescription = `Manage custom agents: list, get, create, upd
 export const listAgentsTool: ToolDefinition<z.infer<typeof listAgentsSchema>> = {
   name: 'list_agents',
   handler: async () => {
-    const agents = await getCustomAgents();
+    const agents = await getAllCustomAgents();
     if (agents.length === 0) {
       return 'No custom agents found.';
     }
