@@ -8,7 +8,8 @@ const validateMcpConfig = (mcpConfig: string): void => {
     const parsedMcpConfig = JSON.parse(mcpConfig);
     mcpConfigSchema.parse(parsedMcpConfig);
   } catch (error) {
-    throw new Error(`Invalid mcpConfig: ${error instanceof Error ? error.message : 'Invalid JSON or schema'}`);
+    // Don't expose internal validation details in error message
+    throw new Error('Invalid MCP configuration format');
   }
 };
 
@@ -46,10 +47,30 @@ export const getCustomAgents = async (limit: number = 50): Promise<CustomAgent[]
   return agents;
 };
 
+const getCustomAgentsCount = async (): Promise<number> => {
+  const res = await ddb.send(
+    new QueryCommand({
+      TableName,
+      KeyConditionExpression: 'PK = :pk',
+      ExpressionAttributeValues: {
+        ':pk': 'custom-agent',
+      },
+      Select: 'COUNT',
+    })
+  );
+  return res.Count ?? 0;
+};
+
+const MAX_PAGE_SIZE = 100;
+
 export const getCustomAgentsPage = async (
   limit: number = 50,
-  exclusiveStartKey?: Record<string, any>
-): Promise<{ agents: CustomAgent[]; lastEvaluatedKey?: Record<string, any>; total?: number }> => {
+  exclusiveStartKey?: Record<string, any>,
+  includePrettyMcpConfig: boolean = false
+): Promise<{ agents: CustomAgent[]; lastEvaluatedKey?: Record<string, any>; total: number }> => {
+  // Validate and clamp limit
+  const validatedLimit = Math.min(Math.max(1, Math.floor(limit)), MAX_PAGE_SIZE);
+
   const res = await ddb.send(
     new QueryCommand({
       TableName,
@@ -58,18 +79,23 @@ export const getCustomAgentsPage = async (
         ':pk': 'custom-agent',
       },
       ScanIndexForward: false, // DESC order
-      Limit: limit,
+      Limit: validatedLimit,
       ExclusiveStartKey: exclusiveStartKey,
     })
   );
+
   const agents = ((res.Items as CustomAgent[]) ?? []).map((agent) => ({
     ...agent,
-    mcpConfig: JSON.stringify(JSON.parse(agent.mcpConfig), undefined, 2),
+    mcpConfig: includePrettyMcpConfig ? JSON.stringify(JSON.parse(agent.mcpConfig), undefined, 2) : agent.mcpConfig,
   })) satisfies CustomAgent[];
+
+  // Get total count only if it's the first page or if explicitly needed
+  const total = !exclusiveStartKey ? await getCustomAgentsCount() : undefined;
 
   return {
     agents,
     lastEvaluatedKey: res.LastEvaluatedKey,
+    total: total ?? 0,
   };
 };
 

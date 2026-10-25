@@ -25,17 +25,19 @@ export default function CustomAgentList({
   const t = useTranslations('customAgent');
   const [agents, setAgents] = useState<CustomAgent[]>(initialAgents);
   const [lastEvaluatedKey, setLastEvaluatedKey] = useState(initialLastEvaluatedKey);
+  const [total, setTotal] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [subAgentCountsState, setSubAgentCountsState] = useState(subAgentCounts);
 
   const handleLoadMore = async () => {
     setIsLoading(true);
     try {
-      const result = await getCustomAgentsPageAction({ lastEvaluatedKey });
+      const result = await getCustomAgentsPageAction({ lastEvaluatedKey, limit: 50 });
       if (result.data?.success) {
         const newAgents = result.data.agents;
         setAgents((prev) => [...prev, ...newAgents]);
         setLastEvaluatedKey(result.data.lastEvaluatedKey);
+        setTotal(result.data.total ?? 0);
 
         // Update subAgentCounts for new agents
         const newCounts = { ...subAgentCountsState };

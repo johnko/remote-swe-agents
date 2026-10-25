@@ -19,7 +19,7 @@ export default async function CustomAgentPage() {
         description: (await tool.toolSpec()).description?.trim() ?? '',
       }))
     ),
-    getCustomAgentsPage(50),
+    getCustomAgentsPage(50, undefined, true),
   ]);
 
   const customAgents = paginatedResult.agents;

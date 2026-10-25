@@ -116,14 +116,18 @@ export const duplicateCustomAgentAction = authActionClient
 export const getCustomAgentsPageAction = authActionClient.action(async ({ _parsedInput }) => {
   try {
     const startKey = _parsedInput?.lastEvaluatedKey as Record<string, any> | undefined;
-    const result = await getCustomAgentsPage(50, startKey);
+    const limit = _parsedInput?.limit ? Math.min(Math.max(1, _parsedInput.limit), 100) : 50;
+
+    const result = await getCustomAgentsPage(limit, startKey, true);
     return {
       success: true,
       agents: result.agents,
       lastEvaluatedKey: result.lastEvaluatedKey,
+      total: result.total,
     };
   } catch (error) {
     console.error('Error fetching custom agents page:', error);
+    // Don't expose internal error details to client
     throw new Error('Failed to fetch custom agents');
   }
 });
