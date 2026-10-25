@@ -270,7 +270,7 @@ function SessionPageClientInner({
   const [showHandoverModal, setShowHandoverModal] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [currentUnreadMap, setCurrentUnreadMap] = useState(unreadMap ?? {});
-  const { isBottom, isHeaderVisible } = useScrollPosition();
+  const { isBottom } = useScrollPosition();
   const { isDisplaced: hideScrollButtons } = useViewportState();
 
   useSwipeGesture({
@@ -931,7 +931,7 @@ function SessionPageClientInner({
 
       {/* Main content */}
       <div className="flex-1 min-h-screen flex flex-col min-w-0">
-        <div className={`sticky z-10 transition-all duration-300 ${isHeaderVisible ? 'top-16' : 'top-0'}`}>
+        <div className="sticky z-10 top-16">
           <Header hasCustomIcon={!!preferences.defaultAgentIconKey} hasSidebar />
           <div className="border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-1.5 sm:px-4 sm:py-2">
             <div className="max-w-4xl mx-auto flex items-center justify-between min-w-0">
