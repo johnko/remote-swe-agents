@@ -2,6 +2,7 @@
 
 import { authActionClient } from '@/lib/safe-action';
 import { upsertCustomAgentSchema, deleteCustomAgentSchema, duplicateCustomAgentSchema } from './schemas';
+import { z } from 'zod';
 import {
   createCustomAgent,
   updateCustomAgent,
@@ -15,6 +16,14 @@ import { redirect } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 
 const AGENT_NAME_MAX_LENGTH = 100;
+
+const getCustomAgentsPageSchema = z.object({
+  limit: z.number().optional(),
+  // DynamoDB ExclusiveStartKey has PK (string) and SK (string), plus type attributes
+  lastEvaluatedKey: z
+    .record(z.string(), z.union([z.string(), z.number(), z.boolean()]))
+    .optional(),
+});
 
 export const upsertCustomAgentAction = authActionClient
   .inputSchema(upsertCustomAgentSchema)
@@ -113,21 +122,24 @@ export const duplicateCustomAgentAction = authActionClient
     }
   });
 
-export const getCustomAgentsPageAction = authActionClient.action(async ({ _parsedInput }) => {
-  try {
-    const startKey = _parsedInput?.lastEvaluatedKey as Record<string, any> | undefined;
-    const limit = _parsedInput?.limit ? Math.min(Math.max(1, _parsedInput.limit), 100) : 50;
+export const getCustomAgentsPageAction = authActionClient
+  .inputSchema(getCustomAgentsPageSchema)
+  .action(async ({ parsedInput }) => {
+    try {
+      const { limit = 50, lastEvaluatedKey } = parsedInput;
+      // Defense-in-depth: Backend also validates MAX_PAGE_SIZE, but clamp here for early rejection
+      const validatedLimit = Math.min(Math.max(1, limit), 100);
 
-    const result = await getCustomAgentsPage(limit, startKey, true);
-    return {
-      success: true,
-      agents: result.agents,
-      lastEvaluatedKey: result.lastEvaluatedKey,
-      total: result.total,
-    };
-  } catch (error) {
-    console.error('Error fetching custom agents page:', error);
-    // Don't expose internal error details to client
-    throw new Error('Failed to fetch custom agents');
-  }
-});
+      const result = await getCustomAgentsPage(validatedLimit, lastEvaluatedKey, true);
+      return {
+        success: true,
+        agents: result.agents,
+        lastEvaluatedKey: result.lastEvaluatedKey,
+        total: result.total,
+      };
+    } catch (error) {
+      console.error('Error fetching custom agents page:', error);
+      // Don't expose internal error details to client
+      throw new Error('Failed to fetch custom agents');
+    }
+  });
