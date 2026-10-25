@@ -1,4 +1,4 @@
-import { QueryCommand, PutCommand, UpdateCommand, GetCommand, DeleteCommand } from '@aws-sdk/lib-dynamodb';
+import { QueryCommand, PutCommand, UpdateCommand, GetCommand, DeleteCommand, paginateQuery } from '@aws-sdk/lib-dynamodb';
 import { CustomAgent, EmptyMcpConfig, mcpConfigSchema } from '../schema';
 import { ddb, TableName } from './aws';
 import { randomBytes } from 'crypto';
@@ -49,17 +49,27 @@ export const getCustomAgents = async (limit: number = 50): Promise<CustomAgent[]
 
 export const getAllCustomAgents = async (): Promise<CustomAgent[]> => {
   const allAgents: CustomAgent[] = [];
-  let exclusiveStartKey: Record<string, any> | undefined;
 
-  // Paginate through all agents
-  while (true) {
-    const result = await getCustomAgentsPage(50, exclusiveStartKey, false); // Don't pretty-print for internal use
-    allAgents.push(...result.agents);
-
-    if (!result.lastEvaluatedKey) {
-      break;
+  // Use SDK paginator which properly handles DynamoDB's 1MB response limit
+  // without truncating results mid-pagination. This is critical because large
+  // mcpConfig JSON fields can cause queries to hit the 1MB limit before
+  // returning all items, resulting in incomplete result sets.
+  const paginator = paginateQuery(
+    { client: ddb, pageSize: 50 },
+    {
+      TableName,
+      KeyConditionExpression: 'PK = :pk',
+      ExpressionAttributeValues: {
+        ':pk': 'custom-agent',
+      },
+      ScanIndexForward: false, // DESC order
     }
-    exclusiveStartKey = result.lastEvaluatedKey;
+  );
+
+  for await (const page of paginator) {
+    if (page.Items) {
+      allAgents.push(...(page.Items as CustomAgent[]));
+    }
   }
 
   // Pretty-print mcpConfig for display
