@@ -59,58 +59,6 @@ export const getAllCustomAgents = async (): Promise<CustomAgent[]> => {
   }));
 };
 
-const getCustomAgentsCount = async (): Promise<number> => {
-  const res = await ddb.send(
-    new QueryCommand({
-      TableName,
-      KeyConditionExpression: 'PK = :pk',
-      ExpressionAttributeValues: {
-        ':pk': 'custom-agent',
-      },
-      Select: 'COUNT',
-    })
-  );
-  return res.Count ?? 0;
-};
-
-const MAX_PAGE_SIZE = 100;
-
-export const getCustomAgentsPage = async (
-  limit: number = 50,
-  exclusiveStartKey?: Record<string, any>,
-  includePrettyMcpConfig: boolean = false
-): Promise<{ agents: CustomAgent[]; lastEvaluatedKey?: Record<string, any>; total: number }> => {
-  // Validate and clamp limit
-  const validatedLimit = Math.min(Math.max(1, Math.floor(limit)), MAX_PAGE_SIZE);
-
-  const res = await ddb.send(
-    new QueryCommand({
-      TableName,
-      KeyConditionExpression: 'PK = :pk',
-      ExpressionAttributeValues: {
-        ':pk': 'custom-agent',
-      },
-      ScanIndexForward: false, // DESC order
-      Limit: validatedLimit,
-      ExclusiveStartKey: exclusiveStartKey,
-    })
-  );
-
-  const agents = ((res.Items as CustomAgent[]) ?? []).map((agent) => ({
-    ...agent,
-    mcpConfig: includePrettyMcpConfig ? JSON.stringify(JSON.parse(agent.mcpConfig), undefined, 2) : agent.mcpConfig,
-  })) satisfies CustomAgent[];
-
-  // Get total count only if it's the first page or if explicitly needed
-  const total = !exclusiveStartKey ? await getCustomAgentsCount() : undefined;
-
-  return {
-    agents,
-    lastEvaluatedKey: res.LastEvaluatedKey,
-    total: total ?? 0,
-  };
-};
-
 export const createCustomAgent = async (
   agent: Omit<CustomAgent, 'PK' | 'SK' | 'createdAt' | 'updatedAt'>
 ): Promise<CustomAgent> => {
