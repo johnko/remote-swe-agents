@@ -6,7 +6,7 @@ import NewSessionForm from './NewSessionForm';
 import { ddb, TableName } from '@remote-swe-agents/agent-core/aws';
 import { QueryCommand } from '@aws-sdk/lib-dynamodb';
 import { PromptTemplate } from '@/app/sessions/new/schemas';
-import { getCustomAgents, getPreferences, getUserPreferences } from '@remote-swe-agents/agent-core/lib';
+import { getAllCustomAgents, getPreferences, getUserPreferences } from '@remote-swe-agents/agent-core/lib';
 import { getSession } from '@/lib/auth';
 
 export default async function NewSessionPage() {
@@ -26,7 +26,7 @@ export default async function NewSessionPage() {
     })
   );
   const preferences = await getPreferences();
-  const customAgents = await getCustomAgents();
+  const customAgents = await getAllCustomAgents();
   const session = await getSession();
   const userPreferences = await getUserPreferences(session.userId);
   const kiroModel = userPreferences.kiroDefaultModel || userPreferences.kiroModel || 'auto';
