@@ -19,6 +19,17 @@ export const kiroModelConfigs = {
   'minimax-m2.5': { name: 'MiniMax M2.5' },
   'glm-5': { name: 'GLM 5' },
   'qwen3-coder-next': { name: 'Qwen3 Coder Next' },
+  'qwen3-coder-30b-a3b': {
+    name: 'Qwen3 Coder 30B A3B',
+    modelId: 'qwen.qwen3-coder-30b-a3b-v1:0',
+    maxOutputTokens: 16_000,
+    maxInputTokens: 256_000,
+    cacheSupport: ['system', 'message', 'tool'],
+    reasoningSupport: true,
+    toolChoiceSupport: ['any', 'auto', 'tool'],
+    supportedCriProfiles: ['us-east-1', 'us-east-2', 'us-west-2', 'eu-central-1', 'eu-north-1'],
+    pricing: { input: 0.15, output: 0.60, cacheRead: 0, cacheWrite: 0 },
+  },
 } as const satisfies Record<string, { name: string }>;
 
 export type KiroModelId = keyof typeof kiroModelConfigs;
