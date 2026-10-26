@@ -573,7 +573,7 @@ systemctl start myapp
     props.webappOriginSourceParameter.grantRead(role);
     role.addToPrincipalPolicy(
       new iam.PolicyStatement({
-        actions: ['bedrock:InvokeModel'],
+        actions: ['bedrock:InvokeModel', 'sts:GetCallerIdentity'],
         resources: ['*'],
       })
     );

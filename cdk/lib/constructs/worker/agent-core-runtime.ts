@@ -120,7 +120,7 @@ export class AgentCoreRuntime extends Construct implements IGrantable {
     );
     role.addToPrincipalPolicy(
       new PolicyStatement({
-        actions: ['bedrock:InvokeModel'],
+        actions: ['bedrock:InvokeModel', 'sts:GetCallerIdentity'],
         resources: ['*'],
       })
     );
