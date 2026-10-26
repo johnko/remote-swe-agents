@@ -67,6 +67,7 @@ export class WorkerImageBuilder extends Construct {
       amiIdSsmPath: props.amiIdParameterName,
       amiIdSsmAccountId: Stack.of(this).account,
       amiIdSsmRegion: Stack.of(this).region,
+      instanceTypes: ['t3.medium', 't3.large'],
       ebsVolumeConfigurations: [
         {
           deviceName: '/dev/sda1',
