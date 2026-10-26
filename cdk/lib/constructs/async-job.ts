@@ -72,7 +72,7 @@ export class AsyncJob extends Construct {
       schedule,
       target: new LambdaInvoke(this.handler, {
         input: ScheduleTargetInput.fromObject({ jobType, payload }),
-        retryAttempts: 5,
+        retryAttempts: 1,
       }),
     });
   }
