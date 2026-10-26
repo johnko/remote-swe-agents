@@ -4,6 +4,8 @@ import { modelConfigs } from '../schema/model';
 import { updateSession } from './sessions';
 
 // Calculate cost in USD based on token usage
+// Pricing values are stored per 1M tokens (matching AWS Bedrock pricing documentation)
+// Formula: (tokens * pricing) / 1,000,000 = USD cost
 export const calculateCost = (
   modelId: string,
   inputTokens: number,
@@ -20,7 +22,7 @@ export const calculateCost = (
       outputTokens * pricing.output +
       cacheReadTokens * pricing.cacheRead +
       cacheWriteTokens * pricing.cacheWrite) /
-    1000
+    1_000_000
   );
 };
 

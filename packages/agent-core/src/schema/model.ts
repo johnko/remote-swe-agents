@@ -89,6 +89,8 @@ const modelConfigSchema = z.object({
   supportsCriProfiles: z.boolean().optional(),
   supportedCriProfiles: z.array(criRegionSchema),
   additionalRequestFields: z.record(z.string(), z.unknown()).optional(),
+  // Pricing per 1M tokens (matching AWS Bedrock pricing documentation)
+  // Calculation: (tokens × price) / 1,000,000 = USD cost
   pricing: z.object({
     input: z.number(),
     output: z.number(),
@@ -113,8 +115,9 @@ export const modelConfigs: Record<ModelType, z.infer<typeof modelConfigSchema>> 
     interleavedThinkingSupport: true,
     adaptiveThinkingOnly: true,
     assistantPrefillSupport: false,
+    isHidden: true,
     supportedCriProfiles: ['global', 'us', 'eu', 'au'],
-    pricing: { input: 0.005, output: 0.025, cacheRead: 0.0005, cacheWrite: 0.00625 },
+    pricing: { input: 5.0, output: 25.0, cacheRead: 0.5, cacheWrite: 6.25 },
   },
   'opus5-5': {
     name: 'Claude Opus 5.5',
@@ -127,8 +130,9 @@ export const modelConfigs: Record<ModelType, z.infer<typeof modelConfigSchema>> 
     interleavedThinkingSupport: true,
     adaptiveThinkingOnly: true,
     assistantPrefillSupport: false,
+    isHidden: true,
     supportedCriProfiles: ['global', 'us', 'eu', 'au'],
-    pricing: { input: 0.005, output: 0.025, cacheRead: 0.0005, cacheWrite: 0.00625 },
+    pricing: { input: 5.0, output: 25.0, cacheRead: 0.5, cacheWrite: 6.25 },
   },
   sonnet5: {
     name: 'Claude Sonnet 5',
@@ -142,7 +146,7 @@ export const modelConfigs: Record<ModelType, z.infer<typeof modelConfigSchema>> 
     adaptiveThinkingOnly: true,
     assistantPrefillSupport: false,
     supportedCriProfiles: ['global', 'us', 'eu', 'au'],
-    pricing: { input: 0.003, output: 0.015, cacheRead: 0.0003, cacheWrite: 0.00375 },
+    pricing: { input: 3.0, output: 15.0, cacheRead: 0.3, cacheWrite: 3.75 },
   },
   'sonnet5-5': {
     name: 'Claude Sonnet 5.5',
@@ -156,7 +160,7 @@ export const modelConfigs: Record<ModelType, z.infer<typeof modelConfigSchema>> 
     adaptiveThinkingOnly: true,
     assistantPrefillSupport: false,
     supportedCriProfiles: ['global', 'us', 'eu', 'au'],
-    pricing: { input: 0.003, output: 0.015, cacheRead: 0.0003, cacheWrite: 0.00375 },
+    pricing: { input: 3000.0, output: 15000.0, cacheRead: 300.0, cacheWrite: 3750.0 },
   },
   'sonnet4.6': {
     name: 'Claude Sonnet 4.6',
@@ -169,7 +173,7 @@ export const modelConfigs: Record<ModelType, z.infer<typeof modelConfigSchema>> 
     interleavedThinkingSupport: true,
     assistantPrefillSupport: false,
     supportedCriProfiles: ['global', 'us', 'eu', 'jp', 'au'],
-    pricing: { input: 0.003, output: 0.015, cacheRead: 0.0003, cacheWrite: 0.00375 },
+    pricing: { input: 3000.0, output: 15000.0, cacheRead: 300.0, cacheWrite: 3750.0 },
   },
   'sonnet4.6-long-context-mode': {
     name: 'Claude Sonnet 4.6 (Long Context)',
@@ -183,7 +187,7 @@ export const modelConfigs: Record<ModelType, z.infer<typeof modelConfigSchema>> 
     assistantPrefillSupport: false,
     supportedCriProfiles: ['global', 'us', 'eu', 'jp', 'au'],
     additionalRequestFields: { anthropic_beta: ['context-1m-2025-08-07'] },
-    pricing: { input: 0.003, output: 0.015, cacheRead: 0.0003, cacheWrite: 0.00375 },
+    pricing: { input: 3.0, output: 15.0, cacheRead: 0.3, cacheWrite: 3.75 },
   },
   'opus4.8': {
     name: 'Claude Opus 4.8',
@@ -196,8 +200,9 @@ export const modelConfigs: Record<ModelType, z.infer<typeof modelConfigSchema>> 
     interleavedThinkingSupport: true,
     adaptiveThinkingOnly: true,
     assistantPrefillSupport: false,
+    isHidden: true,
     supportedCriProfiles: ['global', 'us', 'eu', 'jp', 'au'],
-    pricing: { input: 0.005, output: 0.025, cacheRead: 0.0005, cacheWrite: 0.00625 },
+    pricing: { input: 5.0, output: 25.0, cacheRead: 0.5, cacheWrite: 6.25 },
   },
   fable5: {
     name: 'Claude Fable 5',
@@ -210,9 +215,10 @@ export const modelConfigs: Record<ModelType, z.infer<typeof modelConfigSchema>> 
     interleavedThinkingSupport: true,
     adaptiveThinkingOnly: true,
     assistantPrefillSupport: false,
+    isHidden: true,
     supportedCriProfiles: ['global', 'us'],
     // Fable 5 has uniform pricing across all context lengths (no longContext surcharge).
-    pricing: { input: 0.01, output: 0.05, cacheRead: 0.001, cacheWrite: 0.0125 },
+    pricing: { input: 10.0, output: 50.0, cacheRead: 1.0, cacheWrite: 12.5 },
   },
   'opus4.7': {
     name: 'Claude Opus 4.7',
@@ -225,8 +231,9 @@ export const modelConfigs: Record<ModelType, z.infer<typeof modelConfigSchema>> 
     interleavedThinkingSupport: true,
     adaptiveThinkingOnly: true,
     assistantPrefillSupport: false,
+    isHidden: true,
     supportedCriProfiles: ['global', 'us', 'eu', 'jp'],
-    pricing: { input: 0.005, output: 0.025, cacheRead: 0.0005, cacheWrite: 0.00625 },
+    pricing: { input: 5.0, output: 25.0, cacheRead: 0.5, cacheWrite: 6.25 },
   },
   'opus4.6': {
     name: 'Claude Opus 4.6',
@@ -238,8 +245,9 @@ export const modelConfigs: Record<ModelType, z.infer<typeof modelConfigSchema>> 
     toolChoiceSupport: ['any', 'auto', 'tool'],
     interleavedThinkingSupport: true,
     assistantPrefillSupport: false,
+    isHidden: true,
     supportedCriProfiles: ['global', 'us', 'eu', 'au'],
-    pricing: { input: 0.005, output: 0.025, cacheRead: 0.0005, cacheWrite: 0.00625 },
+    pricing: { input: 5.0, output: 25.0, cacheRead: 0.5, cacheWrite: 6.25 },
   },
   'opus4.6-long-context-mode': {
     name: 'Claude Opus 4.6 (Long Context)',
@@ -253,7 +261,7 @@ export const modelConfigs: Record<ModelType, z.infer<typeof modelConfigSchema>> 
     assistantPrefillSupport: false,
     supportedCriProfiles: ['global', 'us', 'eu', 'au'],
     additionalRequestFields: { anthropic_beta: ['context-1m-2025-08-07'] },
-    pricing: { input: 0.005, output: 0.025, cacheRead: 0.0005, cacheWrite: 0.00625 },
+    pricing: { input: 5.0, output: 25.0, cacheRead: 0.5, cacheWrite: 6.25 },
   },
   'sonnet4.5': {
     name: 'Claude Sonnet 4.5',
@@ -265,7 +273,7 @@ export const modelConfigs: Record<ModelType, z.infer<typeof modelConfigSchema>> 
     toolChoiceSupport: ['any', 'auto', 'tool'],
     interleavedThinkingSupport: true,
     supportedCriProfiles: ['global', 'us', 'eu', 'jp', 'au'],
-    pricing: { input: 0.003, output: 0.015, cacheRead: 0.0003, cacheWrite: 0.00375 },
+    pricing: { input: 3000.0, output: 15000.0, cacheRead: 300.0, cacheWrite: 3750.0 },
   },
   'sonnet4.5-long-context-mode': {
     name: 'Claude Sonnet 4.5 (Long Context)',
@@ -278,11 +286,7 @@ export const modelConfigs: Record<ModelType, z.infer<typeof modelConfigSchema>> 
     interleavedThinkingSupport: true,
     supportedCriProfiles: ['global', 'us', 'eu', 'jp', 'au'],
     additionalRequestFields: { anthropic_beta: ['context-1m-2025-08-07'] },
-    pricing: {
-      input: 0.003,
-      output: 0.015,
-      cacheRead: 0.0003,
-      cacheWrite: 0.00375,
+    pricing: { input: 3.0, output: 15.0, cacheRead: 0.3, cacheWrite: 3.75,
       longContextInput: 0.006,
       longContextOutput: 0.0225,
       longContextCacheRead: 0.0006,
@@ -298,8 +302,9 @@ export const modelConfigs: Record<ModelType, z.infer<typeof modelConfigSchema>> 
     reasoningSupport: true,
     toolChoiceSupport: ['any', 'auto', 'tool'],
     interleavedThinkingSupport: true,
+    isHidden: true,
     supportedCriProfiles: ['global'],
-    pricing: { input: 0.005, output: 0.025, cacheRead: 0.0005, cacheWrite: 0.00625 },
+    pricing: { input: 5.0, output: 25.0, cacheRead: 0.5, cacheWrite: 6.25 },
   },
   'haiku4.5': {
     name: 'Claude Haiku 4.5',
@@ -311,7 +316,7 @@ export const modelConfigs: Record<ModelType, z.infer<typeof modelConfigSchema>> 
     toolChoiceSupport: ['any', 'auto', 'tool'],
     interleavedThinkingSupport: true,
     supportedCriProfiles: ['global', 'us', 'eu', 'jp', 'au'],
-    pricing: { input: 0.001, output: 0.005, cacheRead: 0.0001, cacheWrite: 0.00125 },
+    pricing: { input: 1.0, output: 5.0, cacheRead: 0.1, cacheWrite: 2.0 },
   },
   'haiku5-5': {
     name: 'Claude Haiku 5.5',
@@ -323,7 +328,7 @@ export const modelConfigs: Record<ModelType, z.infer<typeof modelConfigSchema>> 
     toolChoiceSupport: ['any', 'auto', 'tool'],
     interleavedThinkingSupport: true,
     supportedCriProfiles: ['global', 'us', 'eu', 'jp', 'au'],
-    pricing: { input: 0.001, output: 0.005, cacheRead: 0.0001, cacheWrite: 0.00125 },
+    pricing: { input: 1000.0, output: 5000.0, cacheRead: 100.0, cacheWrite: 1250.0 },
   },
   'sonnet3.5v1': {
     name: 'Claude 3.5 Sonnet v1',
@@ -335,7 +340,7 @@ export const modelConfigs: Record<ModelType, z.infer<typeof modelConfigSchema>> 
     toolChoiceSupport: ['any', 'auto', 'tool'],
     isHidden: true,
     supportedCriProfiles: ['us', 'apac'],
-    pricing: { input: 0.003, output: 0.015, cacheRead: 0.0003, cacheWrite: 0.00375 },
+    pricing: { input: 3.0, output: 15.0, cacheRead: 0.3, cacheWrite: 3.75 },
   },
   'sonnet3.5': {
     name: 'Claude 3.5 Sonnet v2',
@@ -345,8 +350,9 @@ export const modelConfigs: Record<ModelType, z.infer<typeof modelConfigSchema>> 
     cacheSupport: [],
     reasoningSupport: false,
     toolChoiceSupport: ['any', 'auto', 'tool'],
+    isHidden: true,
     supportedCriProfiles: ['us', 'apac'],
-    pricing: { input: 0.003, output: 0.015, cacheRead: 0.0003, cacheWrite: 0.00375 },
+    pricing: { input: 3.0, output: 15.0, cacheRead: 0.3, cacheWrite: 3.75 },
   },
   'sonnet3.7': {
     name: 'Claude 3.7 Sonnet',
@@ -356,8 +362,9 @@ export const modelConfigs: Record<ModelType, z.infer<typeof modelConfigSchema>> 
     cacheSupport: ['system', 'message', 'tool'],
     reasoningSupport: true,
     toolChoiceSupport: ['any', 'auto', 'tool'],
+    isHidden: true,
     supportedCriProfiles: ['us', 'eu', 'apac'],
-    pricing: { input: 0.003, output: 0.015, cacheRead: 0.0003, cacheWrite: 0.00375 },
+    pricing: { input: 3.0, output: 15.0, cacheRead: 0.3, cacheWrite: 3.75 },
   },
   'haiku3.5': {
     name: 'Claude 3.5 Haiku',
@@ -369,7 +376,7 @@ export const modelConfigs: Record<ModelType, z.infer<typeof modelConfigSchema>> 
     toolChoiceSupport: ['any', 'auto', 'tool'],
     isHidden: true,
     supportedCriProfiles: ['us', 'eu'],
-    pricing: { input: 0.0008, output: 0.004, cacheRead: 0.00008, cacheWrite: 0.001 },
+    pricing: { input: 800.0, output: 4000.0, cacheRead: 80.0, cacheWrite: 1000.0 },
   },
   'nova-pro': {
     name: 'Amazon Nova Pro',
@@ -380,7 +387,7 @@ export const modelConfigs: Record<ModelType, z.infer<typeof modelConfigSchema>> 
     cacheSupport: ['system'],
     toolChoiceSupport: ['auto'],
     supportedCriProfiles: ['us', 'apac'],
-    pricing: { input: 0.0008, output: 0.0032, cacheRead: 0.0002, cacheWrite: 0.0008 },
+    pricing: { input: 1.25, output: 10.0, cacheRead: 0.2, cacheWrite: 0.8 },
   },
   'gpt-oss-120b': {
     name: 'GPT OSS 120B',
@@ -392,7 +399,7 @@ export const modelConfigs: Record<ModelType, z.infer<typeof modelConfigSchema>> 
     toolChoiceSupport: ['auto'],
     supportsCriProfiles: false,
     supportedCriProfiles: ['us'],
-    pricing: { input: 0.003, output: 0.015, cacheRead: 0.0003, cacheWrite: 0.00375 },
+    pricing: { input: 0.15, output: 0.6, cacheRead: 0, cacheWrite: 0 },
   },
   'gpt-oss-20b': {
     name: 'GPT OSS 20B',
@@ -405,7 +412,7 @@ export const modelConfigs: Record<ModelType, z.infer<typeof modelConfigSchema>> 
     isHidden: true,
     supportsCriProfiles: false,
     supportedCriProfiles: ['us'],
-    pricing: { input: 0.003, output: 0.015, cacheRead: 0.0003, cacheWrite: 0.00375 },
+    pricing: { input: 0.07, output: 0.3, cacheRead: 0.0, cacheWrite: 0.0 },
   },
   opus4: {
     name: 'Claude 4 Opus',
@@ -418,7 +425,7 @@ export const modelConfigs: Record<ModelType, z.infer<typeof modelConfigSchema>> 
     isHidden: true,
     interleavedThinkingSupport: true,
     supportedCriProfiles: ['us'],
-    pricing: { input: 0.015, output: 0.075, cacheRead: 0.0015, cacheWrite: 0.01875 },
+    pricing: { input: 15.0, output: 75.0, cacheRead: 1.5, cacheWrite: 18.75 },
   },
   'opus4.1': {
     name: 'Claude 4.1 Opus',
@@ -431,7 +438,7 @@ export const modelConfigs: Record<ModelType, z.infer<typeof modelConfigSchema>> 
     interleavedThinkingSupport: true,
     isHidden: true,
     supportedCriProfiles: ['us'],
-    pricing: { input: 0.015, output: 0.075, cacheRead: 0.0015, cacheWrite: 0.01875 },
+    pricing: { input: 15.0, output: 75.0, cacheRead: 1.5, cacheWrite: 18.75 },
   },
   sonnet4: {
     name: 'Claude 4 Sonnet',
@@ -443,7 +450,7 @@ export const modelConfigs: Record<ModelType, z.infer<typeof modelConfigSchema>> 
     toolChoiceSupport: ['any', 'auto', 'tool'],
     interleavedThinkingSupport: true,
     supportedCriProfiles: ['global', 'us', 'eu', 'apac'],
-    pricing: { input: 0.003, output: 0.015, cacheRead: 0.0003, cacheWrite: 0.00375 },
+    pricing: { input: 3.0, output: 15.0, cacheRead: 0.3, cacheWrite: 3.75 },
   },
   'sonnet4-long-context-mode': {
     name: 'Claude 4 Sonnet (Long Context)',
@@ -456,11 +463,7 @@ export const modelConfigs: Record<ModelType, z.infer<typeof modelConfigSchema>> 
     interleavedThinkingSupport: true,
     supportedCriProfiles: ['global', 'us', 'eu', 'apac'],
     additionalRequestFields: { anthropic_beta: ['context-1m-2025-08-07'] },
-    pricing: {
-      input: 0.003,
-      output: 0.015,
-      cacheRead: 0.0003,
-      cacheWrite: 0.00375,
+    pricing: { input: 3.0, output: 15.0, cacheRead: 0.3, cacheWrite: 3.75,
       longContextInput: 0.006,
       longContextOutput: 0.0225,
       longContextCacheRead: 0.0006,
@@ -476,7 +479,7 @@ export const modelConfigs: Record<ModelType, z.infer<typeof modelConfigSchema>> 
     reasoningSupport: true,
     toolChoiceSupport: ['any', 'auto', 'tool'],
     supportedCriProfiles: ['us'],
-    pricing: { input: 0.15, output: 0.60, cacheRead: 0, cacheWrite: 0 },
+    pricing: { input: 0.15, output: 0.6, cacheRead: 0.0, cacheWrite: 0.0 },
   },
 };
 
