@@ -124,6 +124,12 @@ export class SlackBolt extends Construct {
         resources: ['*'],
       })
     );
+    asyncHandler.addToRolePolicy(
+      new PolicyStatement({
+        actions: ['bedrock:InvokeModel', 'bedrock:ListFoundationModels'],
+        resources: ['*'],
+      })
+    );
     // Troubleshooting permissions: IAM view and read permissions
     asyncHandler.addToRolePolicy(
       new PolicyStatement({
@@ -136,32 +142,6 @@ export class SlackBolt extends Construct {
           'iam:GetPolicy',
           'iam:GetPolicyVersion',
           'sts:GetCallerIdentity',
-        ],
-        resources: ['*'],
-      })
-    );
-    // Bedrock and runtime diagnostics
-    asyncHandler.addToRolePolicy(
-      new PolicyStatement({
-        actions: [
-          'bedrock:GetFoundationModel',
-          'bedrock:GetFoundationModelAvailability',
-          'logs:GetLogEvents',
-          'ssm:GetParameter',
-          'ssm:DescribeParameters',
-          'cloudformation:DescribeStacks',
-          'cloudformation:ListStackResources',
-          'dynamodb:DescribeTable',
-          'dynamodb:ListTables',
-          'ec2:DescribeLaunchTemplates',
-          'ec2:DescribeInstances',
-          'events:DescribeRule',
-          'events:ListRules',
-          'events:ListTargetsByRule',
-          'lambda:GetFunction',
-          'lambda:ListFunctions',
-          's3:GetBucketLocation',
-          's3:GetBucketVersioning',
         ],
         resources: ['*'],
       })
