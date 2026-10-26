@@ -401,6 +401,7 @@ export const modelConfigs: Record<ModelType, z.infer<typeof modelConfigSchema>> 
     cacheSupport: [],
     reasoningSupport: false,
     toolChoiceSupport: ['auto'],
+    isHidden: true,
     supportsCriProfiles: false,
     supportedCriProfiles: ['us'],
     pricing: { input: 0.003, output: 0.015, cacheRead: 0.0003, cacheWrite: 0.00375 },
