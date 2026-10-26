@@ -1,6 +1,9 @@
 import { Handler } from 'aws-lambda';
 import { z } from 'zod';
+import { CloudWatchClient, PutMetricDataCommand } from '@aws-sdk/client-cloudwatch';
 import { deleteSession, sendWebappEvent } from '@remote-swe-agents/agent-core/lib';
+
+const cloudwatch = new CloudWatchClient();
 
 const jobPayloadPropsSchema = z.discriminatedUnion('type', [
   z.object({
@@ -37,6 +40,10 @@ export const handler: Handler<unknown> = async (event, context) => {
 const SESSION_DELETE_CONCURRENCY = 3;
 
 async function processSessionBatchDelete(workerIds: string[]): Promise<void> {
+  let successCount = 0;
+  let failureCount = 0;
+  const startTime = Date.now();
+
   for (let i = 0; i < workerIds.length; i += SESSION_DELETE_CONCURRENCY) {
     const chunk = workerIds.slice(i, i + SESSION_DELETE_CONCURRENCY);
     await Promise.all(
@@ -45,12 +52,48 @@ async function processSessionBatchDelete(workerIds: string[]): Promise<void> {
         try {
           await deleteSession(workerId);
           success = true;
+          successCount++;
         } catch (e) {
           console.error(`Failed to delete session ${workerId}:`, e);
+          failureCount++;
         }
         // Notify the webapp so it can update the session list in realtime.
         await sendWebappEvent(workerId, { type: 'sessionDeleted', success });
       })
     );
   }
+
+  // Emit metrics to CloudWatch
+  const duration = Date.now() - startTime;
+  await cloudwatch.send(
+    new PutMetricDataCommand({
+      Namespace: 'RemoteSWEAgents/SessionDeletion',
+      MetricData: [
+        {
+          MetricName: 'SessionDeletionAttempts',
+          Value: workerIds.length,
+          Unit: 'Count',
+          Timestamp: new Date(),
+        },
+        {
+          MetricName: 'SessionDeletionSuccesses',
+          Value: successCount,
+          Unit: 'Count',
+          Timestamp: new Date(),
+        },
+        {
+          MetricName: 'SessionDeletionFailures',
+          Value: failureCount,
+          Unit: 'Count',
+          Timestamp: new Date(),
+        },
+        {
+          MetricName: 'SessionDeletionDuration',
+          Value: duration,
+          Unit: 'Milliseconds',
+          Timestamp: new Date(),
+        },
+      ],
+    })
+  );
 }
