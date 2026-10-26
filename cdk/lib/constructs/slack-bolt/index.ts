@@ -120,12 +120,6 @@ export class SlackBolt extends Construct {
 
     asyncHandler.addToRolePolicy(
       new PolicyStatement({
-        actions: ['bedrock:InvokeModel', 'bedrock:ListFoundationModels'],
-        resources: ['*'],
-      })
-    );
-    asyncHandler.addToRolePolicy(
-      new PolicyStatement({
         actions: ['bedrock:InvokeModel'],
         resources: ['*'],
       })
