@@ -153,49 +153,7 @@ export class Webapp extends Construct {
     // recency). Mirrors the worker role grant in constructs/worker/index.ts.
     handler.addToRolePolicy(
       new PolicyStatement({
-        actions: ['bedrock:InvokeModel', 'bedrock:ListFoundationModels'],
-        resources: ['*'],
-      })
-    );
-    // Troubleshooting permissions: IAM view and read permissions
-    handler.addToRolePolicy(
-      new PolicyStatement({
-        actions: [
-          'iam:GetRole',
-          'iam:GetUser',
-          'iam:ListRolePolicies',
-          'iam:GetRolePolicy',
-          'iam:ListAttachedRolePolicies',
-          'iam:GetPolicy',
-          'iam:GetPolicyVersion',
-          'sts:GetCallerIdentity',
-        ],
-        resources: ['*'],
-      })
-    );
-    // Bedrock and runtime diagnostics
-    handler.addToRolePolicy(
-      new PolicyStatement({
-        actions: [
-          'bedrock:GetFoundationModel',
-          'bedrock:GetFoundationModelAvailability',
-          'logs:GetLogEvents',
-          'ssm:GetParameter',
-          'ssm:DescribeParameters',
-          'cloudformation:DescribeStacks',
-          'cloudformation:ListStackResources',
-          'dynamodb:DescribeTable',
-          'dynamodb:ListTables',
-          'ec2:DescribeLaunchTemplates',
-          'ec2:DescribeInstances',
-          'events:DescribeRule',
-          'events:ListRules',
-          'events:ListTargetsByRule',
-          'lambda:GetFunction',
-          'lambda:ListFunctions',
-          's3:GetBucketLocation',
-          's3:GetBucketVersioning',
-        ],
+        actions: ['bedrock:InvokeModel', 'bedrock:ListFoundationModels', 'sts:GetCallerIdentity'],
         resources: ['*'],
       })
     );
