@@ -30,6 +30,7 @@ export * from './export-session-diagnostics';
 export * from './manage-skill';
 export * from './preview';
 export * from './manage-memory';
+export * from './upload-agent-icon';
 
 import { ciTool } from './ci';
 import { commandExecutionTool } from './command-execution';
@@ -61,6 +62,7 @@ import { exportSessionDiagnosticsTool } from './export-session-diagnostics';
 import { listSkillsTool, getSkillTool, createSkillTool, updateSkillTool, deleteSkillTool } from './manage-skill';
 import { openPreviewTool, closePreviewTool, registerPreviewExitHandlers } from './preview';
 import { listLessonsTool, getLessonTool, createLessonTool, updateLessonTool, deleteLessonTool } from './manage-memory';
+import { uploadAgentIconTool } from './upload-agent-icon';
 
 /**
  * Preview tools that are only available on AgentCore runtime with
@@ -144,6 +146,7 @@ export const optionalTools = [
   createLessonTool,
   updateLessonTool,
   deleteLessonTool,
+  uploadAgentIconTool,
 ];
 
 /**

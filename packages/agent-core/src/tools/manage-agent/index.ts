@@ -86,6 +86,7 @@ const updateAgentSchema = z.object({
     .describe('Whether to use all available tools. When true, the tools array is ignored.'),
   mcpConfig: z.string().optional().describe('MCP server configuration as JSON string.'),
   runtimeType: runtimeTypeSchema.optional().describe('The runtime type for the agent: "ec2" or "agent-core".'),
+  iconKey: z.string().optional().describe('The icon key for the agent. Use preset icons or upload a custom icon.'),
   includeDefaultKnowledge: z
     .boolean()
     .optional()
