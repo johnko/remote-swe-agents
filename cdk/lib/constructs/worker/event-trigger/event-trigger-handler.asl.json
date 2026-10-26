@@ -314,7 +314,7 @@
           "ErrorEquals": [
             "States.ALL"
           ],
-          "MaxAttempts": 3,
+          "MaxAttempts": 2,
           "IntervalSeconds": 2,
           "BackoffRate": 2
         }
@@ -345,7 +345,7 @@
           "ErrorEquals": [
             "States.ALL"
           ],
-          "MaxAttempts": 3,
+          "MaxAttempts": 2,
           "IntervalSeconds": 2,
           "BackoffRate": 2
         }
