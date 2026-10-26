@@ -55,6 +55,10 @@ const agentFieldsSchema = z.object({
   kiroModel: kiroModelSchema
     .optional()
     .describe("Model to use when inferenceMode is 'kiro-cli'. Omit to use the default (auto)."),
+  iconKey: z
+    .string()
+    .optional()
+    .describe('The icon key for the agent. Use preset icons or upload a custom icon.'),
 });
 
 const listAgentsSchema = z.object({});
@@ -220,6 +224,7 @@ export const createAgentTool: ToolDefinition<z.infer<typeof createAgentSchema>> 
       parentAgentId: input.parentAgentId,
       inferenceMode: input.inferenceMode,
       kiroModel: input.kiroDefaultModel ?? input.kiroModel,
+      iconKey: input.iconKey,
     };
 
     if (!input.parentAgentId) {
