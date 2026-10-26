@@ -35,7 +35,7 @@ export class AsyncJob extends Construct {
       // (see docker/job.Dockerfile). The previous `async-handler.handler`
       // entrypoint did not exist in the webapp bundle, so every invocation
       // failed to start; correcting it here makes the async job path functional.
-      code: image.toLambdaDockerImageCode({ cmd: ['async-job-runner.handler'] }),
+      code: image.toLambdaDockerImageCode({ cmd: ['async-job-runner.mjs.handler'] }),
       memorySize: 256,
       timeout: Duration.minutes(10),
       architecture: Architecture.ARM_64,
