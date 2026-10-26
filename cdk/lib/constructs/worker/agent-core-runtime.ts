@@ -137,7 +137,6 @@ export class AgentCoreRuntime extends Construct implements IGrantable {
           'ec2:DescribeSecurityGroups',
           'ec2:DescribeSubnets',
           'ec2:DescribeVpcs',
-          'ec2:DescribeLaunchTemplates',
           'cloudformation:DescribeStacks',
           'cloudformation:ListStacks',
           'cloudwatch:DescribeAlarms',
