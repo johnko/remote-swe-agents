@@ -55,6 +55,7 @@ export const modelTypeList = [
   'nova-pro',
   'gpt-oss-120b',
   'gpt-oss-20b',
+  'qwen3-coder-30b-a3b',
 ] as const;
 export const modelTypeSchema = z.enum(modelTypeList);
 export type ModelType = z.infer<typeof modelTypeSchema>;
@@ -465,6 +466,17 @@ export const modelConfigs: Record<ModelType, z.infer<typeof modelConfigSchema>> 
       longContextCacheRead: 0.0006,
       longContextCacheWrite: 0.0075,
     },
+  },
+  'qwen3-coder-30b-a3b': {
+    name: 'Qwen3 Coder 30B A3B',
+    modelId: 'qwen.qwen3-coder-30b-a3b-v1:0',
+    maxOutputTokens: 16_000,
+    maxInputTokens: 256_000,
+    cacheSupport: ['system', 'message', 'tool'],
+    reasoningSupport: true,
+    toolChoiceSupport: ['any', 'auto', 'tool'],
+    supportedCriProfiles: ['us'],
+    pricing: { input: 0.15, output: 0.60, cacheRead: 0, cacheWrite: 0 },
   },
 };
 
