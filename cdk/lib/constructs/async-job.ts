@@ -28,6 +28,7 @@ export class AsyncJob extends Construct {
       file: join('docker', 'job.Dockerfile'),
       exclude: readFileSync('.dockerignore').toString().split('\n'),
       platform: Platform.LINUX_ARM64,
+      buildTimeout: Duration.minutes(30),
     });
 
     const handler = new DockerImageFunction(this, 'Handler', {
