@@ -573,7 +573,23 @@ systemctl start myapp
     props.webappOriginSourceParameter.grantRead(role);
     role.addToPrincipalPolicy(
       new iam.PolicyStatement({
-        actions: ['bedrock:InvokeModel'],
+        actions: ['bedrock:InvokeModel', 'bedrock:ListFoundationModels'],
+        resources: ['*'],
+      })
+    );
+    // Troubleshooting permissions: IAM view and read permissions
+    role.addToPrincipalPolicy(
+      new iam.PolicyStatement({
+        actions: [
+          'iam:GetRole',
+          'iam:GetUser',
+          'iam:ListRolePolicies',
+          'iam:GetRolePolicy',
+          'iam:ListAttachedRolePolicies',
+          'iam:GetPolicy',
+          'iam:GetPolicyVersion',
+          'sts:GetCallerIdentity',
+        ],
         resources: ['*'],
       })
     );

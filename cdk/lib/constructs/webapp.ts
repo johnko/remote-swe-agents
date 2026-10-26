@@ -153,7 +153,23 @@ export class Webapp extends Construct {
     // recency). Mirrors the worker role grant in constructs/worker/index.ts.
     handler.addToRolePolicy(
       new PolicyStatement({
-        actions: ['bedrock:InvokeModel'],
+        actions: ['bedrock:InvokeModel', 'bedrock:ListFoundationModels'],
+        resources: ['*'],
+      })
+    );
+    // Troubleshooting permissions: IAM view and read permissions
+    handler.addToRolePolicy(
+      new PolicyStatement({
+        actions: [
+          'iam:GetRole',
+          'iam:GetUser',
+          'iam:ListRolePolicies',
+          'iam:GetRolePolicy',
+          'iam:ListAttachedRolePolicies',
+          'iam:GetPolicy',
+          'iam:GetPolicyVersion',
+          'sts:GetCallerIdentity',
+        ],
         resources: ['*'],
       })
     );

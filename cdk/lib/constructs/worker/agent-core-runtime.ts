@@ -120,7 +120,23 @@ export class AgentCoreRuntime extends Construct implements IGrantable {
     );
     role.addToPrincipalPolicy(
       new PolicyStatement({
-        actions: ['bedrock:InvokeModel'],
+        actions: ['bedrock:InvokeModel', 'bedrock:ListFoundationModels'],
+        resources: ['*'],
+      })
+    );
+    // Troubleshooting permissions: IAM view and read permissions
+    role.addToPrincipalPolicy(
+      new PolicyStatement({
+        actions: [
+          'iam:GetRole',
+          'iam:GetUser',
+          'iam:ListRolePolicies',
+          'iam:GetRolePolicy',
+          'iam:ListAttachedRolePolicies',
+          'iam:GetPolicy',
+          'iam:GetPolicyVersion',
+          'sts:GetCallerIdentity',
+        ],
         resources: ['*'],
       })
     );
