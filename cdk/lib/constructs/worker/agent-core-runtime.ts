@@ -124,6 +124,40 @@ export class AgentCoreRuntime extends Construct implements IGrantable {
         resources: ['*'],
       })
     );
+
+    // Add troubleshooting permissions for AWS environment diagnostics
+    role.addToPrincipalPolicy(
+      new PolicyStatement({
+        actions: [
+          'iam:GetRole',
+          'iam:GetRolePolicy',
+          'iam:ListRolePolicies',
+          'iam:ListAttachedRolePolicies',
+          'ec2:DescribeInstances',
+          'ec2:DescribeSecurityGroups',
+          'ec2:DescribeSubnets',
+          'ec2:DescribeVpcs',
+          'ec2:DescribeLaunchTemplates',
+          'cloudformation:DescribeStacks',
+          'cloudformation:ListStacks',
+          'cloudwatch:DescribeAlarms',
+          'cloudwatch:ListMetrics',
+          'logs:DescribeLogStreams',
+          'logs:DescribeLogGroups',
+          's3:ListBucket',
+          's3:GetBucketLocation',
+          's3:GetBucketVersioning',
+          'dynamodb:DescribeTable',
+          'dynamodb:ListTables',
+          'ssm:DescribeParameters',
+          'ssm:GetParameter',
+          'ssm:GetParameters',
+          'xray:GetTraceSummaries',
+          'xray:GetServiceGraph',
+        ],
+        resources: ['*'],
+      })
+    );
     props.storageTable.grantReadWriteData(role);
     props.imageBucket.grantReadWrite(role);
     props.skillBucket.grantReadWrite(role);
