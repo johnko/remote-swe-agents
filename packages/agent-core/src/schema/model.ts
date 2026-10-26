@@ -173,7 +173,7 @@ export const modelConfigs: Record<ModelType, z.infer<typeof modelConfigSchema>> 
     interleavedThinkingSupport: true,
     assistantPrefillSupport: false,
     supportedCriProfiles: ['global', 'us', 'eu', 'jp', 'au'],
-    pricing: { input: 3000.0, output: 15000.0, cacheRead: 300.0, cacheWrite: 3750.0 },
+    pricing: { input: 3.0, output: 15.0, cacheRead: 0.3, cacheWrite: 6.0 },
   },
   'sonnet4.6-long-context-mode': {
     name: 'Claude Sonnet 4.6 (Long Context)',
@@ -187,7 +187,7 @@ export const modelConfigs: Record<ModelType, z.infer<typeof modelConfigSchema>> 
     assistantPrefillSupport: false,
     supportedCriProfiles: ['global', 'us', 'eu', 'jp', 'au'],
     additionalRequestFields: { anthropic_beta: ['context-1m-2025-08-07'] },
-    pricing: { input: 3.0, output: 15.0, cacheRead: 0.3, cacheWrite: 3.75 },
+    pricing: { input: 3.0, output: 15.0, cacheRead: 0.3, cacheWrite: 6.0 },
   },
   'opus4.8': {
     name: 'Claude Opus 4.8',
