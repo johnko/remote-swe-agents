@@ -150,8 +150,6 @@ export class AgentCoreRuntime extends Construct implements IGrantable {
           'dynamodb:DescribeTable',
           'dynamodb:ListTables',
           'ssm:DescribeParameters',
-          'ssm:GetParameter',
-          'ssm:GetParameters',
           'xray:GetTraceSummaries',
           'xray:GetServiceGraph',
         ],
