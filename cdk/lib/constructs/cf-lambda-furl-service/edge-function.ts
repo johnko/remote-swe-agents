@@ -26,7 +26,7 @@ export class EdgeFunction extends Construct {
     }
 
     const handler = new NodejsFunction(this, 'Handler', {
-      runtime: Runtime.NODEJS_22_X,
+      runtime: Runtime.NODEJS_24_X,
       entry: props.entryPath,
       ...(props.bundlingDefine
         ? {

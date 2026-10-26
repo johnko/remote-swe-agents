@@ -30,7 +30,7 @@ export class Auth extends Construct {
       // When we do not use a custom domain, we must make domainPrefix unique in the AWS region.
       // To avoid a collision, we generate a random string with CFn custom resource.
       const generator = new SingletonFunction(this, 'RandomStringGenerator', {
-        runtime: Runtime.NODEJS_22_X,
+        runtime: Runtime.NODEJS_24_X,
         handler: 'index.handler',
         timeout: Duration.seconds(5),
         lambdaPurpose: 'RandomStringGenerator',

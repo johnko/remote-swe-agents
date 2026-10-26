@@ -40,7 +40,7 @@ export class WorkerImageBuilder extends Construct {
     writeFileSync(componentYamlPath, yaml.stringify(componentTemplate, { lineWidth: 0 }));
 
     const versioningHandler = new SingletonFunction(this, 'ImageBuilderVersioningHandler', {
-      runtime: Runtime.NODEJS_22_X,
+      runtime: Runtime.NODEJS_24_X,
       handler: 'index.handler',
       timeout: Duration.seconds(5),
       lambdaPurpose: 'ImageBuilderVersioning',

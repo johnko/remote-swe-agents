@@ -1,4 +1,4 @@
-FROM public.ecr.aws/docker/library/node:22-slim AS builder
+FROM public.ecr.aws/docker/library/node:24-slim AS builder
 WORKDIR /app
 COPY package.json ./
 RUN npm install
@@ -6,7 +6,7 @@ COPY tsconfig.json ./
 COPY src/ ./src/
 RUN npx tsc
 
-FROM public.ecr.aws/docker/library/node:22-slim
+FROM public.ecr.aws/docker/library/node:24-slim
 WORKDIR /app
 COPY package.json ./
 RUN npm install --omit=dev && npm cache clean --force

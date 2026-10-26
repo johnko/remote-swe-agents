@@ -17,7 +17,7 @@ export class LambdaWarmer extends Construct {
 
     const handler = new NodejsFunction(this, 'Handler', {
       entry: join(__dirname, 'lambda', 'handler.ts'),
-      runtime: Runtime.NODEJS_22_X,
+      runtime: Runtime.NODEJS_24_X,
       timeout: Duration.seconds(10),
     });
 

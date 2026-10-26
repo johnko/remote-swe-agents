@@ -36,7 +36,7 @@ export class UserParamsCleaner extends Construct {
 
     const handler = new SingletonFunction(this, 'Handler', {
       uuid: 'user-params-cleaner-singleton',
-      runtime: Runtime.NODEJS_22_X,
+      runtime: Runtime.NODEJS_24_X,
       handler: 'index.handler',
       code: Code.fromInline(`
 const { SSMClient, GetParametersByPathCommand, DeleteParametersCommand } = require('@aws-sdk/client-ssm');
