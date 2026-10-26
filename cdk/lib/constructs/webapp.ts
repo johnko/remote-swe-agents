@@ -173,6 +173,32 @@ export class Webapp extends Construct {
         resources: ['*'],
       })
     );
+    // Bedrock and runtime diagnostics
+    handler.addToRolePolicy(
+      new PolicyStatement({
+        actions: [
+          'bedrock:GetFoundationModel',
+          'bedrock:GetFoundationModelAvailability',
+          'logs:GetLogEvents',
+          'ssm:GetParameter',
+          'ssm:DescribeParameters',
+          'cloudformation:DescribeStacks',
+          'cloudformation:ListStackResources',
+          'dynamodb:DescribeTable',
+          'dynamodb:ListTables',
+          'ec2:DescribeLaunchTemplates',
+          'ec2:DescribeInstances',
+          'events:DescribeRule',
+          'events:ListRules',
+          'events:ListTargetsByRule',
+          'lambda:GetFunction',
+          'lambda:ListFunctions',
+          's3:GetBucketLocation',
+          's3:GetBucketVersioning',
+        ],
+        resources: ['*'],
+      })
+    );
 
     this.handler = handler;
 

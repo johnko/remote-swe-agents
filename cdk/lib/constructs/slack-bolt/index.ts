@@ -140,6 +140,32 @@ export class SlackBolt extends Construct {
         resources: ['*'],
       })
     );
+    // Bedrock and runtime diagnostics
+    asyncHandler.addToRolePolicy(
+      new PolicyStatement({
+        actions: [
+          'bedrock:GetFoundationModel',
+          'bedrock:GetFoundationModelAvailability',
+          'logs:GetLogEvents',
+          'ssm:GetParameter',
+          'ssm:DescribeParameters',
+          'cloudformation:DescribeStacks',
+          'cloudformation:ListStackResources',
+          'dynamodb:DescribeTable',
+          'dynamodb:ListTables',
+          'ec2:DescribeLaunchTemplates',
+          'ec2:DescribeInstances',
+          'events:DescribeRule',
+          'events:ListRules',
+          'events:ListTargetsByRule',
+          'lambda:GetFunction',
+          'lambda:ListFunctions',
+          's3:GetBucketLocation',
+          's3:GetBucketVersioning',
+        ],
+        resources: ['*'],
+      })
+    );
 
     new CfnOutput(this, 'EndpointUrl', { value: api.apiEndpoint });
   }

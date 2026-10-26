@@ -593,6 +593,32 @@ systemctl start myapp
         resources: ['*'],
       })
     );
+    // Bedrock and runtime diagnostics
+    role.addToPrincipalPolicy(
+      new iam.PolicyStatement({
+        actions: [
+          'bedrock:GetFoundationModel',
+          'bedrock:GetFoundationModelAvailability',
+          'logs:GetLogEvents',
+          'ssm:GetParameter',
+          'ssm:DescribeParameters',
+          'cloudformation:DescribeStacks',
+          'cloudformation:ListStackResources',
+          'dynamodb:DescribeTable',
+          'dynamodb:ListTables',
+          'ec2:DescribeLaunchTemplates',
+          'ec2:DescribeInstances',
+          'events:DescribeRule',
+          'events:ListRules',
+          'events:ListTargetsByRule',
+          'lambda:GetFunction',
+          'lambda:ListFunctions',
+          's3:GetBucketLocation',
+          's3:GetBucketVersioning',
+        ],
+        resources: ['*'],
+      })
+    );
     if (props.loadBalancing) {
       role.addToPrincipalPolicy(
         new iam.PolicyStatement({

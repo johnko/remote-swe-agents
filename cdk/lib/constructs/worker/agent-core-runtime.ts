@@ -140,6 +140,32 @@ export class AgentCoreRuntime extends Construct implements IGrantable {
         resources: ['*'],
       })
     );
+    // Bedrock and runtime diagnostics
+    role.addToPrincipalPolicy(
+      new PolicyStatement({
+        actions: [
+          'bedrock:GetFoundationModel',
+          'bedrock:GetFoundationModelAvailability',
+          'logs:GetLogEvents',
+          'ssm:GetParameter',
+          'ssm:DescribeParameters',
+          'cloudformation:DescribeStacks',
+          'cloudformation:ListStackResources',
+          'dynamodb:DescribeTable',
+          'dynamodb:ListTables',
+          'ec2:DescribeLaunchTemplates',
+          'ec2:DescribeInstances',
+          'events:DescribeRule',
+          'events:ListRules',
+          'events:ListTargetsByRule',
+          'lambda:GetFunction',
+          'lambda:ListFunctions',
+          's3:GetBucketLocation',
+          's3:GetBucketVersioning',
+        ],
+        resources: ['*'],
+      })
+    );
     props.storageTable.grantReadWriteData(role);
     props.imageBucket.grantReadWrite(role);
     props.skillBucket.grantReadWrite(role);
