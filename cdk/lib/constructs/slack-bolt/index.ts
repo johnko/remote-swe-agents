@@ -126,23 +126,7 @@ export class SlackBolt extends Construct {
     );
     asyncHandler.addToRolePolicy(
       new PolicyStatement({
-        actions: ['bedrock:InvokeModel', 'bedrock:ListFoundationModels'],
-        resources: ['*'],
-      })
-    );
-    // Troubleshooting permissions: IAM view and read permissions
-    asyncHandler.addToRolePolicy(
-      new PolicyStatement({
-        actions: [
-          'iam:GetRole',
-          'iam:GetUser',
-          'iam:ListRolePolicies',
-          'iam:GetRolePolicy',
-          'iam:ListAttachedRolePolicies',
-          'iam:GetPolicy',
-          'iam:GetPolicyVersion',
-          'sts:GetCallerIdentity',
-        ],
+        actions: ['bedrock:InvokeModel'],
         resources: ['*'],
       })
     );
