@@ -2,11 +2,11 @@ import { CfnOutput, CfnResource, CustomResource, Duration, Stack } from 'aws-cdk
 import { IVpc, SecurityGroup } from 'aws-cdk-lib/aws-ec2';
 import { StringParameter } from 'aws-cdk-lib/aws-ssm';
 import { ImagePipeline, ImagePipelineProps } from 'cdk-image-pipeline';
-import { Construct } from 'constructs';
+import { Construct, IConstruct } from 'constructs';
 import { readFileSync, writeFileSync } from 'fs';
 import { join, relative } from 'path';
 import * as yaml from 'yaml';
-import { Code, Runtime, SingletonFunction } from 'aws-cdk-lib/aws-lambda';
+import { Code, Runtime, SingletonFunction, CfnFunction } from 'aws-cdk-lib/aws-lambda';
 import { CfnImageRecipe } from 'aws-cdk-lib/aws-imagebuilder';
 import { AwsCustomResource, AwsCustomResourcePolicy, PhysicalResourceId } from 'aws-cdk-lib/custom-resources';
 import { IBucket } from 'aws-cdk-lib/aws-s3';
@@ -118,12 +118,6 @@ export class WorkerImageBuilder extends Construct {
     cfnPipeline.addPropertyOverride('EnhancedImageMetadataEnabled', false);
     this.imageRecipeName = (pipeline.node.findChild('ImageRecipe') as CfnImageRecipe).attrName;
 
-    // Override Lambda runtime to Python 3.13
-    const updateLambda = pipeline.node.findChild('UpdateLambda') as CfnResource;
-    if (updateLambda) {
-      updateLambda.addPropertyOverride('Runtime', 'python3.13');
-    }
-
     // change this physical id manually when you want to force users to remove the AMI cache
     // (e.g. when DynamoDB table ARN changed)
     const amiVersion = 'v4';
@@ -162,6 +156,19 @@ export class WorkerImageBuilder extends Construct {
       ]),
     });
     purgeAmiCache.node.addDependency(props.amiIdParameter);
+
+    // Override Lambda runtime to Python 3.13
+    // Recursively find and update all Lambda functions in the pipeline construct tree
+    const updateLambdaRuntime = (construct: IConstruct) => {
+      const cfnFunction = construct as unknown as CfnFunction;
+      if (cfnFunction.cfnResourceType === 'AWS::Lambda::Function') {
+        cfnFunction.addPropertyOverride('Runtime', 'python3.13');
+      }
+      for (const child of construct.node.children) {
+        updateLambdaRuntime(child);
+      }
+    };
+    updateLambdaRuntime(pipeline);
 
     new CfnOutput(this, 'RemoveCachedAmiCommand', {
       value: `aws ssm put-parameter --name ${props.amiIdParameterName} --value pending-initial-build --type String --overwrite --region ${Stack.of(this).region}`,
