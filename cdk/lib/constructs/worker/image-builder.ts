@@ -118,6 +118,12 @@ export class WorkerImageBuilder extends Construct {
     cfnPipeline.addPropertyOverride('EnhancedImageMetadataEnabled', false);
     this.imageRecipeName = (pipeline.node.findChild('ImageRecipe') as CfnImageRecipe).attrName;
 
+    // Override Lambda runtime to Python 3.13
+    const updateLambda = pipeline.node.findChild('UpdateLambda') as CfnResource;
+    if (updateLambda) {
+      updateLambda.addPropertyOverride('Runtime', 'python3.13');
+    }
+
     // change this physical id manually when you want to force users to remove the AMI cache
     // (e.g. when DynamoDB table ARN changed)
     const amiVersion = 'v4';
