@@ -24,7 +24,7 @@ export class VapidKeys extends Construct {
 
     const handler = new SingletonFunction(this, 'Handler', {
       uuid: 'vapid-key-generator-singleton',
-      runtime: Runtime.NODEJS_22_X,
+      runtime: Runtime.NODEJS_24_X,
       handler: 'index.handler',
       code: Code.fromInline(`
 const { SSMClient, GetParameterCommand, PutParameterCommand } = require('@aws-sdk/client-ssm');
