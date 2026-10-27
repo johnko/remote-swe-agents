@@ -1,6 +1,6 @@
 import { GetCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb';
 import { UserPreferences, userPreferencesSchema, updateUserPreferencesSchema } from '../schema';
-import { ddb, TableName } from './aws';
+import { ddb, TableName } from './aws/index.js';
 import { z } from 'zod';
 
 export const getUserPreferences = async (userId: string): Promise<UserPreferences> => {

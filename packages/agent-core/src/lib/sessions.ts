@@ -8,7 +8,7 @@ import {
   paginateQuery,
 } from '@aws-sdk/lib-dynamodb';
 import { z } from 'zod';
-import { ddb, TableName, batchWriteWithRetry } from './aws';
+import { ddb, TableName, batchWriteWithRetry } from './aws/index.js';
 import { AgentStatus, SessionItem, sessionItemSchema } from '../schema';
 import { deleteAllEventTriggers } from './event-triggers';
 import { deleteUnreadByWorkerId } from './unread';

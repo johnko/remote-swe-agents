@@ -1,5 +1,5 @@
 import { DeleteObjectsCommand, ListObjectsV2Command } from '@aws-sdk/client-s3';
-import { s3, SkillBucketName } from './aws';
+import { s3, SkillBucketName } from './aws/index.js';
 
 export const skillS3Prefix = (userId: string, skillId: string) => `skills/${userId}/${skillId}`;
 

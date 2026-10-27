@@ -1,5 +1,5 @@
 import { ListObjectsV2Command, GetObjectCommand } from '@aws-sdk/client-s3';
-import { s3, SkillBucketName } from './aws';
+import { s3, SkillBucketName } from './aws/index.js';
 import { Skill, CATALOGUE_MAX_BYTES, CATALOGUE_MAX_SKILLS, CATALOGUE_TRUNCATED_DESC_LENGTH } from '../schema/skill';
 import * as fs from 'fs';
 import * as path from 'path';

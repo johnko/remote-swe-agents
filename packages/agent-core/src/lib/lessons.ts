@@ -1,5 +1,5 @@
 import { QueryCommand, PutCommand, DeleteCommand, GetCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb';
-import { ddb, TableName } from './aws';
+import { ddb, TableName } from './aws/index.js';
 import {
   Lesson,
   LessonCreatedBy,

@@ -14,7 +14,7 @@ import {
   RemoveTargetsCommand,
 } from '@aws-sdk/client-eventbridge';
 import { PutCommand, QueryCommand, DeleteCommand, GetCommand } from '@aws-sdk/lib-dynamodb';
-import { ddb, TableName } from './aws';
+import { ddb, TableName } from './aws/index.js';
 
 const scheduler = new SchedulerClient({});
 const eventBridge = new EventBridgeClient({});

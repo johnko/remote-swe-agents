@@ -6,7 +6,7 @@ import {
   ThrottlingException,
 } from '@aws-sdk/client-bedrock-runtime';
 import { AssumeRoleCommand, STSClient } from '@aws-sdk/client-sts';
-import { ddb, TableName } from './aws';
+import { ddb, TableName } from './aws/index.js';
 import { GetCommand, PutCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb';
 import { criRegion, modelConfigs, ModelType } from '../schema';
 
