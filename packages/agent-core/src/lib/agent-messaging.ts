@@ -1,5 +1,5 @@
 import { PutCommand } from '@aws-sdk/lib-dynamodb';
-import { ddb, TableName } from './aws';
+import { ddb, TableName } from './aws/index.js';
 import { getSession } from './sessions';
 import { getRecentMessages } from './messages';
 import { sendWorkerEvent, sendWebappEvent } from './events';

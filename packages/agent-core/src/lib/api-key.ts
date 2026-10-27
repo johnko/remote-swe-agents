@@ -1,5 +1,5 @@
 import { GetCommand, PutCommand, QueryCommand, DeleteCommand } from '@aws-sdk/lib-dynamodb';
-import { ddb, TableName } from './aws';
+import { ddb, TableName } from './aws/index.js';
 import { ApiKeyItem } from '../schema';
 import crypto from 'crypto';
 

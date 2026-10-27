@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { GetCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb';
 import { GlobalPreferences, globalPreferencesSchema, updateGlobalPreferenceSchema } from '../schema';
-import { ddb, TableName } from './aws';
+import { ddb, TableName } from './aws/index.js';
 
 const keySchema = globalPreferencesSchema.pick({ PK: true, SK: true });
 

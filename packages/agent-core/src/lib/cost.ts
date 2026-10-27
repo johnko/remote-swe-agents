@@ -1,5 +1,5 @@
 import { QueryCommand } from '@aws-sdk/lib-dynamodb';
-import { ddb, TableName } from './aws';
+import { ddb, TableName } from './aws/index.js';
 import { modelConfigs } from '../schema/model';
 import { updateSession } from './sessions';
 

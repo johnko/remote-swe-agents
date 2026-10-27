@@ -10,7 +10,7 @@ import {
   InvokeAgentRuntimeCommand,
   StopRuntimeSessionCommand,
 } from '@aws-sdk/client-bedrock-agentcore';
-import { ec2, ssm } from './aws';
+import { ec2, ssm } from './aws/index.js';
 import { sendWebappEvent } from './events';
 import { getSession, updateSession } from './sessions';
 import { InstanceStatus, RuntimeType } from '../schema';
