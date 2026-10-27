@@ -144,6 +144,7 @@ export class AgentCoreRuntime extends Construct implements IGrantable {
           'cloudwatch:ListMetrics',
           'logs:DescribeLogStreams',
           'logs:DescribeLogGroups',
+          'logs:GetLogEvents',
           's3:ListBucket',
           's3:GetBucketLocation',
           's3:GetBucketVersioning',
