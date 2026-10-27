@@ -15,7 +15,7 @@ import {
   deleteLessonTool,
 } from '../tools/manage-memory';
 import { cloneRepositoryTool } from '../tools/repo';
-import { reportProgressTool } from '../tools/report-progress';
+import { reportProgressTool } from '../tools/report-progress/index.js';
 import { sendFileTool } from '../tools/send-file';
 import { sendToAgentTool } from '../tools/send-to-agent';
 import { acknowledgeAgentTool } from '../tools/acknowledge-agent';

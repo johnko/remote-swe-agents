@@ -1,4 +1,4 @@
-import { reportProgressTool } from '../tools/report-progress';
+import { reportProgressTool } from '../tools/report-progress/index.js';
 import { PutCommand, GetCommand } from '@aws-sdk/lib-dynamodb';
 import { ddb, TableName } from './aws/ddb';
 // Re-export client-safe sender types from their dedicated module so the
