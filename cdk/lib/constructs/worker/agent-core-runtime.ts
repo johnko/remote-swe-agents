@@ -110,7 +110,6 @@ export class AgentCoreRuntime extends Construct implements IGrantable {
           'logs:CreateLogGroup',
           'logs:CreateLogStream',
           'logs:PutLogEvents',
-          'logs:GetLogEvents',
           'bedrock-agentcore:GetWorkloadAccessToken',
           'bedrock-agentcore:GetWorkloadAccessTokenForJWT',
           'bedrock-agentcore:GetWorkloadAccessTokenForUserId',
