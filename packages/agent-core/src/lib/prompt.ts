@@ -1,6 +1,6 @@
 import { reportProgressTool } from '../tools/report-progress/index.js';
 import { PutCommand, GetCommand } from '@aws-sdk/lib-dynamodb';
-import { ddb, TableName } from './aws/ddb';
+import { ddb, TableName } from './aws';
 // Re-export client-safe sender types from their dedicated module so the
 // existing `import { ... } from '@remote-swe-agents/agent-core/lib'` call
 // sites stay valid. Anything in this `lib/` barrel can transitively pull

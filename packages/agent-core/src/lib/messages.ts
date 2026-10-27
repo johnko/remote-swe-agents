@@ -4,7 +4,7 @@ import sharp from 'sharp';
 import { existsSync, mkdirSync, readFileSync, unlinkSync, writeFileSync } from 'fs';
 import path from 'path';
 import { tmpdir } from 'os';
-import { ddb, TableName } from './aws/ddb';
+import { ddb, TableName } from './aws';
 import { writeBytesToKey, getBytesFromKey, BucketName } from './aws/s3';
 import { sendWebappEvent } from './events';
 import { sendMessageToSlack } from './slack';
