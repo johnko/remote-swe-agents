@@ -28,7 +28,7 @@ export * from './push-notification.js';
 export * from './unread.js';
 export * from './search-sessions.js';
 export * from './inference-mode.js';
-export * from './inference.js';
+export * from './inference/index.js';
 export * from './model-resolver.js';
 export * from './auto-handover.js';
 export * from './handover-context.js';
