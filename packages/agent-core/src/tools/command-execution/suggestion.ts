@@ -1,4 +1,4 @@
-import { ciTool } from '../ci';
+import { ciTool } from '../ci/index.js';
 
 export const generateSuggestion = (command: string, success: boolean): string | undefined => {
   const suggestion: string[] = [];

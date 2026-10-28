@@ -1,9 +1,9 @@
 import { z } from 'zod';
-import { ToolDefinition, zodToJsonSchemaBody } from '../../private/common/lib';
-import { getSession, getChildSessions, reparentSessions } from '../../lib/sessions';
-import { createSession } from '../../lib/create-session';
-import { getWebappSessionUrl } from '../../lib/webapp-origin';
-import { copySessionParticipants } from '../../lib/session-participants';
+import { ToolDefinition, zodToJsonSchemaBody } from '../../private/common/lib/index.js';
+import { getSession, getChildSessions, reparentSessions } from '../../lib/sessions/index.js';
+import { createSession } from '../../lib/create-session/index.js';
+import { getWebappSessionUrl } from '../../lib/webapp-origin/index.js';
+import { copySessionParticipants } from '../../lib/session-participants/index.js';
 
 const inputSchema = z.object({
   message: z

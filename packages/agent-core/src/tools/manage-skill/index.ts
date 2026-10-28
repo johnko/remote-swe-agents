@@ -1,14 +1,14 @@
 import { z } from 'zod';
-import { ToolDefinition, zodToJsonSchemaBody } from '../../private/common/lib';
+import { ToolDefinition, zodToJsonSchemaBody } from '../../private/common/lib/index.js';
 import {
   listSkills,
   getSkill,
   registerSkillFromFiles,
   updateSkillFromFiles,
   deleteSkillRecord,
-} from '../../lib/skills';
-import { deleteSkillFiles } from '../../lib/skill-s3';
-import { getSession } from '../../lib/sessions';
+} from '../../lib/skills/index.js';
+import { deleteSkillFiles } from '../../lib/skill-s3/index.js';
+import { getSession } from '../../lib/sessions/index.js';
 import { SKILL_NAME_PATTERN, MAX_SKILL_NAME_LENGTH } from '../../schema/skill';
 
 const resolveUserId = async (workerId: string): Promise<string> => {

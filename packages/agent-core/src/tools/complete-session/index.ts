@@ -1,9 +1,9 @@
 import { z } from 'zod';
-import { ToolDefinition, zodToJsonSchemaBody } from '../../private/common/lib';
-import { getSession, updateSessionAgentStatus, stopWorkerInstance } from '../../lib';
-import { sendWebappEvent } from '../../lib/events';
-import { savePendingCompleteSession } from '../confirm-complete-session';
-import { terminatePreview } from '../preview';
+import { ToolDefinition, zodToJsonSchemaBody } from '../../private/common/lib/index.js';
+import { getSession, updateSessionAgentStatus, stopWorkerInstance } from '../../lib/index.js';
+import { sendWebappEvent } from '../../lib/events/index.js';
+import { savePendingCompleteSession } from '../confirm-complete-session/index.js';
+import { terminatePreview } from '../preview/index.js';
 
 const inputSchema = z.object({
   sessionId: z

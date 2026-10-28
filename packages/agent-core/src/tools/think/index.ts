@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { ToolDefinition, zodToJsonSchemaBody } from '../../private/common/lib';
+import { ToolDefinition, zodToJsonSchemaBody } from '../../private/common/lib/index.js';
 
 const inputSchema = z.object({
   thought: z.string().describe('Your thoughts.'),

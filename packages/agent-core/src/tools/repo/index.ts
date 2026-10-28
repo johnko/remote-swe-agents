@@ -2,9 +2,9 @@ import { z } from 'zod';
 import { randomBytes } from 'crypto';
 import { join } from 'path';
 import { existsSync } from 'fs';
-import { DefaultWorkingDirectory, executeCommand } from '../command-execution';
-import { ToolDefinition, zodToJsonSchemaBody } from '../../private/common/lib';
-import { writeMetadata } from '../../lib/metadata';
+import { DefaultWorkingDirectory, executeCommand } from '../command-execution/index.js';
+import { ToolDefinition, zodToJsonSchemaBody } from '../../private/common/lib/index.js';
+import { writeMetadata } from '../../lib/metadata/index.js';
 
 const inputSchema = z.object({
   owner: z.string().describe('GitHub repository owner'),

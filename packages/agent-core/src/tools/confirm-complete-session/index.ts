@@ -2,10 +2,10 @@ import { join } from 'path';
 import { tmpdir } from 'os';
 import { writeFileSync, readFileSync, unlinkSync } from 'fs';
 import { z } from 'zod';
-import { ToolDefinition, zodToJsonSchemaBody } from '../../private/common/lib';
-import { getSession, updateSessionAgentStatus, stopWorkerInstance } from '../../lib';
-import { sendWebappEvent } from '../../lib/events';
-import { terminatePreview } from '../preview';
+import { ToolDefinition, zodToJsonSchemaBody } from '../../private/common/lib/index.js';
+import { getSession, updateSessionAgentStatus, stopWorkerInstance } from '../../lib/index.js';
+import { sendWebappEvent } from '../../lib/events/index.js';
+import { terminatePreview } from '../preview/index.js';
 
 const PENDING_DIR = tmpdir();
 

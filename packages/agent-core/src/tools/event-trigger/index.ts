@@ -1,11 +1,11 @@
 import { z } from 'zod';
-import { ToolDefinition, zodToJsonSchemaBody } from '../../private/common/lib';
+import { ToolDefinition, zodToJsonSchemaBody } from '../../private/common/lib/index.js';
 import {
   createScheduleTrigger,
   createEventPatternTrigger,
   listEventTriggers,
   deleteEventTrigger,
-} from '../../lib/event-triggers';
+} from '../../lib/event-triggers/index.js';
 
 // --- createEventTrigger ---
 
