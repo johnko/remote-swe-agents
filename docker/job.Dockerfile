@@ -13,7 +13,7 @@ RUN cd packages/webapp && npx esbuild src/jobs/*.ts --bundle --outdir=dist --pla
 FROM public.ecr.aws/lambda/nodejs:22 AS runner
 
 COPY package*.json ./
-COPY packages/agent-core/package*.json ./packages/agent-core/
+COPY packages/agent-core/ ./packages/agent-core/
 COPY packages/webapp/package*.json ./packages/webapp/
 COPY --from=builder /build/packages/agent-core/dist ./packages/agent-core/dist
 RUN --mount=type=cache,target=/root/.npm npm ci --omit=dev
