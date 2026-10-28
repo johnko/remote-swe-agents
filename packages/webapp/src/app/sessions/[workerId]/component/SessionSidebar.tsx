@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useState, useRef } from 'react';
-import { MessageSquare, Plus, X, List, CheckCheck } from 'lucide-react';
+import { MessageSquare, Plus, X, List, CheckCheck, EyeOff as EyeOffIcon } from 'lucide-react';
 import { webappEventSchema } from '@remote-swe-agents/agent-core/schema';
 import type { SessionListItem } from '@/lib/session-list';
 import { getUnifiedStatus } from '@/utils/session-status';
@@ -99,6 +99,14 @@ export default function SessionSidebar({
   }, [initialSessions]);
 
   useBodyScrollLock(isOpen);
+
+  const handleHideCompletedToggle = useCallback(() => {
+    setHideCompleted((prev) => {
+      const next = !prev;
+      localStorage.setItem('sessions-hide-completed', String(next));
+      return next;
+    });
+  }, []);
 
   useEventBus({
     channelName: 'webapp/worker/*',
@@ -329,6 +337,24 @@ export default function SessionSidebar({
         <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700">
           <h2 className="text-sm font-semibold text-gray-900 dark:text-white truncate">{t('title')}</h2>
           <div className="flex items-center gap-1">
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={handleHideCompletedToggle}
+                    className={`p-1.5 rounded-md transition-colors cursor-pointer ${
+                      hideCompleted
+                        ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
+                        : 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300'
+                    }`}
+                    title={hideCompleted ? t('showCompleted') : t('hideCompleted')}
+                  >
+                    <EyeOffIcon className="w-4 h-4" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent>{hideCompleted ? t('showCompleted') : t('hideCompleted')}</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
             {Object.values(unreadMap).some((v) => v.unreadCount > 0) && onMarkAllRead && (
               <TooltipProvider>
                 <Tooltip>
