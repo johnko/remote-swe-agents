@@ -498,6 +498,7 @@ export default function NewSessionForm({
                 disabled={isPending || !formState.isValid || isUploading}
                 className="w-full"
                 size="lg"
+                variant="secondary"
               >
                 {isPending ? t('creatingSession') : isUploading ? t('waitingForImageUpload') : t('createSessionButton')}
               </Button>

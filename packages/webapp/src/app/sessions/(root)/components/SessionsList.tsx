@@ -441,7 +441,7 @@ export default function SessionsList({ initialSessions, currentUserId, unreadMap
         </div>
 
         <Button
-          variant={hideCompleted ? 'default' : 'outline'}
+          variant={hideCompleted ? 'secondary' : 'outline'}
           size="sm"
           className="h-8 flex items-center gap-1.5"
           onClick={handleHideCompletedToggle}
