@@ -1,16 +1,16 @@
 import { z } from 'zod';
-import { ToolDefinition, zodToJsonSchemaBody } from '../../private/common/lib';
-import { sendMessageToSlack } from '../../lib/slack';
-import { sendPushNotificationToUser, resolveNotificationAgentName } from '../../lib/push-notification';
-import { incrementUnread } from '../../lib/unread';
-import { getSession, updateSessionLastMessage } from '../../lib/sessions';
-import { getCustomAgent } from '../../lib/custom-agent';
-import { getPreferences } from '../../lib/preferences';
-import { sendWebappEvent } from '../../lib/events';
-import { sanitiseForDelivery } from '../../lib/placeholder-detection';
-import { shouldSuppressUserDelivery, recordUserDelivery } from '../../lib/user-delivery-dedup';
-import { notifyOtherParticipants } from '../../lib/session-participants';
-import { withChildSessionGuard } from '../child-guard';
+import { ToolDefinition, zodToJsonSchemaBody } from '../../private/common/lib/index.js';
+import { sendMessageToSlack } from '../../lib/slack/index.js';
+import { sendPushNotificationToUser, resolveNotificationAgentName } from '../../lib/push-notification/index.js';
+import { incrementUnread } from '../../lib/unread/index.js';
+import { getSession, updateSessionLastMessage } from '../../lib/sessions/index.js';
+import { getCustomAgent } from '../../lib/custom-agent/index.js';
+import { getPreferences } from '../../lib/preferences/index.js';
+import { sendWebappEvent } from '../../lib/events/index.js';
+import { sanitiseForDelivery } from '../../lib/placeholder-detection/index.js';
+import { shouldSuppressUserDelivery, recordUserDelivery } from '../../lib/user-delivery-dedup/index.js';
+import { notifyOtherParticipants } from '../../lib/session-participants/index.js';
+import { withChildSessionGuard } from '../child-guard/index.js';
 
 const inputSchema = z.object({
   message: z.string().min(1).describe('The message you want to send to the user.'),

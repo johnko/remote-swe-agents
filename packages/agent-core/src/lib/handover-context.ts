@@ -1,5 +1,5 @@
 import { MessageItem } from '../schema/index.js';
-import { TodoList } from '../schema/todo';
+import { TodoList } from '../schema/todo/index.js';
 
 /**
  * Helpers for the webapp "Handover to New Session" feature.

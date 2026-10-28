@@ -1,4 +1,4 @@
-import { savePendingState, loadAndDeletePendingState, createConfirmTool } from '../child-guard';
+import { savePendingState, loadAndDeletePendingState, createConfirmTool } from '../child-guard/index.js';
 import { sendMessageToUser } from '../report-progress/index.js';
 
 const PENDING_KEY = 'user-message';

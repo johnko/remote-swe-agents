@@ -2,7 +2,7 @@ import webpush from 'web-push';
 import { QueryCommand, PutCommand, DeleteCommand } from '@aws-sdk/lib-dynamodb';
 import { SSMClient, GetParameterCommand } from '@aws-sdk/client-ssm';
 import { ddb, TableName } from './aws/index.js';
-import { PushSubscriptionItem } from '../schema/push-subscription';
+import { PushSubscriptionItem } from '../schema/push-subscription/index.js';
 import { getUnreadSummary } from './unread.js';
 
 const ssm = new SSMClient({});

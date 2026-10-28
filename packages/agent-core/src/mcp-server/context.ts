@@ -1,4 +1,4 @@
-import { getPreferences } from '../lib/preferences';
+import { getPreferences } from '../lib/preferences/index.js'';
 import { globalPreferencesSchema, type GlobalPreferences } from '../schema/index.js';
 
 /**

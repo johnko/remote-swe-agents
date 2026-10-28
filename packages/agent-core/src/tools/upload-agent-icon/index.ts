@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { ToolDefinition, zodToJsonSchemaBody } from '../../private/common/lib';
-import { s3, BucketName } from '../../lib/aws/s3';
+import { ToolDefinition, zodToJsonSchemaBody } from '../../private/common/lib/index.js';
+import { s3, BucketName } from '../../lib/aws/s3/index.js';
 import { PutObjectCommand } from '@aws-sdk/client-s3';
 import { randomBytes } from 'crypto';
 

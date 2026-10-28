@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { ToolDefinition, zodToJsonSchemaBody } from '../../private/common/lib';
-import { updateTodoItems, TodoItemUpdate, formatTodoList } from '../../lib/todo';
+import { ToolDefinition, zodToJsonSchemaBody } from '../../private/common/lib/index.js';
+import { updateTodoItems, TodoItemUpdate, formatTodoList } from '../../lib/todo/index.js';
 import { todoInitTool } from './todo-init.js';
 
 // Item update schema

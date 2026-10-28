@@ -1,7 +1,7 @@
 import { z } from 'zod';
-import { ToolDefinition, zodToJsonSchemaBody } from '../../private/common/lib';
-import { updateSessionTitle } from '../../lib/sessions';
-import { sendWebappEvent } from '../../lib/events';
+import { ToolDefinition, zodToJsonSchemaBody } from '../../private/common/lib/index.js';
+import { updateSessionTitle } from '../../lib/sessions/index.js';
+import { sendWebappEvent } from '../../lib/events/index.js';
 
 const inputSchema = z.object({
   title: z

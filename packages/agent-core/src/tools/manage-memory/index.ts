@@ -1,13 +1,13 @@
 import { z } from 'zod';
-import { ToolDefinition, zodToJsonSchemaBody } from '../../private/common/lib';
-import { listLessons, getLesson, createLesson, updateLesson, deleteLesson } from '../../lib/lessons';
-import { getSession } from '../../lib/sessions';
+import { ToolDefinition, zodToJsonSchemaBody } from '../../private/common/lib/index.js';
+import { listLessons, getLesson, createLesson, updateLesson, deleteLesson } from '../../lib/lessons/index.js';
+import { getSession } from '../../lib/sessions/index.js';
 import {
   MAX_LESSON_CONTENT_LENGTH,
   MAX_LESSON_CATEGORY_LENGTH,
   MAX_LESSONS_PER_USER,
   lessonStatusSchema,
-} from '../../schema/lesson';
+} from '../../schema/lesson/index.js';
 
 const resolveUserId = async (workerId: string): Promise<string> => {
   const session = await getSession(workerId);

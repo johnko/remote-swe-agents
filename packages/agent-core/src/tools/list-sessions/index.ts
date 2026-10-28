@@ -1,7 +1,7 @@
 import { z } from 'zod';
-import { ToolDefinition, zodToJsonSchemaBody } from '../../private/common/lib';
-import { getSession, getChildSessions, getDescendantSessions, getSessions } from '../../lib/sessions';
-import { resolveAgentDisplayName } from '../../lib/agent-messaging';
+import { ToolDefinition, zodToJsonSchemaBody } from '../../private/common/lib/index.js';
+import { getSession, getChildSessions, getDescendantSessions, getSessions } from '../../lib/sessions/index.js';
+import { resolveAgentDisplayName } from '../../lib/agent-messaging/index.js';
 import { SessionItem } from '../../schema/index.js';
 
 const inputSchema = z.object({

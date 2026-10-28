@@ -1,5 +1,5 @@
-import { createConfirmTool } from '../child-guard';
-import { sendFileToUser } from '../send-file';
+import { createConfirmTool } from '../child-guard/index.js';
+import { sendFileToUser } from '../send-file/index.js';
 
 const PENDING_KEY = 'user-file';
 

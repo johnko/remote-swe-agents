@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { CancellationToken, ToolDefinition, truncate, zodToJsonSchemaBody } from '../../private/common/lib';
-import { executeCommand, BACKGROUND_CANCELLATION_MARKER } from '../command-execution';
+import { CancellationToken, ToolDefinition, truncate, zodToJsonSchemaBody } from '../../private/common/lib/index.js';
+import { executeCommand, BACKGROUND_CANCELLATION_MARKER } from '../command-execution/index.js';
 
 /**
  * Parse a positive numeric env var, falling back to a default when the value

@@ -1,14 +1,14 @@
 import { z } from 'zod';
-import { ToolDefinition, zodToJsonSchemaBody } from '../../private/common/lib';
+import { ToolDefinition, zodToJsonSchemaBody } from '../../private/common/lib/index.js';
 import {
   getAllCustomAgents,
   getCustomAgent,
   createCustomAgent,
   updateCustomAgent,
   deleteCustomAgent,
-} from '../../lib/custom-agent';
+} from '../../lib/custom-agent/index.js';
 import { modelTypeSchema, runtimeTypeSchema, inferenceModeSchema, kiroModelSchema } from '../../schema/index.js';
-import { savePendingCreateAgent } from '../confirm-create-agent';
+import { savePendingCreateAgent } from '../confirm-create-agent/index.js';
 
 const agentFieldsSchema = z.object({
   name: z.string().describe('The name of the agent.'),

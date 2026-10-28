@@ -1,12 +1,12 @@
 import { z } from 'zod';
-import { ToolDefinition, zodToJsonSchemaBody } from '../../private/common/lib';
-import { sendFileToSlack } from '../../lib/slack';
-import { s3, BucketName } from '../../lib/aws/s3';
+import { ToolDefinition, zodToJsonSchemaBody } from '../../private/common/lib/index.js';
+import { sendFileToSlack } from '../../lib/slack/index.js';
+import { s3, BucketName } from '../../lib/aws/s3/index.js';
 import { S3Client, PutObjectCommand, GetObjectCommand, GetBucketLocationCommand } from '@aws-sdk/client-s3';
 import { readFileSync, statSync, writeFileSync } from 'fs';
 import { extname, basename } from 'path';
-import { buildAttachmentSentinel, getAttachedFileKey } from '../../lib';
-import { withChildSessionGuard } from '../child-guard';
+import { buildAttachmentSentinel, getAttachedFileKey } from '../../lib/index.js';
+import { withChildSessionGuard } from '../child-guard/index.js';
 
 const inputSchema = z.object({
   filePath: z.string().describe('the local file system path to the file, or an S3 URI (s3://bucket/key)'),
