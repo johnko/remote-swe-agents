@@ -129,6 +129,7 @@ export class AgentCoreRuntime extends Construct implements IGrantable {
     );
 
     // Add troubleshooting permissions for AWS environment diagnostics
+    // (CloudFormation read permissions are covered by ViewOnlyAccess managed policy)
     role.addToPrincipalPolicy(
       new PolicyStatement({
         actions: [
@@ -140,19 +141,9 @@ export class AgentCoreRuntime extends Construct implements IGrantable {
           'ec2:DescribeSecurityGroups',
           'ec2:DescribeSubnets',
           'ec2:DescribeVpcs',
-          'cloudformation:ListStacks',
-          'cloudformation:DescribeStacks',
-          'cloudformation:DescribeStackEvents',
-          'cloudformation:DescribeStackResource',
-          'cloudformation:DescribeStackResourceDrifts',
-          'cloudformation:GetTemplate',
-          'cloudformation:GetTemplateSummary',
           'cloudwatch:DescribeAlarms',
           'cloudwatch:GetMetricStatistics',
           'cloudwatch:ListMetrics',
-          'logs:DescribeLogStreams',
-          'logs:DescribeLogGroups',
-          'logs:GetLogEvents',
           's3:ListBucket',
           's3:GetBucketLocation',
           's3:GetBucketVersioning',
