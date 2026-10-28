@@ -1,6 +1,6 @@
 import { QueryCommand } from '@aws-sdk/lib-dynamodb';
 import { ddb, TableName } from './aws/index.js';
-import { modelConfigs } from '../schema/model';
+import { modelConfigs } from '../schema/model.js';
 import { updateSession } from './sessions.js';
 
 // Calculate cost in USD based on token usage
