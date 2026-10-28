@@ -40,7 +40,7 @@ export default async function Home() {
               </Link>
             </div>
 
-            <div className="grid md:grid-cols-3 gap-8 text-left">
+            <div className="grid md:grid-cols-3 gap-4 text-left">
               <div className="p-6 rounded-lg relative" style={{borderRight: '1px solid', borderImageSource: 'linear-gradient(to bottom, rgba(107, 114, 128, 0.8) 0%, rgba(107, 114, 128, 0) 100%)', borderImageSlice: 1}}>
                 <h3 className="text-lg font-semibold mb-3 text-gray-900 dark:text-white">🔧 Code Development</h3>
                 <p className="text-gray-600 dark:text-gray-300">
