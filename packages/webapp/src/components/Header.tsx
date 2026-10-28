@@ -39,7 +39,7 @@ export default function Header({
       <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 w-full">
         <div className="flex justify-between h-16 items-center w-full">
           <div className="flex-shrink-0 min-w-0">
-            <Link href="/" className="text-xl font-bold text-gray-900 dark:text-white truncate flex items-center gap-2">
+            <Link href="/sessions" className="text-xl font-bold text-gray-900 dark:text-white truncate flex items-center gap-2">
               {hasCustomIcon && (
                 <Image
                   src="/api/agent-icon"
