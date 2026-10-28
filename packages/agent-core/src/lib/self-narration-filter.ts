@@ -39,7 +39,7 @@
  */
 
 import { normalizeForDedup, isNearDuplicateMessage, bigramSimilarity, RecentMessageForDedup } from './message-dedup.js';
-import { toolNameInSet } from '../tool-name-utils';
+import { toolNameInSet } from '../tool-name-utils/index.js';
 
 /**
  * Minimum normalised length for the rehash containment signal to be eligible.

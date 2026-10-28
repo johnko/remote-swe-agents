@@ -9,7 +9,7 @@ import {
   RecentMessageForDedup,
 } from './message-dedup.js';
 import { MessageItem } from '../schema';
-import { toolNameInSet } from '../tool-name-utils';
+import { toolNameInSet } from '../tool-name-utils/index.js';
 
 /**
  * Internal messageType used to mirror every message that was actually
