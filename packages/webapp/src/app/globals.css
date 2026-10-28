@@ -125,10 +125,6 @@
     @apply hover:cursor-pointer;
   }
 
-  a[data-slot="button"] {
-    @apply px-8 py-8;
-  }
-
   .katex-display {
     overflow-x: auto;
     overflow-y: hidden;
