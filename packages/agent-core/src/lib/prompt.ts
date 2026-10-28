@@ -8,9 +8,9 @@ import { ddb, TableName } from './aws/index.js';
 // that ONLY need the sender union should import from
 // `@remote-swe-agents/agent-core/types/sender` instead to keep their
 // bundles free of server-only modules.
-export { USER_MESSAGE_SENDER_TYPES } from '../types/sender/index.js';
-export type { UserMessageSenderType, UserMessageSender } from '../types/sender/index.js';
-import type { UserMessageSender } from '../types/sender/index.js';
+export { USER_MESSAGE_SENDER_TYPES } from '../types/sender.js';
+export type { UserMessageSenderType, UserMessageSender } from '../types/sender.js';
+import type { UserMessageSender } from '../types/sender.js';
 
 export const renderToolResult = (props: { toolResult: string; forceReport: boolean; parentSessionId?: string }) => {
   let forceReportMessage = '';
