@@ -4,7 +4,7 @@ import { writeFileSync, readFileSync, unlinkSync } from 'fs';
 import { z } from 'zod';
 import { ToolDefinition, zodToJsonSchemaBody } from '../../private/common/lib';
 import { createCustomAgent } from '../../lib/custom-agent';
-import { CustomAgent } from '../../schema';
+import { CustomAgent } from '../../schema/index.js';
 
 const PENDING_DIR = tmpdir();
 const PENDING_TTL_MS = 30 * 60 * 1000;

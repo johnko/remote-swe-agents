@@ -9,7 +9,7 @@ import {
   RuntimeType,
   SessionItem,
   defaultAgentConfig,
-} from '../schema';
+} from '../schema/index.js';
 import { getOrCreateWorkerInstance, updateInstanceStatus } from './worker-manager.js';
 import { sendWorkerEvent } from './events.js';
 import { getCustomAgent } from './custom-agent.js';

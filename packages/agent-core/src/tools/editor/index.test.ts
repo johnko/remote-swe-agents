@@ -5,7 +5,7 @@ import { join } from 'path';
 import { tmpdir } from 'os';
 
 import { randomBytes } from 'crypto';
-import { globalPreferencesSchema } from '../../schema';
+import { globalPreferencesSchema } from '../../schema/index.js';
 
 const tempDirPath = join(tmpdir(), `worker-test-${randomBytes(6).toString('hex')}`);
 const mockContext = {

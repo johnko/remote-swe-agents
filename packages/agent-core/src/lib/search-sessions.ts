@@ -1,6 +1,6 @@
 import { getSession, getDescendantSessions, getAllSessionsIncludingChildren } from './sessions.js';
 import { getConversationHistory } from './messages.js';
-import type { SessionItem } from '../schema';
+import type { SessionItem } from '../schema/index.js';
 
 export type SearchScope = 'session' | 'tree' | 'all';
 

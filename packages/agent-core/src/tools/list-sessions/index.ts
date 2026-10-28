@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { ToolDefinition, zodToJsonSchemaBody } from '../../private/common/lib';
 import { getSession, getChildSessions, getDescendantSessions, getSessions } from '../../lib/sessions';
 import { resolveAgentDisplayName } from '../../lib/agent-messaging';
-import { SessionItem } from '../../schema';
+import { SessionItem } from '../../schema/index.js';
 
 const inputSchema = z.object({
   scope: z

@@ -4,7 +4,7 @@ import path from 'path';
 import { ToolDefinition, zodToJsonSchemaBody } from '../../private/common/lib';
 import { getSession, getDescendantSessions } from '../../lib/sessions';
 import { getConversationHistory } from '../../lib/messages';
-import type { SessionItem, MessageItem } from '../../schema';
+import type { SessionItem, MessageItem } from '../../schema/index.js';
 
 const inputSchema = z.object({
   sessionId: z.string().describe('The session ID to export diagnostics for.'),

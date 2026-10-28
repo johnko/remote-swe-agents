@@ -1,5 +1,5 @@
-import { MessageItem } from '../schema';
-import { SessionItem } from '../schema';
+import { MessageItem } from '../schema/index.js';
+import { SessionItem } from '../schema/index.js';
 
 /**
  * Format a millisecond epoch timestamp into the zero-padded, fixed-width SK

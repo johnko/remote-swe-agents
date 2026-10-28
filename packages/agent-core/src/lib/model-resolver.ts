@@ -1,4 +1,4 @@
-import { InferenceMode, KiroModelId, ModelType, modelConfigs, kiroModelConfigs } from '../schema';
+import { InferenceMode, KiroModelId, ModelType, modelConfigs, kiroModelConfigs } from '../schema/index.js';
 import { defaultAgentConfig } from '../schema/agent';
 
 /**

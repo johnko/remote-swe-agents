@@ -1,5 +1,5 @@
 import { describe, expect, test, vi, beforeEach } from 'vitest';
-import { globalPreferencesSchema } from '../../schema';
+import { globalPreferencesSchema } from '../../schema/index.js';
 
 const mockGetSession = vi.fn();
 const mockGetConversationHistory = vi.fn();

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { applyRewindFilter, countRewoundMessages, RewindState } from './rewind-filter.js';
-import { MessageItem } from '../schema';
+import { MessageItem } from '../schema/index.js';
 
 const messageSKFromTimestamp = (timestampMs: number): string => String(timestampMs).padStart(15, '0');
 

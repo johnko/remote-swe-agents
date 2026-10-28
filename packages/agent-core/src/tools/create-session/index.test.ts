@@ -21,7 +21,7 @@ vi.mock('../../lib/webapp-origin', () => ({
 }));
 
 import { createNewSessionTool } from './index';
-import type { GlobalPreferences } from '../../schema';
+import type { GlobalPreferences } from '../../schema/index.js';
 
 const context = {
   workerId: 'session-parent-123',

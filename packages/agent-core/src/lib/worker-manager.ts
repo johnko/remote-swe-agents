@@ -13,7 +13,7 @@ import {
 import { ec2, ssm } from './aws/index.js';
 import { sendWebappEvent } from './events.js';
 import { getSession, updateSession } from './sessions.js';
-import { InstanceStatus, RuntimeType } from '../schema';
+import { InstanceStatus, RuntimeType } from '../schema/index.js';
 
 const agentCore = new BedrockAgentCoreClient();
 

@@ -1,5 +1,5 @@
 import { getPreferences } from '../lib/preferences';
-import { globalPreferencesSchema, type GlobalPreferences } from '../schema';
+import { globalPreferencesSchema, type GlobalPreferences } from '../schema/index.js';
 
 /**
  * Minimal env-driven context shared by every MCP tool handler invocation.

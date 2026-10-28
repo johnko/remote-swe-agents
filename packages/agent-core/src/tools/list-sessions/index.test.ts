@@ -18,7 +18,7 @@ vi.mock('../../lib/agent-messaging', () => ({
 }));
 
 import { listSessionsTool } from './index';
-import type { GlobalPreferences } from '../../schema';
+import type { GlobalPreferences } from '../../schema/index.js';
 
 const context = {
   workerId: 'session-caller-001',

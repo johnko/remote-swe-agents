@@ -1,4 +1,4 @@
-import { MessageItem } from '../schema';
+import { MessageItem } from '../schema/index.js';
 import { TodoList } from '../schema/todo';
 
 /**

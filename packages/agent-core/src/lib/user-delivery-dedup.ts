@@ -8,7 +8,7 @@ import {
   normalizeForDedup,
   RecentMessageForDedup,
 } from './message-dedup.js';
-import { MessageItem } from '../schema';
+import { MessageItem } from '../schema/index.js';
 import { toolNameInSet } from '../tool-name-utils/index.js';
 
 /**
