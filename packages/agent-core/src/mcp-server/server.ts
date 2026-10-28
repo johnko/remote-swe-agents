@@ -2,8 +2,8 @@ import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
 import { randomUUID } from 'crypto';
-import type { ToolDefinition } from '../private/common/lib';
-import { zodToJsonSchemaBody } from '../private/common/lib';
+import type { ToolDefinition } from '../private/common/lib/index.js'';
+import { zodToJsonSchemaBody } from '../private/common/lib/index.js'';
 import { kiroExportedTools } from './selection';
 import { readEnvContext, resolveGlobalPreferences, type McpContextEnv } from './context';
 
