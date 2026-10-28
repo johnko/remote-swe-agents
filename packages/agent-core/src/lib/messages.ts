@@ -5,7 +5,7 @@ import { existsSync, mkdirSync, readFileSync, unlinkSync, writeFileSync } from '
 import path from 'path';
 import { tmpdir } from 'os';
 import { ddb, TableName } from './aws/index.js';
-import { writeBytesToKey, getBytesFromKey, BucketName } from './aws/s3';
+import { writeBytesToKey, getBytesFromKey, BucketName } from './aws/s3.js';
 import { sendWebappEvent } from './events';
 import { sendMessageToSlack } from './slack';
 import { toolNamesEqual } from '../tool-name-utils';
