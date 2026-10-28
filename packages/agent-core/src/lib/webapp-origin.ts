@@ -1,4 +1,4 @@
-import { getParameter } from './aws/ssm';
+import { getParameter } from './aws/ssm.js';
 
 /**
  * Get the webapp origin URL from SSM parameter
