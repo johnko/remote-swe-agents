@@ -137,6 +137,8 @@ export class AgentCoreRuntime extends Construct implements IGrantable {
           'iam:GetRolePolicy',
           'iam:ListRolePolicies',
           'iam:ListAttachedRolePolicies',
+          'iam:GetPolicy',
+          'iam:GetPolicyVersion',
           'ec2:DescribeInstances',
           'ec2:DescribeSecurityGroups',
           'ec2:DescribeSubnets',
