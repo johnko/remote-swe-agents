@@ -337,6 +337,22 @@ export default function SessionSidebar({
         <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700">
           <h2 className="text-sm font-semibold text-gray-900 dark:text-white truncate">{t('title')}</h2>
           <div className="flex items-center gap-1">
+            {Object.values(unreadMap).some((v) => v.unreadCount > 0) && onMarkAllRead && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={onMarkAllRead}
+                      disabled={isMarkingAllRead}
+                      className="p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 transition-colors cursor-pointer disabled:opacity-50"
+                    >
+                      <CheckCheck className="w-4 h-4" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent>{t('markAllRead')}</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -355,22 +371,6 @@ export default function SessionSidebar({
                 <TooltipContent>{hideCompleted ? t('showCompleted') : t('hideCompleted')}</TooltipContent>
               </Tooltip>
             </TooltipProvider>
-            {Object.values(unreadMap).some((v) => v.unreadCount > 0) && onMarkAllRead && (
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <button
-                      onClick={onMarkAllRead}
-                      disabled={isMarkingAllRead}
-                      className="p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 transition-colors cursor-pointer disabled:opacity-50"
-                    >
-                      <CheckCheck className="w-4 h-4" />
-                    </button>
-                  </TooltipTrigger>
-                  <TooltipContent>{t('markAllRead')}</TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            )}
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
