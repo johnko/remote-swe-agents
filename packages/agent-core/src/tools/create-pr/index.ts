@@ -6,7 +6,7 @@ import { ddb, TableName } from '../../lib/aws/ddb';
 import { ciTool } from '../ci';
 import { appendWorkerIdMetadata } from '../../lib/worker-id';
 import { getWebappSessionUrl } from '../../lib/webapp-origin';
-import { GlobalPreferences } from '../../schema';
+import { GlobalPreferences } from '../../schema/index.js';
 
 const inputSchema = z.object({
   title: z.string().describe('Title of the pull request'),

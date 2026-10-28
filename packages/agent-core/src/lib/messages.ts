@@ -16,7 +16,7 @@ import {
   INTERNAL_ERROR_MESSAGE_TYPE,
   RETRIGGER_GIVEUP_MESSAGE_TYPE,
   CANCELLED_TURN_MESSAGE_TYPE,
-} from '../schema';
+} from '../schema/index.js';
 
 // Maximum input token count before applying middle-out strategy
 export const MAX_INPUT_TOKEN = 80_000;

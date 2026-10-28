@@ -13,7 +13,7 @@ import {
   DEFAULT_DEDUP_WINDOW_MS,
   RecentMessageForDedup,
 } from './message-dedup.js';
-import { MessageItem, SessionItem } from '../schema';
+import { MessageItem, SessionItem } from '../schema/index.js';
 
 /**
  * Resolve the display name for a session's agent.

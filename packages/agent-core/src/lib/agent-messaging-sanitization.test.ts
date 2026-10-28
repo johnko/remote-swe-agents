@@ -1,5 +1,5 @@
 import { describe, expect, test, vi, beforeEach } from 'vitest';
-import type { SessionItem } from '../schema';
+import type { SessionItem } from '../schema/index.js';
 
 const mockSend = vi.fn();
 const mockGetSession = vi.fn();

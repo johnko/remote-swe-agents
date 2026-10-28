@@ -1,4 +1,4 @@
-import { InferenceMode } from '../schema';
+import { InferenceMode } from '../schema/index.js';
 import { resolveModelConfig } from './model-resolver.js';
 
 export interface InferenceModeContext {

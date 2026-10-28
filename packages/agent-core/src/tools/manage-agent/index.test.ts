@@ -18,7 +18,7 @@ vi.mock('../confirm-create-agent', () => ({
 }));
 
 import { createAgentTool, updateAgentTool } from './index';
-import type { GlobalPreferences } from '../../schema';
+import type { GlobalPreferences } from '../../schema/index.js';
 
 const existingAgent = {
   PK: 'custom-agent',

@@ -1,5 +1,5 @@
 import { Message } from '@aws-sdk/client-bedrock-runtime';
-import { CustomAgent, MessageItem, SessionItem, InferenceMode, Skill } from '../../schema';
+import { CustomAgent, MessageItem, SessionItem, InferenceMode, Skill } from '../../schema/index.js';
 
 /**
  * Opaque cancellation token passed through the backend pipeline. The concrete

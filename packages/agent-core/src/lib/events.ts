@@ -3,7 +3,7 @@ import { defaultProvider } from '@aws-sdk/credential-provider-node';
 import { HttpRequest } from '@smithy/protocol-http';
 import { Sha256 } from '@aws-crypto/sha256-js';
 import z from 'zod';
-import { webappEventSchema } from '../schema';
+import { webappEventSchema } from '../schema/index.js';
 
 const httpEndpoint = process.env.EVENT_HTTP_ENDPOINT!;
 const region = process.env.AWS_REGION!;

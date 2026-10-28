@@ -7,7 +7,7 @@ import {
   updateCustomAgent,
   deleteCustomAgent,
 } from '../../lib/custom-agent';
-import { modelTypeSchema, runtimeTypeSchema, inferenceModeSchema, kiroModelSchema } from '../../schema';
+import { modelTypeSchema, runtimeTypeSchema, inferenceModeSchema, kiroModelSchema } from '../../schema/index.js';
 import { savePendingCreateAgent } from '../confirm-create-agent';
 
 const agentFieldsSchema = z.object({

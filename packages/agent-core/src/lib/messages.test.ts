@@ -1,5 +1,5 @@
 import { describe, expect, test, vi, beforeEach } from 'vitest';
-import type { MessageItem } from '../schema';
+import type { MessageItem } from '../schema/index.js';
 
 const mockSend = vi.fn();
 const mockPaginateQuery = vi.fn();

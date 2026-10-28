@@ -9,7 +9,7 @@ import {
 } from '@aws-sdk/lib-dynamodb';
 import { z } from 'zod';
 import { ddb, TableName, batchWriteWithRetry } from './aws/index.js';
-import { AgentStatus, SessionItem, sessionItemSchema } from '../schema';
+import { AgentStatus, SessionItem, sessionItemSchema } from '../schema/index.js';
 import { deleteAllEventTriggers } from './event-triggers.js';
 import { deleteUnreadByWorkerId } from './unread.js';
 import { sendWebappEvent } from './events.js';

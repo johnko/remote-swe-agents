@@ -1,5 +1,5 @@
 import { GetCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb';
-import { UserPreferences, userPreferencesSchema, updateUserPreferencesSchema } from '../schema';
+import { UserPreferences, userPreferencesSchema, updateUserPreferencesSchema } from '../schema/index.js';
 import { ddb, TableName } from './aws/index.js';
 import { z } from 'zod';
 

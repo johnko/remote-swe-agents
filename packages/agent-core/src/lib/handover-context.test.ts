@@ -7,7 +7,7 @@ import {
   extractWorkState,
   stripPromptEnvelope,
 } from './handover-context.js';
-import { MessageItem } from '../schema';
+import { MessageItem } from '../schema/index.js';
 import { TodoList } from '../schema/todo';
 
 const makeItem = (partial: Partial<MessageItem> & { content: string }): MessageItem => ({

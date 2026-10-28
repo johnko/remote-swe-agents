@@ -1,6 +1,6 @@
 import { Tool, ToolResultContentBlock } from '@aws-sdk/client-bedrock-runtime';
 import z, { ZodType } from 'zod';
-import { GlobalPreferences } from '../../schema';
+import { GlobalPreferences } from '../../schema/index.js';
 
 export interface CancellationToken {
   readonly isCancelled: boolean;

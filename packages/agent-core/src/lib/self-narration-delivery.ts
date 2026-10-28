@@ -30,7 +30,7 @@ import { getRecentMessages } from './messages.js';
 import { DEFAULT_DEDUP_WINDOW_MS, RecentMessageForDedup } from './message-dedup.js';
 import { USER_DELIVERY_LOG_MESSAGE_TYPE, isMessageDeliveryToolName } from './user-delivery-dedup.js';
 import { isRehashOrSelfNarration, shouldSuppressWakeupMonologue, hadNewWorkTool } from './self-narration-filter.js';
-import { MessageItem } from '../schema';
+import { MessageItem } from '../schema/index.js';
 
 /** Parse a persisted message item's JSON content blocks into plain text. */
 const itemText = (it: MessageItem): string => {
