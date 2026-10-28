@@ -345,13 +345,19 @@ export default function SessionSidebar({
                 </Tooltip>
               </TooltipProvider>
             )}
-            <Link
-              href="/sessions/new"
-              className="p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 transition-colors"
-              title={t('newSession')}
-            >
-              <Plus className="w-4 h-4" />
-            </Link>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Link
+                    href="/sessions/new"
+                    className="p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 transition-colors"
+                  >
+                    <Plus className="w-4 h-4" />
+                  </Link>
+                </TooltipTrigger>
+                <TooltipContent>{t('newSession')}</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
             <button
               onClick={onClose}
               className="p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 transition-colors lg:hidden cursor-pointer"
