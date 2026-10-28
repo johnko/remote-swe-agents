@@ -78,6 +78,9 @@ export class AgentCoreRuntime extends Construct implements IGrantable {
     this.grantPrincipal = role;
     this.role = role;
 
+    // Add AWS managed ViewOnlyAccess policy for broad read-only troubleshooting access
+    role.addManagedPolicy(ManagedPolicy.fromAwsManagedPolicyName('ViewOnlyAccess'));
+
     if (props.additionalManagedPolicies?.length) {
       props.additionalManagedPolicies.forEach((policy) => {
         role.addManagedPolicy(
@@ -133,12 +136,19 @@ export class AgentCoreRuntime extends Construct implements IGrantable {
           'iam:GetRolePolicy',
           'iam:ListRolePolicies',
           'iam:ListAttachedRolePolicies',
+          'iam:GetPolicy',
+          'iam:GetPolicyVersion',
           'ec2:DescribeInstances',
           'ec2:DescribeSecurityGroups',
           'ec2:DescribeSubnets',
           'ec2:DescribeVpcs',
           'cloudformation:ListStacks',
           'cloudformation:DescribeStacks',
+          'cloudformation:DescribeStackEvents',
+          'cloudformation:DescribeStackResource',
+          'cloudformation:DescribeStackResourceDrifts',
+          'cloudformation:GetTemplate',
+          'cloudformation:GetTemplateSummary',
           'cloudwatch:DescribeAlarms',
           'cloudwatch:GetMetricStatistics',
           'cloudwatch:ListMetrics',
