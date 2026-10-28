@@ -46,7 +46,7 @@ export default function CostBreakdown({ sessionCosts, modelCosts }: CostBreakdow
       {/* Tab navigation */}
       <div className="flex space-x-2 mb-6">
         <Button
-          variant={activeTab === 'sessions' ? 'default' : 'outline'}
+          variant={activeTab === 'sessions' ? 'secondary' : 'outline'}
           onClick={() => setActiveTab('sessions')}
           className="flex items-center gap-2"
         >
@@ -54,7 +54,7 @@ export default function CostBreakdown({ sessionCosts, modelCosts }: CostBreakdow
           {t('bySession')}
         </Button>
         <Button
-          variant={activeTab === 'models' ? 'default' : 'outline'}
+          variant={activeTab === 'models' ? 'secondary' : 'outline'}
           onClick={() => setActiveTab('models')}
           className="flex items-center gap-2"
         >
