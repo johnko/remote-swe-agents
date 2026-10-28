@@ -9,7 +9,7 @@ import {
 } from '../../lib/skills/index.js';
 import { deleteSkillFiles } from '../../lib/skill-s3/index.js';
 import { getSession } from '../../lib/sessions/index.js';
-import { SKILL_NAME_PATTERN, MAX_SKILL_NAME_LENGTH } from '../../schema/skill';
+import { SKILL_NAME_PATTERN, MAX_SKILL_NAME_LENGTH } from '../../schema/skill/index.js';
 
 const resolveUserId = async (workerId: string): Promise<string> => {
   const session = await getSession(workerId);

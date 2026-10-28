@@ -7,7 +7,7 @@ import {
   MAX_LESSON_CATEGORY_LENGTH,
   MAX_LESSONS_PER_USER,
   lessonStatusSchema,
-} from '../../schema/lesson';
+} from '../../schema/lesson/index.js';
 
 const resolveUserId = async (workerId: string): Promise<string> => {
   const session = await getSession(workerId);
