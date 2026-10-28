@@ -246,11 +246,14 @@ export class MainStack extends cdk.Stack {
       });
     }
 
-    new EC2GarbageCollector(this, 'EC2GarbageCollector', {
-      expirationInDays: 1,
-      imageRecipeName: worker.imageBuilder.imageRecipeName,
-      workerAmiIdParameter: workerAmiIdParameter,
-    });
+    // Only create EC2 garbage collector if image builder exists (i.e., microVM is not available)
+    if (worker.imageBuilder) {
+      new EC2GarbageCollector(this, 'EC2GarbageCollector', {
+        expirationInDays: 1,
+        imageRecipeName: worker.imageBuilder.imageRecipeName,
+        workerAmiIdParameter: workerAmiIdParameter,
+      });
+    }
 
     if (preview) {
       webapp.handler.addEnvironment('PREVIEW_HANDOFF_SECRET_ARN', preview.handoffSecretArn);
