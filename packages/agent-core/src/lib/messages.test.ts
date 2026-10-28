@@ -55,7 +55,7 @@ import {
   materializeImageBlock,
   sendSystemMessage,
   repairDanglingToolUse,
-} from './messages';
+} from './messages.js';
 import { existsSync, mkdirSync, writeFileSync, rmSync } from 'fs';
 import path from 'path';
 import { tmpdir } from 'os';
@@ -860,8 +860,8 @@ describe('postProcessMessageContent image handling (non-forUi)', () => {
 // sendSystemMessage — lastMessageUpdate emit + mention strip + best-effort
 // ---------------------------------------------------------------------------
 
-import { sendWebappEvent } from './events';
-import { sendMessageToSlack } from './slack';
+import { sendWebappEvent } from './events.js';
+import { sendMessageToSlack } from './slack.js';
 
 const mockWebappEvent = sendWebappEvent as ReturnType<typeof vi.fn>;
 const mockSlack = sendMessageToSlack as ReturnType<typeof vi.fn>;

@@ -10,7 +10,7 @@ import {
   NOVELTY_VETO_THRESHOLD,
   DEFAULT_DEDUP_WINDOW_MS,
   shouldSuppressDuplicateAck,
-} from './message-dedup';
+} from './message-dedup.js';
 
 // ---------------------------------------------------------------------------
 // Resurrection re-emit duplication: a child turn interrupted mid-flight

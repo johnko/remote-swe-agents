@@ -1,3 +1,3 @@
-export * from './types';
-export * from './default-sink';
-export { resolveToolEventSink } from './test-event-drop-hook';
+export * from './types.js';
+export * from './default-sink.js';
+export { resolveToolEventSink } from './test-event-drop-hook.js';

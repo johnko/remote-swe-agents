@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildLessonsBlock } from './lesson-injection';
+import { buildLessonsBlock } from './lesson-injection.js';
 import { Lesson, LESSON_INJECTION_MAX_BODY_LENGTH, LESSON_INJECTION_MAX_BYTES } from '../schema/lesson';
 
 const makeLesson = (overrides: Partial<Lesson> = {}): Lesson => ({

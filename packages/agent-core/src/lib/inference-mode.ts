@@ -1,5 +1,5 @@
 import { InferenceMode } from '../schema';
-import { resolveModelConfig } from './model-resolver';
+import { resolveModelConfig } from './model-resolver.js';
 
 export interface InferenceModeContext {
   sessionInferenceMode?: InferenceMode;
@@ -32,7 +32,7 @@ export interface InferenceModeContext {
  * This helper is intentionally pure and synchronous so it can be reused
  * from both the worker runtime and the webapp SSR layer.
  *
- * @deprecated Use `resolveModelConfig` from './model-resolver' for new code.
+ * @deprecated Use `resolveModelConfig` from './model-resolver.js' for new code.
  * This function is retained for backward compatibility and delegates to the
  * unified resolver internally.
  */

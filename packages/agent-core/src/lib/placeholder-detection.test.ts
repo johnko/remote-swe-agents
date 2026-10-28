@@ -5,7 +5,7 @@ import {
   stripScaffoldingPrefix,
   sanitiseForDelivery,
   isInterruptPlaceholder,
-} from './placeholder-detection';
+} from './placeholder-detection.js';
 
 // Unit tests for the shared detectors live here (agent-core) because the
 // module is the single source of truth consumed by BOTH delivery paths:

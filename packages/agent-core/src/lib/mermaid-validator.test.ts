@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { validateMermaidInText, buildMermaidFeedback } from './mermaid-validator';
+import { validateMermaidInText, buildMermaidFeedback } from './mermaid-validator.js';
 
 describe('validateMermaidInText', () => {
   test('returns valid when no mermaid blocks present', async () => {

@@ -1,12 +1,12 @@
 import { spawn } from 'child_process';
-import { authorizeGitHubCli } from './github';
-export { isGitHubConfigured, authorizeGitHubCli } from './github';
+import { authorizeGitHubCli } from './github.js';
+export { isGitHubConfigured, authorizeGitHubCli } from './github.js';
 import { homedir, tmpdir } from 'os';
 import { join } from 'path';
 import { mkdirSync, writeFileSync, unlinkSync } from 'fs';
 import { z } from 'zod';
 import { CancellationToken, ToolDefinition, truncate, zodToJsonSchemaBody } from '../../private/common/lib';
-import { generateSuggestion } from './suggestion';
+import { generateSuggestion } from './suggestion.js';
 
 const inputSchema = z.object({
   command: z.string().describe('The command to execute.'),

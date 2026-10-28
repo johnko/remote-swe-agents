@@ -4,8 +4,8 @@ import {
   isKnownKiroInternalError,
   isPromptTimeoutOrIdleError,
   toUserFacingTurnError,
-} from './kiro-error-classification';
-import { PROMPT_SETTLE_WEDGED_ERROR } from './kiro-acp-types';
+} from './kiro-error-classification.js';
+import { PROMPT_SETTLE_WEDGED_ERROR } from './kiro-acp-types.js';
 
 // The raw kiro-cli infrastructure errors observed leaking to the UX.
 const RAW_WEDGED = `[System] Prompt failed after retry: ${PROMPT_SETTLE_WEDGED_ERROR}`;

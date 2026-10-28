@@ -1,5 +1,5 @@
-import { ToolEventSink, ToolUseEmit } from './types';
-import { defaultToolEventSink } from './default-sink';
+import { ToolEventSink, ToolUseEmit } from './types.js';
+import { defaultToolEventSink } from './default-sink.js';
 
 /**
  * Environment variable that enables the test event drop hook.

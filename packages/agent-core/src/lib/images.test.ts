@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { imageFormatFromKey } from './images';
+import { imageFormatFromKey } from './images.js';
 
 describe('imageFormatFromKey', () => {
   test('extracts format from common S3 key extensions', () => {

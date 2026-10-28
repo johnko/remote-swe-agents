@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { renderUserMessage, sanitizeSenderLabel, defangLeadingFromHeader } from './prompt';
+import { renderUserMessage, sanitizeSenderLabel, defangLeadingFromHeader } from './prompt.js';
 
 describe('renderUserMessage', () => {
   test('omits sender header when no sender is provided (backward compatible)', () => {

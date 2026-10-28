@@ -1,5 +1,5 @@
 import { Message } from '@aws-sdk/client-bedrock-runtime';
-import { PersistedToolResult, PersistedToolUse, ToolEventSink, ToolResultEmit, ToolUseEmit } from './types';
+import { PersistedToolResult, PersistedToolUse, ToolEventSink, ToolResultEmit, ToolUseEmit } from './types.js';
 import { saveToolResultMessage, saveToolUseMessage } from '../messages';
 import { sendWebappEvent } from '../events';
 

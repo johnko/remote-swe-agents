@@ -20,8 +20,8 @@ vi.mock('./embeddings', async (importOriginal) => {
   };
 });
 
-import { retrieveRelevantLessons, updateLesson, listLessons } from './lessons';
-import { encodeEmbedding } from './embeddings';
+import { retrieveRelevantLessons, updateLesson, listLessons } from './lessons.js';
+import { encodeEmbedding } from './embeddings.js';
 
 type StoredLesson = {
   PK: string;

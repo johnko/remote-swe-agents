@@ -47,7 +47,7 @@ vi.mock('./webapp-origin', () => ({
 }));
 
 // Preserve the real prompt renderer so we can assert on the produced text.
-import { createSession } from './create-session';
+import { createSession } from './create-session.js';
 
 function getTransactItems(call: any) {
   return call[0]?.input?.TransactItems;

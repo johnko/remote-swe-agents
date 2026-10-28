@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import type { RecentMessageForDedup } from './message-dedup';
+import type { RecentMessageForDedup } from './message-dedup.js';
 import {
   containmentScore,
   isRehashContainment,
@@ -11,7 +11,7 @@ import {
   hadNewWorkTool,
   MIN_REHASH_LENGTH,
   REHASH_CONTAINMENT_THRESHOLD,
-} from './self-narration-filter';
+} from './self-narration-filter.js';
 
 // Send-zero internal-monologue leaks, synthesised from live observations.
 // Every one of these was emitted as end-of-turn text on a timer/ack wake-up

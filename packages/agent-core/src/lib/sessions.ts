@@ -10,9 +10,9 @@ import {
 import { z } from 'zod';
 import { ddb, TableName, batchWriteWithRetry } from './aws/index.js';
 import { AgentStatus, SessionItem, sessionItemSchema } from '../schema';
-import { deleteAllEventTriggers } from './event-triggers';
-import { deleteUnreadByWorkerId } from './unread';
-import { sendWebappEvent } from './events';
+import { deleteAllEventTriggers } from './event-triggers.js';
+import { deleteUnreadByWorkerId } from './unread.js';
+import { sendWebappEvent } from './events.js';
 
 /**
  * Get session information from DynamoDB

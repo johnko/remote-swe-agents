@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { buildContextUsageEnvironmentBlock, CONTEXT_USAGE_GUIDELINE_PERCENTAGE } from './auto-handover';
+import { buildContextUsageEnvironmentBlock, CONTEXT_USAGE_GUIDELINE_PERCENTAGE } from './auto-handover.js';
 
 describe('buildContextUsageEnvironmentBlock', () => {
   test('returns undefined when the percentage is unknown', () => {

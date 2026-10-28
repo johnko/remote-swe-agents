@@ -19,7 +19,7 @@ import {
   USER_DELIVERY_LOG_MESSAGE_TYPE,
   isMessageDeliveryToolName,
   shouldSuppressToolUseRedelivery,
-} from './user-delivery-dedup';
+} from './user-delivery-dedup.js';
 
 // Synthetic Japanese fixture: the dedup heuristic is character-bigram based
 // because production traffic is Japanese, so CJK inputs are a functional

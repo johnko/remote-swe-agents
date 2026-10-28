@@ -10,7 +10,7 @@ vi.mock('./aws', () => ({
   TableName: 'test-table',
 }));
 
-import { deleteApiKey, deriveApiKeyId, getApiKeySenderInfo, getApiKeys } from './api-key';
+import { deleteApiKey, deriveApiKeyId, getApiKeySenderInfo, getApiKeys } from './api-key.js';
 
 const makeItem = (sk: string, ownerId?: string) => ({
   PK: 'api-key',

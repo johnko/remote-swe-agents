@@ -43,7 +43,7 @@ vi.mock('./preferences', () => ({
 // and that the persisted item / wrapped envelope are safe against
 // newline-injection attacks (the Reviewer's N3 indication).
 
-import { sendAgentMessage } from './agent-messaging';
+import { sendAgentMessage } from './agent-messaging.js';
 
 const buildSession = (id: string, extra: Partial<SessionItem> = {}): SessionItem =>
   ({

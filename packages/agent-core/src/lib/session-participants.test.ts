@@ -22,7 +22,7 @@ import {
   getSessionParticipants,
   notifyOtherParticipants,
   copySessionParticipants,
-} from './session-participants';
+} from './session-participants.js';
 
 describe('session-participants', () => {
   beforeEach(() => {

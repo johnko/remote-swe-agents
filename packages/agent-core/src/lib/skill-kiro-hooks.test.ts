@@ -1,12 +1,12 @@
 import { describe, expect, test, beforeEach, afterEach, vi } from 'vitest';
-import { parseSkillMd } from './skill-frontmatter';
+import { parseSkillMd } from './skill-frontmatter.js';
 import {
   deployKiroWorkspaceFiles,
   resolveKiroAgentName,
   KIRO_AGENT_NAME_PATTERN,
   getKiroWorkspaceDir,
   convertHooksV2ToV3,
-} from './skill-catalogue';
+} from './skill-catalogue.js';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';

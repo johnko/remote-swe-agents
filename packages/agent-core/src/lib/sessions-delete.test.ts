@@ -21,7 +21,7 @@ vi.mock('@aws-sdk/lib-dynamodb', async (importOriginal) => {
 vi.mock('./event-triggers', () => ({ deleteAllEventTriggers: vi.fn() }));
 vi.mock('./unread', () => ({ deleteUnreadByWorkerId: vi.fn() }));
 
-import { deleteSession } from './sessions';
+import { deleteSession } from './sessions.js';
 
 function asyncIterableOf<T>(items: T[]) {
   return {

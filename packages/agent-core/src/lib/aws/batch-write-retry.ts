@@ -1,5 +1,5 @@
 import { BatchWriteCommand, BatchWriteCommandOutput } from '@aws-sdk/lib-dynamodb';
-import { ddb, TableName } from './ddb';
+import { ddb, TableName } from './ddb.js';
 
 const MAX_RETRIES = 6;
 const BASE_DELAY_MS = 100;

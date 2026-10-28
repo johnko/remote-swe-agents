@@ -1,18 +1,18 @@
 import { PutCommand } from '@aws-sdk/lib-dynamodb';
 import { ddb, TableName } from './aws/index.js';
-import { getSession } from './sessions';
-import { getRecentMessages } from './messages';
-import { sendWorkerEvent, sendWebappEvent } from './events';
-import { getOrCreateWorkerInstance } from './worker-manager';
-import { renderAgentMessage, sanitizeSenderLabel } from './prompt';
-import { getCustomAgent } from './custom-agent';
-import { getPreferences } from './preferences';
+import { getSession } from './sessions.js';
+import { getRecentMessages } from './messages.js';
+import { sendWorkerEvent, sendWebappEvent } from './events.js';
+import { getOrCreateWorkerInstance } from './worker-manager.js';
+import { renderAgentMessage, sanitizeSenderLabel } from './prompt.js';
+import { getCustomAgent } from './custom-agent.js';
+import { getPreferences } from './preferences.js';
 import {
   shouldSuppressDuplicateMessage,
   shouldSuppressDuplicateAck,
   DEFAULT_DEDUP_WINDOW_MS,
   RecentMessageForDedup,
-} from './message-dedup';
+} from './message-dedup.js';
 import { MessageItem, SessionItem } from '../schema';
 
 /**

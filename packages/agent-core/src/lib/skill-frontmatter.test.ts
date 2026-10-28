@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { parseSkillMd } from './skill-frontmatter';
+import { parseSkillMd } from './skill-frontmatter.js';
 
 describe('parseSkillMd', () => {
   test('parses valid frontmatter with all fields', () => {

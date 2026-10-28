@@ -3,7 +3,7 @@ import { s3, SkillBucketName } from './aws/index.js';
 import { Skill, CATALOGUE_MAX_BYTES, CATALOGUE_MAX_SKILLS, CATALOGUE_TRUNCATED_DESC_LENGTH } from '../schema/skill';
 import * as fs from 'fs';
 import * as path from 'path';
-import { parseSkillMd } from './skill-frontmatter';
+import { parseSkillMd } from './skill-frontmatter.js';
 
 /**
  * Local directory where skill files are downloaded from S3.

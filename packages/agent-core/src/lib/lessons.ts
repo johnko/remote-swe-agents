@@ -9,7 +9,7 @@ import {
   LESSON_RELEVANCE_THRESHOLD,
 } from '../schema/lesson';
 import { randomBytes } from 'crypto';
-import { embedText, encodeEmbedding, decodeEmbedding, cosineSimilarity } from './embeddings';
+import { embedText, encodeEmbedding, decodeEmbedding, cosineSimilarity } from './embeddings.js';
 
 /**
  * Lesson (memory) store. Lessons are durable, user-scoped notes captured from
