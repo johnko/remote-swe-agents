@@ -1,4 +1,4 @@
-import { Lesson, LESSON_INJECTION_MAX_BODY_LENGTH, LESSON_INJECTION_MAX_BYTES } from '../schema/lesson';
+import { Lesson, LESSON_INJECTION_MAX_BODY_LENGTH, LESSON_INJECTION_MAX_BYTES } from '../schema/lesson/index.js';
 
 /**
  * Render the "## Learned Lessons" system-prompt block from a set of already

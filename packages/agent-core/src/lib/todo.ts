@@ -1,5 +1,5 @@
 import { readMetadata, writeMetadata } from './metadata.js';
-import { TodoItem, TodoList } from '../schema/todo';
+import { TodoItem, TodoList } from '../schema/todo/index.js';
 
 export const TODO_METADATA_KEY = 'todo-list';
 

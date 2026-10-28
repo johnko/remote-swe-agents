@@ -1,7 +1,7 @@
 import * as yauzl from 'yauzl-promise';
 import { Readable } from 'stream';
 import { isAbsolute, normalize } from 'node:path';
-import { MAX_SKILL_FILE_COUNT, ZIP_BOMB_THRESHOLD } from '../schema/skill';
+import { MAX_SKILL_FILE_COUNT, ZIP_BOMB_THRESHOLD } from '../schema/skill/index.js';
 
 export interface ExtractedFile {
   relativePath: string;

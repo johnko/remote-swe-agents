@@ -1,7 +1,7 @@
 import { QueryCommand, PutCommand, DeleteCommand, GetCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb';
 import { DeleteObjectsCommand, GetObjectCommand, ListObjectsV2Command, PutObjectCommand } from '@aws-sdk/client-s3';
 import { ddb, TableName, s3, SkillBucketName, BucketName } from './aws/index.js';
-import { Skill, MAX_SKILLS_PER_USER, MAX_TOTAL_STORAGE_PER_USER, MAX_SKILL_FILE_COUNT } from '../schema/skill';
+import { Skill, MAX_SKILLS_PER_USER, MAX_TOTAL_STORAGE_PER_USER, MAX_SKILL_FILE_COUNT } from '../schema/skill/index.js';
 import { validateZipEntryPath } from './skill-zip.js';
 import { randomBytes } from 'crypto';
 import { parseSkillMd } from './skill-frontmatter.js';
