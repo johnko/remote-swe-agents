@@ -21,7 +21,7 @@ export default async function Home() {
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
               <Link href="/sessions">
-                <Button variant="outline" size="lg" className="flex items-center gap-2">
+                <Button variant="secondary" size="lg" className="flex items-center gap-2">
                   <MessageSquare className="w-5 h-5" />
                   {sessionsT('title')}
                 </Button>
@@ -33,7 +33,7 @@ export default async function Home() {
                 </Button>
               </Link>
               <Link href="/cost">
-                <Button variant="outline" size="lg" className="flex items-center gap-2">
+                <Button variant="secondary" size="lg" className="flex items-center gap-2">
                   <DollarSign className="w-5 h-5" />
                   {t('costAnalysis')}
                 </Button>
