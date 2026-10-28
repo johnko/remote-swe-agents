@@ -10,17 +10,17 @@ import {
   SessionItem,
   defaultAgentConfig,
 } from '../schema';
-import { getOrCreateWorkerInstance, updateInstanceStatus } from './worker-manager';
-import { sendWorkerEvent } from './events';
-import { getCustomAgent } from './custom-agent';
-import { imageFormatFromKey } from './images';
-import { renderUserMessage, renderAgentMessage, renderSystemNotification, sanitizeSenderLabel } from './prompt';
-import { postNewSlackThread } from './slack';
-import { getWebappSessionUrl } from './webapp-origin';
-import { getChildSessions, getSession } from './sessions';
-import { resolveAgentDisplayName } from './agent-messaging';
+import { getOrCreateWorkerInstance, updateInstanceStatus } from './worker-manager.js';
+import { sendWorkerEvent } from './events.js';
+import { getCustomAgent } from './custom-agent.js';
+import { imageFormatFromKey } from './images.js';
+import { renderUserMessage, renderAgentMessage, renderSystemNotification, sanitizeSenderLabel } from './prompt.js';
+import { postNewSlackThread } from './slack.js';
+import { getWebappSessionUrl } from './webapp-origin.js';
+import { getChildSessions, getSession } from './sessions.js';
+import { resolveAgentDisplayName } from './agent-messaging.js';
 import { randomBytes } from 'crypto';
-import { addSessionParticipant } from './session-participants';
+import { addSessionParticipant } from './session-participants.js';
 
 export interface CreateSessionParams {
   message: string;

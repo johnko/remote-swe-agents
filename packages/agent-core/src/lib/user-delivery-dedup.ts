@@ -1,13 +1,13 @@
 import { PutCommand } from '@aws-sdk/lib-dynamodb';
 import { ddb, TableName } from './aws/index.js';
-import { getRecentMessages } from './messages';
+import { getRecentMessages } from './messages.js';
 import {
   shouldSuppressDuplicateMessage,
   DEFAULT_DEDUP_WINDOW_MS,
   MIN_DEDUP_LENGTH,
   normalizeForDedup,
   RecentMessageForDedup,
-} from './message-dedup';
+} from './message-dedup.js';
 import { MessageItem } from '../schema';
 import { toolNameInSet } from '../tool-name-utils';
 

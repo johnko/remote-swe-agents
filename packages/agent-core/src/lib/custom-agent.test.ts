@@ -7,7 +7,7 @@ vi.mock('./aws', () => ({
   TableName: 'TestTable',
 }));
 
-import { updateCustomAgent } from './custom-agent';
+import { updateCustomAgent } from './custom-agent.js';
 
 describe('updateCustomAgent (partial update)', () => {
   beforeEach(() => {

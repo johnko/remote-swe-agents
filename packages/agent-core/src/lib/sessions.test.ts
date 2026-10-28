@@ -11,7 +11,7 @@ vi.mock('./aws', () => ({
 vi.mock('./event-triggers', () => ({ deleteAllEventTriggers: vi.fn() }));
 vi.mock('./unread', () => ({ deleteUnreadByWorkerId: vi.fn() }));
 
-import { reparentSessions, clearSessionKiroSessionId } from './sessions';
+import { reparentSessions, clearSessionKiroSessionId } from './sessions.js';
 
 function getTransactItems(call: any) {
   return call[0]?.input?.TransactItems;

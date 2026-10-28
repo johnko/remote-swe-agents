@@ -17,7 +17,7 @@ import {
   deleteSkillRecord,
   registerSkillFromFiles,
   updateSkillFromFiles,
-} from './skills';
+} from './skills.js';
 import { MAX_SKILLS_PER_USER, MAX_SKILL_FILE_COUNT } from '../schema/skill';
 
 describe('skills CRUD', () => {

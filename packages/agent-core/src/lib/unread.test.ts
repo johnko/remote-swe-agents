@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { computeTotalUnread } from './unread';
+import { computeTotalUnread } from './unread.js';
 
 /**
  * `computeTotalUnread` = sum of unreadCount only. `hasPending` is excluded

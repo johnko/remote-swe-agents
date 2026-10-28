@@ -6,11 +6,11 @@ import path from 'path';
 import { tmpdir } from 'os';
 import { ddb, TableName } from './aws/index.js';
 import { writeBytesToKey, getBytesFromKey, BucketName } from './aws/s3.js';
-import { sendWebappEvent } from './events';
-import { sendMessageToSlack } from './slack';
+import { sendWebappEvent } from './events.js';
+import { sendMessageToSlack } from './slack.js';
 import { toolNamesEqual } from '../tool-name-utils';
-import { getWebappSessionUrl } from './webapp-origin';
-import { updateSessionLastMessage } from './sessions';
+import { getWebappSessionUrl } from './webapp-origin.js';
+import { updateSessionLastMessage } from './sessions.js';
 import {
   MessageItem,
   INTERNAL_ERROR_MESSAGE_TYPE,
@@ -21,7 +21,7 @@ import {
 // Maximum input token count before applying middle-out strategy
 export const MAX_INPUT_TOKEN = 80_000;
 
-import { ensureImageWithinBounds } from './image-resize';
+import { ensureImageWithinBounds } from './image-resize.js';
 export { ensureImageWithinBounds };
 
 const PID_DIR = path.join(tmpdir(), '.remote-swe-pids');

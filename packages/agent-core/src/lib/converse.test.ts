@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { deepMerge, preProcessInput } from './converse';
+import { deepMerge, preProcessInput } from './converse.js';
 import { ConverseCommandInput } from '@aws-sdk/client-bedrock-runtime';
 
 const baseInput = (userText = 'hello'): ConverseCommandInput => ({

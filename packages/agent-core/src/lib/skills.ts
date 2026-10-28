@@ -2,10 +2,10 @@ import { QueryCommand, PutCommand, DeleteCommand, GetCommand, UpdateCommand } fr
 import { DeleteObjectsCommand, GetObjectCommand, ListObjectsV2Command, PutObjectCommand } from '@aws-sdk/client-s3';
 import { ddb, TableName, s3, SkillBucketName, BucketName } from './aws/index.js';
 import { Skill, MAX_SKILLS_PER_USER, MAX_TOTAL_STORAGE_PER_USER, MAX_SKILL_FILE_COUNT } from '../schema/skill';
-import { validateZipEntryPath } from './skill-zip';
+import { validateZipEntryPath } from './skill-zip.js';
 import { randomBytes } from 'crypto';
-import { parseSkillMd } from './skill-frontmatter';
-import { skillS3Prefix } from './skill-s3';
+import { parseSkillMd } from './skill-frontmatter.js';
+import { skillS3Prefix } from './skill-s3.js';
 
 const skillPK = (userId: string) => `skill-${userId}`;
 

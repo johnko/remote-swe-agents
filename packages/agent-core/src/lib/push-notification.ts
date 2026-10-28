@@ -3,7 +3,7 @@ import { QueryCommand, PutCommand, DeleteCommand } from '@aws-sdk/lib-dynamodb';
 import { SSMClient, GetParameterCommand } from '@aws-sdk/client-ssm';
 import { ddb, TableName } from './aws/index.js';
 import { PushSubscriptionItem } from '../schema/push-subscription';
-import { getUnreadSummary } from './unread';
+import { getUnreadSummary } from './unread.js';
 
 const ssm = new SSMClient({});
 let cachedVapidPublicKey: string | undefined | null = undefined;

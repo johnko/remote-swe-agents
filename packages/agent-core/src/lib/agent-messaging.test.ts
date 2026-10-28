@@ -51,7 +51,7 @@ vi.mock('./messages', () => ({
   getRecentMessages: (...args: any[]) => mockGetRecentMessages(...args),
 }));
 
-import { sendAgentMessage } from './agent-messaging';
+import { sendAgentMessage } from './agent-messaging.js';
 
 const buildSession = (id: string, extra: Partial<SessionItem> = {}): SessionItem =>
   ({

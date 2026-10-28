@@ -1,4 +1,4 @@
-import { PROMPT_SETTLE_WEDGED_ERROR } from './kiro-acp-types';
+import { PROMPT_SETTLE_WEDGED_ERROR } from './kiro-acp-types.js';
 
 /**
  * Canonical, user-facing message shown when a turn ends abnormally because of

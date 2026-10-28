@@ -38,7 +38,7 @@
  * can be imported from any package in the monorepo.
  */
 
-import { normalizeForDedup, isNearDuplicateMessage, bigramSimilarity, RecentMessageForDedup } from './message-dedup';
+import { normalizeForDedup, isNearDuplicateMessage, bigramSimilarity, RecentMessageForDedup } from './message-dedup.js';
 import { toolNameInSet } from '../tool-name-utils';
 
 /**

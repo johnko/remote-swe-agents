@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { decodeKiroToolOutput } from './kiro-tool-output-decoder';
+import { decodeKiroToolOutput } from './kiro-tool-output-decoder.js';
 
 describe('decodeKiroToolOutput — v2 (items[] Rust enum)', () => {
   it('decodes execute_bash Json shape (stdout + stderr), suppressing exit status 0', () => {

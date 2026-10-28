@@ -1,7 +1,7 @@
 import { QueryCommand } from '@aws-sdk/lib-dynamodb';
 import { ddb, TableName } from './aws/index.js';
 import { modelConfigs } from '../schema/model';
-import { updateSession } from './sessions';
+import { updateSession } from './sessions.js';
 
 // Calculate cost in USD based on token usage
 // Pricing values are stored per 1M tokens (matching AWS Bedrock pricing documentation)

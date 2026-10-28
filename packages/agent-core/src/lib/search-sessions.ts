@@ -1,5 +1,5 @@
-import { getSession, getDescendantSessions, getAllSessionsIncludingChildren } from './sessions';
-import { getConversationHistory } from './messages';
+import { getSession, getDescendantSessions, getAllSessionsIncludingChildren } from './sessions.js';
+import { getConversationHistory } from './messages.js';
 import type { SessionItem } from '../schema';
 
 export type SearchScope = 'session' | 'tree' | 'all';
@@ -47,7 +47,7 @@ export const SEARCHABLE_MESSAGE_TYPES = new Set([
   'communicationLog',
 ]);
 
-import { toolNameInSet } from './tool-name-utils';
+import { toolNameInSet } from './tool-name-utils.js';
 
 export const MSG_TOOLS = new Set([
   // Canonical snake_case tool IDs (matched normalized via toolNameInSet, so the

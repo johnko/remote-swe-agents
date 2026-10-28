@@ -6,7 +6,7 @@ import {
   collectWorkStateScanTexts,
   extractWorkState,
   stripPromptEnvelope,
-} from './handover-context';
+} from './handover-context.js';
 import { MessageItem } from '../schema';
 import { TodoList } from '../schema/todo';
 

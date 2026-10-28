@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { resolveModelConfig } from './model-resolver';
+import { resolveModelConfig } from './model-resolver.js';
 
 describe('resolveModelConfig', () => {
   describe('inferenceMode resolution', () => {

@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest';
-import { calculateCost } from './cost';
+import { calculateCost } from './cost.js';
 
 test('calculateCost for sonnet3.7 model', () => {
   // GIVEN

@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { sanitizeUserId } from './kiro-api-key';
+import { sanitizeUserId } from './kiro-api-key.js';
 
 describe('sanitizeUserId', () => {
   test('strips webapp# prefix', () => {

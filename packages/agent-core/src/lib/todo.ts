@@ -1,4 +1,4 @@
-import { readMetadata, writeMetadata } from './metadata';
+import { readMetadata, writeMetadata } from './metadata.js';
 import { TodoItem, TodoList } from '../schema/todo';
 
 export const TODO_METADATA_KEY = 'todo-list';

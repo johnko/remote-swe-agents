@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { validateZipEntryPath } from './skill-zip';
+import { validateZipEntryPath } from './skill-zip.js';
 
 describe('validateZipEntryPath', () => {
   test('accepts valid paths', () => {

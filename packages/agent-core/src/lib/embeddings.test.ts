@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { encodeEmbedding, decodeEmbedding, cosineSimilarity } from './embeddings';
+import { encodeEmbedding, decodeEmbedding, cosineSimilarity } from './embeddings.js';
 
 describe('encodeEmbedding / decodeEmbedding', () => {
   it('round-trips a vector through base64 Float32 with float32 precision', () => {

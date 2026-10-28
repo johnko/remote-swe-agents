@@ -22,9 +22,9 @@ import {
   searchSessionContent,
   SEARCHABLE_MESSAGE_TYPES,
   MSG_TOOLS,
-} from './search-sessions';
-import { getSession, getDescendantSessions, getAllSessionsIncludingChildren } from './sessions';
-import { getConversationHistory } from './messages';
+} from './search-sessions.js';
+import { getSession, getDescendantSessions, getAllSessionsIncludingChildren } from './sessions.js';
+import { getConversationHistory } from './messages.js';
 
 const mockedGetSession = vi.mocked(getSession);
 const mockedGetDescendantSessions = vi.mocked(getDescendantSessions);

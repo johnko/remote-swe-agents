@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { buildSkillCatalogue } from './skill-catalogue';
+import { buildSkillCatalogue } from './skill-catalogue.js';
 import { Skill } from '../schema/skill';
 
 const makeSkill = (overrides: Partial<Skill> = {}): Skill => ({
