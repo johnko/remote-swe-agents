@@ -8,7 +8,7 @@ import { ddb, TableName } from './aws/index.js';
 import { writeBytesToKey, getBytesFromKey, BucketName } from './aws/s3.js';
 import { sendWebappEvent } from './events.js';
 import { sendMessageToSlack } from './slack.js';
-import { toolNamesEqual } from '../tool-name-utils';
+import { toolNamesEqual } from '../tool-name-utils/index.js';
 import { getWebappSessionUrl } from './webapp-origin.js';
 import { updateSessionLastMessage } from './sessions.js';
 import {
