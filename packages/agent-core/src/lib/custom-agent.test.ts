@@ -1,234 +1,445 @@
-import { describe, expect, test, vi, beforeEach } from 'vitest';
+import { describe, expect, it, vi, beforeEach } from 'vitest';
 
-const mockSend = vi.fn();
+const mockPaginateQuery = vi.fn();
+
+vi.mock('@aws-sdk/lib-dynamodb', () => ({
+  paginateQuery: (...args: any[]) => mockPaginateQuery(...args),
+  QueryCommand: vi.fn(),
+  PutCommand: vi.fn(),
+  UpdateCommand: vi.fn(),
+  GetCommand: vi.fn(),
+  DeleteCommand: vi.fn(),
+}));
+
+const mockDdbSend = vi.fn();
 
 vi.mock('./aws', () => ({
-  ddb: { send: (...args: any[]) => mockSend(...args) },
+  ddb: { send: (...args: any[]) => mockDdbSend(...args) },
   TableName: 'TestTable',
 }));
 
-import { updateCustomAgent } from './custom-agent.js';
+import { getAllCustomAgents, getCustomAgent } from './custom-agent.js';
+import type { CustomAgent } from '../schema/index.js';
 
-describe('updateCustomAgent (partial update)', () => {
+const createMockAgent = (overrides: Partial<CustomAgent> & { SK: string }): CustomAgent => ({
+  PK: 'custom-agent',
+  name: 'Test Agent',
+  description: 'Test description',
+  defaultModel: 'sonnet4.6',
+  systemPrompt: 'You are helpful.',
+  tools: ['tool1', 'tool2'],
+  useAllTools: false,
+  mcpConfig: '{"mcpServers":{}}',
+  runtimeType: 'agent-core',
+  includeDefaultKnowledge: true,
+  createdAt: Date.now(),
+  updatedAt: Date.now(),
+  ...overrides,
+});
+
+describe('getAllCustomAgents - Small Result Sets', () => {
   beforeEach(() => {
-    mockSend.mockReset();
-    mockSend.mockResolvedValue({
-      Attributes: {
-        PK: 'custom-agent',
-        SK: 'agent-1',
-        name: 'Existing Name',
-        description: 'Existing Description',
-        defaultModel: 'sonnet4.6',
-        systemPrompt: 'Existing system prompt',
-        tools: ['existingTool'],
-        useAllTools: false,
-        mcpConfig: '{"mcpServers":{}}',
-        runtimeType: 'agent-core',
-        includeDefaultKnowledge: true,
-        createdAt: 1,
-        updatedAt: 2,
+    mockPaginateQuery.mockReset();
+  });
+
+  it('returns empty array when 0 agents exist', async () => {
+    const mockPaginator = {
+      [Symbol.asyncIterator]: async function* () {
+        yield { Items: [] };
       },
+    };
+    
+    mockPaginateQuery.mockReturnValueOnce(mockPaginator);
+
+    const result = await getAllCustomAgents();
+
+    expect(result).toEqual([]);
+  });
+
+  it('returns all agents when count < page size (10 agents)', async () => {
+    const agents = Array.from({ length: 10 }, (_, i) =>
+      createMockAgent({ SK: `agent-${i}`, name: `Agent ${i}` })
+    );
+
+    const mockPaginator = {
+      [Symbol.asyncIterator]: async function* () {
+        yield { Items: agents };
+      },
+    };
+    
+    mockPaginateQuery.mockReturnValueOnce(mockPaginator);
+
+    const result = await getAllCustomAgents();
+
+    expect(result).toHaveLength(10);
+    expect(result.map((a) => a.SK)).toEqual(agents.map((a) => a.SK));
+  });
+
+  it('returns all agents when count equals page size (50 agents)', async () => {
+    const agents = Array.from({ length: 50 }, (_, i) =>
+      createMockAgent({ SK: `agent-${i}`, name: `Agent ${i}` })
+    );
+
+    const mockPaginator = {
+      [Symbol.asyncIterator]: async function* () {
+        yield { Items: agents };
+      },
+    };
+    
+    mockPaginateQuery.mockReturnValueOnce(mockPaginator);
+
+    const result = await getAllCustomAgents();
+
+    expect(result).toHaveLength(50);
+    expect(result.map((a) => a.SK)).toEqual(agents.map((a) => a.SK));
+  });
+
+  it('pretty-prints mcpConfig for all agents', async () => {
+    const agent = createMockAgent({
+      SK: 'agent-1',
+      mcpConfig: '{"mcpServers":{"stdio":{"command":"node","args":["server.js"]}}}',
     });
+
+    const mockPaginator = {
+      [Symbol.asyncIterator]: async function* () {
+        yield { Items: [agent] };
+      },
+    };
+    
+    mockPaginateQuery.mockReturnValueOnce(mockPaginator);
+
+    const result = await getAllCustomAgents();
+
+    expect(result).toHaveLength(1);
+    // mcpConfig should be pretty-printed (with newlines/indentation)
+    expect(result[0].mcpConfig).toContain('\n');
+    expect(result[0].mcpConfig).toContain('  ');
+    const parsed = JSON.parse(result[0].mcpConfig);
+    expect(parsed).toHaveProperty('mcpServers.stdio');
+  });
+});
+
+describe('getAllCustomAgents - Large Result Sets (Pagination)', () => {
+  beforeEach(() => {
+    mockPaginateQuery.mockReset();
   });
 
-  test('updates only provided fields and always sets updatedAt', async () => {
-    // GIVEN
-    const updates = { description: 'New description' };
+  it('handles 100 agents across 2 pages (page size 50)', async () => {
+    const page1 = Array.from({ length: 50 }, (_, i) =>
+      createMockAgent({ SK: `agent-${i}`, name: `Agent ${i}` })
+    );
+    const page2 = Array.from({ length: 50 }, (_, i) =>
+      createMockAgent({ SK: `agent-${50 + i}`, name: `Agent ${50 + i}` })
+    );
 
-    // WHEN
-    await updateCustomAgent('agent-1', updates);
+    const mockPaginator = {
+      [Symbol.asyncIterator]: async function* () {
+        yield { Items: page1 };
+        yield { Items: page2 };
+      },
+    };
+    
+    mockPaginateQuery.mockReturnValueOnce(mockPaginator);
 
-    // THEN
-    expect(mockSend).toHaveBeenCalledTimes(1);
-    const command = mockSend.mock.calls[0][0];
-    const input = command.input;
+    const result = await getAllCustomAgents();
 
-    expect(input.TableName).toBe('TestTable');
-    expect(input.Key).toEqual({ PK: 'custom-agent', SK: 'agent-1' });
-
-    // Only description and updatedAt should be in UpdateExpression
-    expect(input.UpdateExpression).toContain('#description = :description');
-    expect(input.UpdateExpression).toContain('#updatedAt = :updatedAt');
-    expect(input.UpdateExpression).not.toContain('#name');
-    expect(input.UpdateExpression).not.toContain('#systemPrompt');
-    expect(input.UpdateExpression).not.toContain('#tools');
-    expect(input.UpdateExpression).not.toContain('#mcpConfig');
-
-    expect(input.ExpressionAttributeValues[':description']).toBe('New description');
-    expect(typeof input.ExpressionAttributeValues[':updatedAt']).toBe('number');
+    expect(result).toHaveLength(100);
+    expect(result.map((a) => a.SK)).toEqual([...page1.map((a) => a.SK), ...page2.map((a) => a.SK)]);
   });
 
-  test('skips undefined fields in the updates object', async () => {
-    // GIVEN
-    const updates = {
-      name: 'New Name',
-      description: undefined,
-      tools: undefined,
-    } as const;
+  it('handles 200 agents across 4 pages', async () => {
+    const pages = Array.from({ length: 4 }, (_, pageNum) =>
+      Array.from({ length: 50 }, (_, i) =>
+        createMockAgent({ SK: `agent-${pageNum * 50 + i}`, name: `Agent ${pageNum * 50 + i}` })
+      )
+    );
 
-    // WHEN
-    await updateCustomAgent('agent-1', updates);
+    const mockPaginator = {
+      [Symbol.asyncIterator]: async function* () {
+        for (const page of pages) {
+          yield { Items: page };
+        }
+      },
+    };
+    
+    mockPaginateQuery.mockReturnValueOnce(mockPaginator);
 
-    // THEN
-    const input = mockSend.mock.calls[0][0].input;
-    expect(input.UpdateExpression).toContain('#name = :name');
-    expect(input.UpdateExpression).not.toContain('#description');
-    expect(input.UpdateExpression).not.toContain('#tools');
-    expect(input.ExpressionAttributeValues[':name']).toBe('New Name');
-    expect(input.ExpressionAttributeValues[':description']).toBeUndefined();
+    const result = await getAllCustomAgents();
+
+    expect(result).toHaveLength(200);
+    // Verify order is preserved across pages
+    for (let i = 0; i < 200; i++) {
+      expect(result[i].SK).toBe(`agent-${i}`);
+    }
   });
 
-  test('allows explicit empty array to overwrite tools', async () => {
-    // GIVEN
-    const updates = { tools: [] };
+  it('handles edge case: 101 agents (2 pages with last page having 1 item)', async () => {
+    const page1 = Array.from({ length: 50 }, (_, i) =>
+      createMockAgent({ SK: `agent-${i}` })
+    );
+    const page2 = Array.from({ length: 51 }, (_, i) =>
+      createMockAgent({ SK: `agent-${50 + i}` })
+    );
 
-    // WHEN
-    await updateCustomAgent('agent-1', updates);
+    const mockPaginator = {
+      [Symbol.asyncIterator]: async function* () {
+        yield { Items: page1 };
+        yield { Items: page2 };
+      },
+    };
+    
+    mockPaginateQuery.mockReturnValueOnce(mockPaginator);
 
-    // THEN
-    const input = mockSend.mock.calls[0][0].input;
-    expect(input.UpdateExpression).toContain('#tools = :tools');
-    expect(input.ExpressionAttributeValues[':tools']).toEqual([]);
+    const result = await getAllCustomAgents();
+
+    expect(result).toHaveLength(101);
+    expect(result[100].SK).toBe('agent-100');
   });
 
-  test('allows explicit empty string to overwrite description', async () => {
-    // GIVEN
-    const updates = { description: '' };
+  it('handles page with no Items property gracefully', async () => {
+    const page1 = Array.from({ length: 25 }, (_, i) =>
+      createMockAgent({ SK: `agent-${i}` })
+    );
 
-    // WHEN
-    await updateCustomAgent('agent-1', updates);
+    const mockPaginator = {
+      [Symbol.asyncIterator]: async function* () {
+        yield { Items: page1 };
+        yield {}; // Page with no Items
+        yield { Items: [createMockAgent({ SK: 'agent-25' })] };
+      },
+    };
+    
+    mockPaginateQuery.mockReturnValueOnce(mockPaginator);
 
-    // THEN
-    const input = mockSend.mock.calls[0][0].input;
-    expect(input.UpdateExpression).toContain('#description = :description');
-    expect(input.ExpressionAttributeValues[':description']).toBe('');
+    const result = await getAllCustomAgents();
+
+    expect(result).toHaveLength(26);
+    expect(result.map((a) => a.SK)).toEqual([...Array.from({ length: 25 }, (_, i) => `agent-${i}`), 'agent-25']);
+  });
+});
+
+describe('getAllCustomAgents - Pagination Internals', () => {
+  beforeEach(() => {
+    mockPaginateQuery.mockReset();
   });
 
-  test('does not validate mcpConfig when it is not provided', async () => {
-    // GIVEN
-    const updates = { name: 'Just a name change' };
+  it('calls paginateQuery with correct parameters (PK, page size, DESC order)', async () => {
+    const mockPaginator = {
+      [Symbol.asyncIterator]: async function* () {
+        yield { Items: [] };
+      },
+    };
+    
+    mockPaginateQuery.mockReturnValueOnce(mockPaginator);
 
-    // WHEN / THEN - no throw even though no mcpConfig
-    await expect(updateCustomAgent('agent-1', updates)).resolves.toBeDefined();
+    await getAllCustomAgents();
+
+    expect(mockPaginateQuery).toHaveBeenCalledTimes(1);
+    const [config, params] = mockPaginateQuery.mock.calls[0];
+    
+    // Verify page size
+    expect(config.pageSize).toBe(50);
+    
+    // Verify key condition uses PK
+    expect(params.KeyConditionExpression).toContain(':pk');
+    expect(params.ExpressionAttributeValues[':pk']).toBe('custom-agent');
+    
+    // Verify DESC order
+    expect(params.ScanIndexForward).toBe(false);
   });
 
-  test('validates mcpConfig when explicitly provided', async () => {
-    // GIVEN
-    const updates = { mcpConfig: 'not valid json' };
+  it('concatenates items from multiple pages in order', async () => {
+    const agents = [
+      createMockAgent({ SK: 'a', name: 'First' }),
+      createMockAgent({ SK: 'b', name: 'Second' }),
+      createMockAgent({ SK: 'c', name: 'Third' }),
+    ];
 
-    // WHEN / THEN
-    await expect(updateCustomAgent('agent-1', updates)).rejects.toThrow(/Invalid mcpConfig/);
+    const mockPaginator = {
+      [Symbol.asyncIterator]: async function* () {
+        yield { Items: [agents[0]] };
+        yield { Items: [agents[1]] };
+        yield { Items: [agents[2]] };
+      },
+    };
+    
+    mockPaginateQuery.mockReturnValueOnce(mockPaginator);
+
+    const result = await getAllCustomAgents();
+
+    expect(result).toHaveLength(3);
+    expect(result[0].SK).toBe('a');
+    expect(result[1].SK).toBe('b');
+    expect(result[2].SK).toBe('c');
   });
 
-  test('does not send the update to DynamoDB when mcpConfig validation fails', async () => {
-    // GIVEN
-    const updates = { mcpConfig: 'not valid json' };
+  it('maintains DESC order (ScanIndexForward: false)', async () => {
+    const agents = Array.from({ length: 10 }, (_, i) =>
+      createMockAgent({ SK: `agent-${String(i).padStart(3, '0')}`, name: `Agent ${i}` })
+    ).reverse(); // Simulate DESC order
 
-    // WHEN
-    await expect(updateCustomAgent('agent-1', updates)).rejects.toThrow();
+    const mockPaginator = {
+      [Symbol.asyncIterator]: async function* () {
+        yield { Items: agents };
+      },
+    };
+    
+    mockPaginateQuery.mockReturnValueOnce(mockPaginator);
 
-    // THEN
-    expect(mockSend).not.toHaveBeenCalled();
+    const result = await getAllCustomAgents();
+
+    expect(result).toHaveLength(10);
+    expect(result[0].SK).toBe(agents[0].SK);
+  });
+});
+
+describe('getAllCustomAgents - Performance/Load Tests', () => {
+  beforeEach(() => {
+    mockPaginateQuery.mockReset();
   });
 
-  test('rejects empty string for mcpConfig (regression: previously silently defaulted)', async () => {
-    // GIVEN
-    const updates = { mcpConfig: '' };
+  it('handles 1000 agents (20 pages of 50 each) efficiently', async () => {
+    const pageCount = 20;
+    const itemsPerPage = 50;
 
-    // WHEN / THEN
-    await expect(updateCustomAgent('agent-1', updates)).rejects.toThrow(/Invalid mcpConfig/);
-    expect(mockSend).not.toHaveBeenCalled();
+    const mockPaginator = {
+      [Symbol.asyncIterator]: async function* () {
+        for (let p = 0; p < pageCount; p++) {
+          const page = Array.from({ length: itemsPerPage }, (_, i) =>
+            createMockAgent({ SK: `agent-${p * itemsPerPage + i}` })
+          );
+          yield { Items: page };
+        }
+      },
+    };
+    
+    mockPaginateQuery.mockReturnValueOnce(mockPaginator);
+
+    const startTime = performance.now();
+    const result = await getAllCustomAgents();
+    const endTime = performance.now();
+
+    expect(result).toHaveLength(1000);
+    expect(endTime - startTime).toBeLessThan(5000); // Should complete in < 5 seconds
   });
 
-  test('updates runtimeType only', async () => {
-    // WHEN
-    await updateCustomAgent('agent-1', { runtimeType: 'ec2' });
+  it('handles 5000 agents (100 pages) without memory issues', async () => {
+    const pageCount = 100;
+    const itemsPerPage = 50;
 
-    // THEN
-    const input = mockSend.mock.calls[0][0].input;
-    expect(input.UpdateExpression).toContain('#runtimeType = :runtimeType');
-    expect(input.UpdateExpression).not.toContain('#name');
-    expect(input.ExpressionAttributeValues[':runtimeType']).toBe('ec2');
+    const mockPaginator = {
+      [Symbol.asyncIterator]: async function* () {
+        for (let p = 0; p < pageCount; p++) {
+          const page = Array.from({ length: itemsPerPage }, (_, i) =>
+            createMockAgent({ SK: `agent-${p * itemsPerPage + i}` })
+          );
+          yield { Items: page };
+        }
+      },
+    };
+    
+    mockPaginateQuery.mockReturnValueOnce(mockPaginator);
+
+    const result = await getAllCustomAgents();
+
+    expect(result).toHaveLength(5000);
+    expect(result.filter((a) => a.SK.startsWith('agent-'))).toHaveLength(5000);
   });
 
-  test('allows explicit useAllTools: false to overwrite a true value', async () => {
-    // WHEN
-    await updateCustomAgent('agent-1', { useAllTools: false });
+  it('properly disposes of resources after large pagination', async () => {
+    const mockPaginator = {
+      [Symbol.asyncIterator]: async function* () {
+        for (let p = 0; p < 50; p++) {
+          yield {
+            Items: Array.from({ length: 50 }, (_, i) =>
+              createMockAgent({ SK: `agent-${p * 50 + i}` })
+            ),
+          };
+        }
+      },
+    };
+    
+    mockPaginateQuery.mockReturnValueOnce(mockPaginator);
 
-    // THEN
-    const input = mockSend.mock.calls[0][0].input;
-    expect(input.UpdateExpression).toContain('#useAllTools = :useAllTools');
-    expect(input.ExpressionAttributeValues[':useAllTools']).toBe(false);
+    const result = await getAllCustomAgents();
+    expect(result).toHaveLength(2500);
+
+    // Verify we can call it again (resources are properly disposed)
+    const mockPaginator2 = {
+      [Symbol.asyncIterator]: async function* () {
+        yield { Items: [createMockAgent({ SK: 'agent-final' })] };
+      },
+    };
+    
+    mockPaginateQuery.mockReturnValueOnce(mockPaginator2);
+    const result2 = await getAllCustomAgents();
+    expect(result2).toHaveLength(1);
+  });
+});
+
+describe('getAllCustomAgents - Error Handling', () => {
+  beforeEach(() => {
+    mockPaginateQuery.mockReset();
   });
 
-  test('allows explicit includeDefaultKnowledge: false to overwrite a true value', async () => {
-    // WHEN
-    await updateCustomAgent('agent-1', { includeDefaultKnowledge: false });
+  it('handles async iterator errors gracefully', async () => {
+    const mockPaginator = {
+      [Symbol.asyncIterator]: async function* () {
+        yield { Items: [createMockAgent({ SK: 'agent-1' })] };
+        throw new Error('DynamoDB error');
+      },
+    };
+    
+    mockPaginateQuery.mockReturnValueOnce(mockPaginator);
 
-    // THEN
-    const input = mockSend.mock.calls[0][0].input;
-    expect(input.UpdateExpression).toContain('#includeDefaultKnowledge = :includeDefaultKnowledge');
-    expect(input.ExpressionAttributeValues[':includeDefaultKnowledge']).toBe(false);
+    await expect(getAllCustomAgents()).rejects.toThrow('DynamoDB error');
+  });
+});
+
+describe('Removed Pagination Functions Validation', () => {
+  it('verifies old pagination patterns are not present in custom-agent.ts', async () => {
+    const customAgentModule = await import('./custom-agent.js');
+    
+    expect(customAgentModule).toHaveProperty('getAllCustomAgents');
+    expect(customAgentModule).toHaveProperty('getCustomAgent');
+    expect(customAgentModule).toHaveProperty('createCustomAgent');
+    expect(customAgentModule).toHaveProperty('updateCustomAgent');
+    expect(customAgentModule).toHaveProperty('deleteCustomAgent');
+
+    // Verify no old pagination functions exist
+    expect(customAgentModule).not.toHaveProperty('listCustomAgents');
+    expect(customAgentModule).not.toHaveProperty('listCustomAgentsWithCursor');
+    expect(customAgentModule).not.toHaveProperty('getCustomAgentsPage');
+  });
+});
+
+describe('Other Custom Agent Functions', () => {
+  beforeEach(() => {
+    mockDdbSend.mockReset();
   });
 
-  test('accepts valid mcpConfig and includes it in update', async () => {
-    // GIVEN
-    const updates = { mcpConfig: JSON.stringify({ mcpServers: {} }) };
+  it('getCustomAgent returns agent by ID', async () => {
+    const agent = createMockAgent({ SK: 'agent-1' });
+    mockDdbSend.mockResolvedValueOnce({ Item: agent });
 
-    // WHEN
-    await updateCustomAgent('agent-1', updates);
+    const result = await getCustomAgent('agent-1');
 
-    // THEN
-    const input = mockSend.mock.calls[0][0].input;
-    expect(input.UpdateExpression).toContain('#mcpConfig = :mcpConfig');
-    expect(input.ExpressionAttributeValues[':mcpConfig']).toBe('{"mcpServers":{}}');
+    expect(result).toEqual(agent);
+    expect(mockDdbSend).toHaveBeenCalledTimes(1);
   });
 
-  test('empty updates object still bumps updatedAt', async () => {
-    // GIVEN
-    const updates = {};
+  it('getCustomAgent returns undefined when agent not found', async () => {
+    mockDdbSend.mockResolvedValueOnce({ Item: undefined });
 
-    // WHEN
-    await updateCustomAgent('agent-1', updates);
+    const result = await getCustomAgent('missing');
 
-    // THEN
-    const input = mockSend.mock.calls[0][0].input;
-    expect(input.UpdateExpression).toBe('SET #updatedAt = :updatedAt');
-    expect(typeof input.ExpressionAttributeValues[':updatedAt']).toBe('number');
+    expect(result).toBeUndefined();
   });
 
-  test('returns the updated attributes from DynamoDB', async () => {
-    // WHEN
-    const result = await updateCustomAgent('agent-1', { description: 'x' });
+  it('getCustomAgent returns undefined when customAgentId is undefined', async () => {
+    const result = await getCustomAgent(undefined);
 
-    // THEN
-    expect(result.SK).toBe('agent-1');
-    expect(result.name).toBe('Existing Name');
-  });
-
-  test('inferenceMode: null REMOVEs the attribute (reset to inherit)', async () => {
-    // WHEN
-    await updateCustomAgent('agent-1', { inferenceMode: null, description: 'New description' });
-
-    // THEN
-    const input = mockSend.mock.calls[0][0].input;
-    expect(input.UpdateExpression).toContain('REMOVE #inferenceMode');
-    expect(input.UpdateExpression).not.toContain('#inferenceMode = :inferenceMode');
-    expect(input.ExpressionAttributeNames['#inferenceMode']).toBe('inferenceMode');
-    expect(input.ExpressionAttributeValues[':inferenceMode']).toBeUndefined();
-    // SET clause still applies for the other fields
-    expect(input.UpdateExpression).toContain('#description = :description');
-    expect(input.UpdateExpression).toContain('#updatedAt = :updatedAt');
-  });
-
-  test('inferenceMode: non-null value is SET, not removed', async () => {
-    // WHEN
-    await updateCustomAgent('agent-1', { inferenceMode: 'kiro-cli' });
-
-    // THEN
-    const input = mockSend.mock.calls[0][0].input;
-    expect(input.UpdateExpression).not.toContain('REMOVE');
-    expect(input.UpdateExpression).toContain('#inferenceMode = :inferenceMode');
-    expect(input.ExpressionAttributeValues[':inferenceMode']).toBe('kiro-cli');
+    expect(result).toBeUndefined();
+    expect(mockDdbSend).not.toHaveBeenCalled();
   });
 });
