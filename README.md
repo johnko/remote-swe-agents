@@ -24,6 +24,7 @@ This is an example implementation of a fully autonomous software development AI 
 - **No upfront or fixed costs** while you don't use the system
 - **MCP support** through integration with MCP servers
 - **Can work on OSS forked repositories**
+- **Hooks system** - Observe, control, and extend agent lifecycle with custom scripts (see [Hooks Documentation](./docs/HOOKS.md))
 
 ## Examples
 
