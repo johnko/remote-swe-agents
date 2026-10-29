@@ -13,8 +13,9 @@ test('calculateCost for sonnet3.7 model', () => {
   const cost = calculateCost(modelId, inputTokens, outputTokens, cacheReadTokens, cacheWriteTokens);
 
   // THEN
-  const expectedCost = (1000 * 0.003 + 500 * 0.015 + 200 * 0.0003 + 100 * 0.00375) / 1000;
-  expect(cost).toBe(expectedCost);
+  // Pricing is per 1M tokens: input: 3.0, output: 15.0, cacheRead: 0.3, cacheWrite: 3.75
+  const expectedCost = (1000 * 3.0 + 500 * 15.0 + 200 * 0.3 + 100 * 3.75) / 1_000_000;
+  expect(cost).toBeCloseTo(expectedCost, 8);
 });
 
 test('calculateCost for haiku3.5 model', () => {
@@ -29,8 +30,9 @@ test('calculateCost for haiku3.5 model', () => {
   const cost = calculateCost(modelId, inputTokens, outputTokens, cacheReadTokens, cacheWriteTokens);
 
   // THEN
-  const expectedCost = (2000 * 0.0008 + 1000 * 0.004 + 500 * 0.00008 + 250 * 0.001) / 1000;
-  expect(cost).toBe(expectedCost);
+  // Pricing is per 1M tokens: input: 800.0, output: 4000.0, cacheRead: 80.0, cacheWrite: 1000.0
+  const expectedCost = (2000 * 800.0 + 1000 * 4000.0 + 500 * 80.0 + 250 * 1000.0) / 1_000_000;
+  expect(cost).toBeCloseTo(expectedCost, 8);
 });
 
 test('calculateCost returns 0 for unknown model', () => {
