@@ -4,6 +4,7 @@ const mockGetCustomAgent = vi.fn();
 const mockUpdateCustomAgent = vi.fn();
 const mockCreateCustomAgent = vi.fn();
 const mockDeleteCustomAgent = vi.fn();
+const mockGetAllCustomAgents = vi.fn();
 const mockSavePendingCreateAgent = vi.fn();
 
 vi.mock('../../lib/custom-agent', () => ({
@@ -11,6 +12,7 @@ vi.mock('../../lib/custom-agent', () => ({
   createCustomAgent: (...args: any[]) => mockCreateCustomAgent(...args),
   updateCustomAgent: (...args: any[]) => mockUpdateCustomAgent(...args),
   deleteCustomAgent: (...args: any[]) => mockDeleteCustomAgent(...args),
+  getAllCustomAgents: (...args: any[]) => mockGetAllCustomAgents(...args),
 }));
 
 vi.mock('../confirm-create-agent', () => ({
@@ -372,6 +374,143 @@ describe('createAgentTool (parentAgentId validation)', () => {
     expect(mockCreateCustomAgent).toHaveBeenCalledTimes(1);
     const [payload] = mockCreateCustomAgent.mock.calls[0];
     expect(payload.kiroModel).toBe('deepseek-3.2');
+  });
+});
+
+
+describe('listAgentsTool - Integration with getAllCustomAgents', () => {
+  beforeEach(() => {
+    mockGetAllCustomAgents.mockReset();
+  });
+
+  test('calls getAllCustomAgents internally', async () => {
+    // GIVEN
+    const agents = [
+      { ...existingAgent, SK: 'agent-1', name: 'Agent 1', description: 'Desc 1' },
+      { ...existingAgent, SK: 'agent-2', name: 'Agent 2', description: 'Desc 2' },
+    ];
+    mockGetAllCustomAgents.mockResolvedValueOnce(agents);
+
+    // WHEN - Import and call listAgentsTool
+    const { listAgentsTool } = await import('./index');
+    const result = await listAgentsTool.handler({}, context);
+
+    // THEN
+    expect(mockGetAllCustomAgents).toHaveBeenCalledTimes(1);
+    expect(result).toBeTruthy();
+  });
+
+  test('returns "No custom agents found" when list is empty', async () => {
+    // GIVEN
+    mockGetAllCustomAgents.mockResolvedValueOnce([]);
+
+    // WHEN
+    const { listAgentsTool } = await import('./index');
+    const result = await listAgentsTool.handler({}, context);
+
+    // THEN
+    expect(result).toContain('No custom agents found');
+  });
+
+  test('returns formatted agent summary for all agents', async () => {
+    // GIVEN
+    const agents = [
+      {
+        ...existingAgent,
+        SK: 'agent-1',
+        name: 'Test Agent 1',
+        description: 'Description 1',
+        tools: ['tool1', 'tool2'],
+        parentAgentId: undefined,
+      },
+      {
+        ...existingAgent,
+        SK: 'agent-2',
+        name: 'Test Agent 2',
+        description: 'Description 2',
+        tools: ['tool3'],
+        parentAgentId: 'agent-1',
+      },
+    ];
+    mockGetAllCustomAgents.mockResolvedValueOnce(agents);
+
+    // WHEN
+    const { listAgentsTool } = await import('./index');
+    const result = await listAgentsTool.handler({}, context);
+
+    // THEN
+    expect(result).toContain('Test Agent 1');
+    expect(result).toContain('Test Agent 2');
+    expect(result).toContain('Description 1');
+    expect(result).toContain('Description 2');
+    expect(result).toContain('agent-1');
+    expect(result).toContain('agent-2');
+
+    // Verify it's JSON formatted
+    const parsed = JSON.parse(result);
+    expect(Array.isArray(parsed)).toBe(true);
+    expect(parsed).toHaveLength(2);
+  });
+
+  test('includes all agent fields in output', async () => {
+    // GIVEN
+    const agent = {
+      ...existingAgent,
+      SK: 'test-id',
+      name: 'Full Agent',
+      description: 'Custom description',
+      defaultModel: 'sonnet4.6',
+      bedrockDefaultModel: 'sonnet4.6',
+      kiroDefaultModel: 'auto',
+      runtimeType: 'agent-core',
+      iconKey: 'custom-icon',
+      tools: ['tool1'],
+      parentAgentId: 'parent-id',
+      createdAt: 1000,
+      updatedAt: 2000,
+    };
+    mockGetAllCustomAgents.mockResolvedValueOnce([agent]);
+
+    // WHEN
+    const { listAgentsTool } = await import('./index');
+    const result = await listAgentsTool.handler({}, context);
+
+    // THEN
+    const parsed = JSON.parse(result);
+    expect(parsed[0]).toMatchObject({
+      id: 'test-id',
+      name: 'Full Agent',
+      description: 'Custom description',
+      defaultModel: 'sonnet4.6',
+      bedrockDefaultModel: 'sonnet4.6',
+      kiroDefaultModel: 'auto',
+      runtimeType: 'agent-core',
+      iconKey: 'custom-icon',
+      tools: ['tool1'],
+      parentAgentId: 'parent-id',
+    });
+    expect(parsed[0].createdAt).toMatch(/\d{4}-\d{2}-\d{2}/); // ISO date format
+  });
+
+  test('handles pagination result set of 100+ agents', async () => {
+    // GIVEN - Simulate result from getAllCustomAgents after pagination
+    const agents = Array.from({ length: 150 }, (_, i) => ({
+      ...existingAgent,
+      SK: `agent-${i}`,
+      name: `Agent ${i}`,
+      description: `Description ${i}`,
+    }));
+    mockGetAllCustomAgents.mockResolvedValueOnce(agents);
+
+    // WHEN
+    const { listAgentsTool } = await import('./index');
+    const result = await listAgentsTool.handler({}, context);
+
+    // THEN
+    const parsed = JSON.parse(result);
+    expect(parsed).toHaveLength(150);
+    expect(parsed[0].name).toBe('Agent 0');
+    expect(parsed[149].name).toBe('Agent 149');
   });
 });
 
