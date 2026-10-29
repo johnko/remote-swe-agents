@@ -7,6 +7,8 @@ import {
   HookExecutionType,
   HookDefinition,
   HookPermission,
+  SessionStartPayload,
+  ToolBeforePayload,
 } from './index.js';
 
 describe('HookRegistry', () => {
@@ -179,7 +181,7 @@ describe('HookExecutor', () => {
       registeredAt: Date.now(),
     };
 
-    const payload = {
+    const payload: SessionStartPayload = {
       event: HookEvent.SESSION_START,
       timestamp: Date.now(),
       sessionId: 'test-session',
@@ -189,7 +191,7 @@ describe('HookExecutor', () => {
     const result = await executor.execute(hook, payload);
 
     expect(result.success).toBe(true);
-    expect(result.response?.permission).toBe('allow');
+    expect(result.response?.permission).toBe(HookPermission.ALLOW);
   });
 
   it('should handle hook execution failure gracefully', async () => {
@@ -204,7 +206,7 @@ describe('HookExecutor', () => {
       registeredAt: Date.now(),
     };
 
-    const payload = {
+    const payload: SessionStartPayload = {
       event: HookEvent.SESSION_START,
       timestamp: Date.now(),
       sessionId: 'test-session',
@@ -218,8 +220,6 @@ describe('HookExecutor', () => {
   });
 
   it('should stop on first blocking denial', async () => {
-    const registry = new HookRegistry();
-
     const blockingHook = {
       id: 'blocking-hook',
       name: 'blocking',
@@ -242,7 +242,7 @@ describe('HookExecutor', () => {
       registeredAt: Date.now(),
     };
 
-    const payload = {
+    const payload: ToolBeforePayload = {
       event: HookEvent.TOOL_BEFORE,
       timestamp: Date.now(),
       sessionId: 'test-session',
@@ -261,32 +261,19 @@ describe('HookExecutor', () => {
 
 describe('HookLifecycleManager', () => {
   let manager: HookLifecycleManager;
-  let registry: HookRegistry;
 
   beforeEach(() => {
     manager = new HookLifecycleManager();
-    registry = new HookRegistry();
   });
 
   it('should handle session start event', async () => {
-    const hookDef: HookDefinition = {
-      name: 'session-start-hook',
-      event: HookEvent.SESSION_START,
-      type: HookExecutionType.COMMAND,
-      command: 'echo \'{"permission":"allow"}\'',
-    };
-
-    registry.register(hookDef);
-
-    // Note: In actual implementation, this would use the global registry
-    // For testing, we'd need to inject or mock the registry
     const result = await manager.onSessionStart({
       sessionId: 'test-session',
       userId: 'test-user',
     });
 
-    // Result would vary based on whether the registry is properly initialized
     expect(result).toBeDefined();
+    expect(result.allowed).toBe(true);
   });
 
   it('should handle tool before event', async () => {
@@ -309,3 +296,6 @@ describe('HookLifecycleManager', () => {
     expect(result).toBeDefined();
   });
 });
+
+
+

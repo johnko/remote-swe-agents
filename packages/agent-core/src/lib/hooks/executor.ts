@@ -1,5 +1,5 @@
 import { execSync } from 'child_process';
-import { AnyHookPayload, HookExecutionType, HookResponse, RegisteredHook, HookExecutionResult } from './types.js';
+import { AnyHookPayload, HookExecutionType, HookResponse, HookPermission, RegisteredHook, HookExecutionResult } from './types.js';
 
 /**
  * Hook executor handles the execution of registered hooks
@@ -63,7 +63,7 @@ export class HookExecutor {
       results.push(result);
 
       // If this is a blocking hook and it denied, stop execution
-      if (hook.blocking && result.response?.permission === 'deny') {
+      if (hook.blocking && result.response?.permission === HookPermission.DENY) {
         return {
           allowed: false,
           results,
@@ -132,7 +132,7 @@ export class HookExecutor {
     console.warn(`Function-based hooks not yet implemented: ${hook.name}`);
 
     return {
-      permission: 'allow',
+      permission: HookPermission.ALLOW,
     };
   }
 }

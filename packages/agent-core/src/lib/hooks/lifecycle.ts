@@ -22,11 +22,14 @@ export class HookLifecycleManager {
   /**
    * Fire SESSION_START hook
    */
-  async onSessionStart(payload: Omit<SessionStartPayload, 'timestamp' | 'event'>) {
+  async onSessionStart(payload: Omit<SessionStartPayload, 'timestamp' | 'event'>): Promise<{ allowed: boolean; results: any[] }> {
+    const p = payload as SessionStartPayload;
     const fullPayload: SessionStartPayload = {
-      ...payload,
       event: HookEvent.SESSION_START,
       timestamp: Date.now(),
+      sessionId: p.sessionId,
+      userId: p.userId,
+      parentSessionId: p.parentSessionId,
     };
 
     const registry = getGlobalHookRegistry();
@@ -41,11 +44,14 @@ export class HookLifecycleManager {
   /**
    * Fire SESSION_END hook
    */
-  async onSessionEnd(payload: Omit<SessionEndPayload, 'timestamp' | 'event'>) {
+  async onSessionEnd(payload: Omit<SessionEndPayload, 'timestamp' | 'event'>): Promise<{ allowed: boolean; results: any[] }> {
+    const p = payload as SessionEndPayload;
     const fullPayload: SessionEndPayload = {
-      ...payload,
       event: HookEvent.SESSION_END,
       timestamp: Date.now(),
+      sessionId: p.sessionId,
+      userId: p.userId,
+      duration: p.duration,
     };
 
     const registry = getGlobalHookRegistry();
@@ -60,11 +66,14 @@ export class HookLifecycleManager {
   /**
    * Fire TOOL_BEFORE hook
    */
-  async onToolBefore(payload: Omit<ToolBeforePayload, 'timestamp' | 'event'>) {
+  async onToolBefore(payload: Omit<ToolBeforePayload, 'timestamp' | 'event'>): Promise<{ allowed: boolean; results: any[] }> {
+    const p = payload as ToolBeforePayload;
     const fullPayload: ToolBeforePayload = {
-      ...payload,
       event: HookEvent.TOOL_BEFORE,
       timestamp: Date.now(),
+      sessionId: p.sessionId,
+      toolName: p.toolName,
+      toolInput: p.toolInput,
     };
 
     const registry = getGlobalHookRegistry();
@@ -79,11 +88,15 @@ export class HookLifecycleManager {
   /**
    * Fire TOOL_AFTER hook
    */
-  async onToolAfter(payload: Omit<ToolAfterPayload, 'timestamp' | 'event'>) {
+  async onToolAfter(payload: Omit<ToolAfterPayload, 'timestamp' | 'event'>): Promise<{ allowed: boolean; results: any[] }> {
+    const p = payload as ToolAfterPayload;
     const fullPayload: ToolAfterPayload = {
-      ...payload,
       event: HookEvent.TOOL_AFTER,
       timestamp: Date.now(),
+      sessionId: p.sessionId,
+      toolName: p.toolName,
+      toolInput: p.toolInput,
+      toolOutput: p.toolOutput,
     };
 
     const registry = getGlobalHookRegistry();
@@ -98,11 +111,15 @@ export class HookLifecycleManager {
   /**
    * Fire TOOL_ERROR hook
    */
-  async onToolError(payload: Omit<ToolErrorPayload, 'timestamp' | 'event'>) {
+  async onToolError(payload: Omit<ToolErrorPayload, 'timestamp' | 'event'>): Promise<{ allowed: boolean; results: any[] }> {
+    const p = payload as ToolErrorPayload;
     const fullPayload: ToolErrorPayload = {
-      ...payload,
       event: HookEvent.TOOL_ERROR,
       timestamp: Date.now(),
+      sessionId: p.sessionId,
+      toolName: p.toolName,
+      toolInput: p.toolInput,
+      errorMessage: p.errorMessage,
     };
 
     const registry = getGlobalHookRegistry();
@@ -117,11 +134,14 @@ export class HookLifecycleManager {
   /**
    * Fire MESSAGE_RECEIVED hook
    */
-  async onMessageReceived(payload: Omit<MessageReceivedPayload, 'timestamp' | 'event'>) {
+  async onMessageReceived(payload: Omit<MessageReceivedPayload, 'timestamp' | 'event'>): Promise<{ allowed: boolean; results: any[] }> {
+    const p = payload as MessageReceivedPayload;
     const fullPayload: MessageReceivedPayload = {
-      ...payload,
       event: HookEvent.MESSAGE_RECEIVED,
       timestamp: Date.now(),
+      sessionId: p.sessionId,
+      userId: p.userId,
+      message: p.message,
     };
 
     const registry = getGlobalHookRegistry();
@@ -136,11 +156,13 @@ export class HookLifecycleManager {
   /**
    * Fire MESSAGE_SENT hook
    */
-  async onMessageSent(payload: Omit<MessageSentPayload, 'timestamp' | 'event'>) {
+  async onMessageSent(payload: Omit<MessageSentPayload, 'timestamp' | 'event'>): Promise<{ allowed: boolean; results: any[] }> {
+    const p = payload as MessageSentPayload;
     const fullPayload: MessageSentPayload = {
-      ...payload,
       event: HookEvent.MESSAGE_SENT,
       timestamp: Date.now(),
+      sessionId: p.sessionId,
+      message: p.message,
     };
 
     const registry = getGlobalHookRegistry();
@@ -155,11 +177,13 @@ export class HookLifecycleManager {
   /**
    * Fire WORKER_START hook
    */
-  async onWorkerStart(payload: Omit<WorkerStartPayload, 'timestamp' | 'event'>) {
+  async onWorkerStart(payload: Omit<WorkerStartPayload, 'timestamp' | 'event'>): Promise<{ allowed: boolean; results: any[] }> {
+    const p = payload as WorkerStartPayload;
     const fullPayload: WorkerStartPayload = {
-      ...payload,
       event: HookEvent.WORKER_START,
       timestamp: Date.now(),
+      workerId: p.workerId,
+      runtimeType: p.runtimeType,
     };
 
     const registry = getGlobalHookRegistry();
@@ -174,11 +198,12 @@ export class HookLifecycleManager {
   /**
    * Fire WORKER_STOP hook
    */
-  async onWorkerStop(payload: Omit<WorkerStopPayload, 'timestamp' | 'event'>) {
+  async onWorkerStop(payload: Omit<WorkerStopPayload, 'timestamp' | 'event'>): Promise<{ allowed: boolean; results: any[] }> {
+    const p = payload as WorkerStopPayload;
     const fullPayload: WorkerStopPayload = {
-      ...payload,
       event: HookEvent.WORKER_STOP,
       timestamp: Date.now(),
+      workerId: p.workerId,
     };
 
     const registry = getGlobalHookRegistry();
@@ -193,11 +218,13 @@ export class HookLifecycleManager {
   /**
    * Fire AGENT_START hook
    */
-  async onAgentStart(payload: Omit<AgentStartPayload, 'timestamp' | 'event'>) {
+  async onAgentStart(payload: Omit<AgentStartPayload, 'timestamp' | 'event'>): Promise<{ allowed: boolean; results: any[] }> {
+    const p = payload as AgentStartPayload;
     const fullPayload: AgentStartPayload = {
-      ...payload,
       event: HookEvent.AGENT_START,
       timestamp: Date.now(),
+      sessionId: p.sessionId,
+      agentId: p.agentId,
     };
 
     const registry = getGlobalHookRegistry();
@@ -212,11 +239,13 @@ export class HookLifecycleManager {
   /**
    * Fire AGENT_END hook
    */
-  async onAgentEnd(payload: Omit<AgentEndPayload, 'timestamp' | 'event'>) {
+  async onAgentEnd(payload: Omit<AgentEndPayload, 'timestamp' | 'event'>): Promise<{ allowed: boolean; results: any[] }> {
+    const p = payload as AgentEndPayload;
     const fullPayload: AgentEndPayload = {
-      ...payload,
       event: HookEvent.AGENT_END,
       timestamp: Date.now(),
+      sessionId: p.sessionId,
+      agentId: p.agentId,
     };
 
     const registry = getGlobalHookRegistry();
