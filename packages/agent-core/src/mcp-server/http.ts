@@ -3,7 +3,7 @@ import { randomBytes, randomUUID } from 'node:crypto';
 import type { AddressInfo } from 'node:net';
 import { Server as McpServer } from '@modelcontextprotocol/sdk/server/index.js';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
-import type { ToolDefinition } from '../private/common/lib/index.js'';
+import type { ToolDefinition } from '../private/common/lib/index.js';
 import { buildMcpServer } from './server';
 import { kiroExportedTools } from './selection';
 import { readEnvContext, type McpContextEnv } from './context';
