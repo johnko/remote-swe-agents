@@ -1,7 +1,7 @@
 import { Handler } from 'aws-lambda';
 import { z } from 'zod';
 import { CloudWatchClient, PutMetricDataCommand } from '@aws-sdk/client-cloudwatch';
-import { deleteSession, sendWebappEvent } from '@remote-swe-agents/agent-core/lib/index.js';
+import { deleteSession, sendWebappEvent } from '@remote-swe-agents/agent-core/lib';
 
 const cloudwatch = new CloudWatchClient();
 
