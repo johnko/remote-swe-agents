@@ -6,7 +6,8 @@ COPY packages/agent-core/package*.json ./packages/agent-core/
 COPY packages/webapp/package*.json ./packages/webapp/
 RUN --mount=type=cache,target=/root/.npm npm ci
 COPY ./ ./
-RUN cd packages/agent-core && npm run build
+# Build and validate agent-core (catches ESM import issues early)
+RUN cd packages/agent-core && npm run build:validate
 
 ARG SKIP_TS_BUILD=""
 ARG ALLOWED_ORIGIN_HOST=""
@@ -31,6 +32,13 @@ COPY --from=builder /build/packages/webapp/public ./packages/webapp/public
 COPY --from=builder /build/packages/webapp/run.sh ./run.sh
 
 RUN ln -s /tmp/cache ./packages/webapp/.next/cache
+
+# Copy agent-core dist and validate ESM imports work with production dependencies
+COPY --from=builder /build/packages/agent-core/dist ./packages/agent-core/dist
+COPY package*.json ./
+COPY packages/agent-core/package*.json ./packages/agent-core/
+RUN --mount=type=cache,target=/root/.npm npm ci --omit=dev
+RUN cd packages/agent-core && npm run validate:esm
 
 ENTRYPOINT ["sh"]
 CMD ["run.sh"]

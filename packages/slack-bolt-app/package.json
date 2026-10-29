@@ -6,9 +6,11 @@
     "dev": "tsx watch src/local.ts",
     "build": "tsc",
     "bundle": "esbuild src/lambda.ts src/async-handler.ts src/local.ts --bundle --outdir=dist --platform=node --charset=utf8 --external:@node-rs/*",
+    "bundle:validate": "npm run bundle && npm run validate:bundle",
+    "validate:bundle": "node --eval \"const fs = require('fs'); const code = fs.readFileSync('./dist/lambda.js', 'utf8'); if (!code.includes('export') || !code.includes('handler')) { console.error('✗ Missing handler export'); process.exit(1); } console.log('✓ Lambda bundle valid'); console.log('✓ Handler export found');\"",
     "format": "prettier --write './**/*.ts'",
     "format:check": "prettier --check './**/*.ts'",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \\\"Error: no test specified\\\" && exit 1"
   },
   "dependencies": {
     "@aws-crypto/sha256-js": "^5.2.0",

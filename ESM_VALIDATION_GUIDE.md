@@ -8,9 +8,18 @@ Lambda functions use Node.js with strict ESM module resolution, which requires e
 Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/var/task/packages/agent-core/dist/schema/events'
 ```
 
-## Solution: Automated ESM Validation
+## Solution: Automated Validation Across All Lambdas
 
-We use npm scripts to validate ESM imports work correctly during the build process, catching issues before they reach production.
+We use npm scripts to validate imports work correctly during the build process, catching issues before they reach production.
+
+### Lambda Functions with Validation
+
+| Function | Dockerfile | Validation |
+|----------|-----------|-----------|
+| **job** | `docker/job.Dockerfile` | Agent-core ESM + production validation |
+| **slack-bolt-app** | `docker/slack-bolt-app.Dockerfile` | Agent-core ESM + bundle handler export |
+| **webapp** | `docker/webapp.Dockerfile` | Agent-core ESM + production validation |
+| **agent** (worker) | `docker/agent.Dockerfile` | Agent-core ESM validation |
 
 ### 1. For `@remote-swe-agents/agent-core`
 
@@ -31,39 +40,62 @@ npm run build:validate --workspace packages/agent-core
 ✓ ESM validation passed
 ```
 
-### 2. For Lambda Dockerfiles
+### 2. For slack-bolt-app Lambda
 
-All Lambda Dockerfiles should use `build:validate` instead of plain `build`:
+The slack-bolt-app has bundle validation:
 
-```dockerfile
-FROM public.ecr.aws/lambda/nodejs:22 AS builder
-...
-# ✓ GOOD: Validates ESM imports during build
-RUN cd packages/agent-core && npm run build:validate
+```bash
+# Validate bundled handler exports
+npm run validate:bundle --workspace packages/slack-bolt-app
 
-# ✗ BAD: No validation
-RUN cd packages/agent-core && npm run build
+# Bundle with validation
+npm run bundle:validate --workspace packages/slack-bolt-app
 ```
 
-And validate again in the runner stage with production dependencies:
+**Output when passing:**
+```
+✓ Lambda bundle valid
+✓ Handler export found
+```
 
+### 3. For Lambda Dockerfiles
+
+All Lambda Dockerfiles use validation scripts:
+
+**job.Dockerfile:**
 ```dockerfile
-FROM public.ecr.aws/lambda/nodejs:22 AS runner
-...
+# Builder: compile and validate ESM
+RUN cd packages/agent-core && npm run build:validate
+
+# Runner: re-validate with production dependencies
 RUN cd packages/agent-core && npm run validate:esm
 ```
 
-### 3. For New Lambda Functions
+**slack-bolt-app.Dockerfile:**
+```dockerfile
+# Builder: build agent-core and bundle with validation
+RUN cd packages/agent-core && npm run build:validate
+RUN cd packages/slack-bolt-app && npm run bundle:validate
 
-When creating a new Lambda function that imports from `@remote-swe-agents/agent-core`:
+# Runner: final ESM validation
+RUN cd packages/agent-core && npm run validate:esm
+```
 
-1. **Update the Dockerfile** to use `npm run build:validate`
-2. **Test locally without Docker** (for development):
-   ```bash
-   # After building
-   npm run build --workspace packages/agent-core
-   npm run validate:esm --workspace packages/agent-core
-   ```
+**webapp.Dockerfile:**
+```dockerfile
+# Builder: validate agent-core
+RUN cd packages/agent-core && npm run build:validate
+
+# Runner: copy dist and re-validate with production dependencies
+COPY --from=builder /build/packages/agent-core/dist ./packages/agent-core/dist
+RUN cd packages/agent-core && npm run validate:esm
+```
+
+**agent.Dockerfile:**
+```dockerfile
+# Build and validate agent-core
+RUN cd packages/agent-core && npm run build:validate
+```
 
 ### 4. Local Development (Without Docker)
 
@@ -74,17 +106,59 @@ Developers without Docker can test ESM imports directly:
 cd packages/agent-core
 npm run validate:esm
 
+# For slack-bolt-app bundle
+cd packages/slack-bolt-app
+npm run bundle:validate
+
 # Or manually
 node --input-type=module --eval "import('./dist/schema/index.js').then(m => console.log('✓ Imports work'))"
 ```
 
-### 5. Preventing Regressions
+### 5. For New Lambda Functions
+
+When creating a new Lambda function that imports from `@remote-swe-agents/agent-core`:
+
+1. **Update the Dockerfile:**
+   ```dockerfile
+   # Builder stage
+   RUN cd packages/agent-core && npm run build:validate
+   
+   # Runner stage
+   RUN cd packages/agent-core && npm run validate:esm
+   ```
+
+2. **Test locally without Docker:**
+   ```bash
+   npm run build --workspace packages/agent-core
+   npm run validate:esm --workspace packages/agent-core
+   ```
+
+3. **If bundling, add validation:**
+   ```json
+   "scripts": {
+     "bundle:validate": "npm run bundle && npm run validate:bundle"
+   }
+   ```
+
+### 6. Available Scripts
+
+**In `packages/agent-core/package.json`:**
+- `npm run build` - TypeScript compilation only
+- `npm run build:validate` - Compile + validate ESM imports
+- `npm run validate:esm` - Validate without recompiling
+
+**In `packages/slack-bolt-app/package.json`:**
+- `npm run bundle` - esbuild bundling only
+- `npm run bundle:validate` - Bundle + validate handler export
+- `npm run validate:bundle` - Validate without re-bundling
+
+### 7. Preventing Regressions
 
 When modifying files in `packages/agent-core/src/schema/`:
 
 - Always ensure imports include `.js` extensions
 - Run `npm run validate:esm` before committing
-- The Docker build will catch it if you forget
+- All Docker builds will catch it if you forget
 
 **Example (correct):**
 ```typescript
@@ -96,18 +170,7 @@ import { agentStatusSchema } from './agent.js';  // ✓ Has .js
 import { agentStatusSchema } from './agent';     // ✗ Missing .js
 ```
 
-### 6. Available Scripts
-
-In `packages/agent-core/package.json`:
-
-- `npm run build` - TypeScript compilation only
-- `npm run build:validate` - Compile + validate ESM imports
-- `npm run validate:esm` - Validate without recompiling
-- `npm run test` - Run unit tests
-- `npm run format` - Format code
-- `npm run format:check` - Check formatting
-
-### 7. Troubleshooting
+### 8. Troubleshooting
 
 **Q: "Unexpected: too few exports" error**
 - Agent-core's schema module should export ~50+ symbols
@@ -124,10 +187,16 @@ In `packages/agent-core/package.json`:
 - The validation runs differently with clean installs
 - Run `npm ci` locally to match Docker exactly
 
+**Q: slack-bolt-app validation fails**
+- Make sure esbuild has completed successfully
+- Check that dist/lambda.js was created
+- Verify the bundle contains export statements
+
 ---
 
 ## Related Documentation
 
 - **PR #80**: Core fix for ESM imports (all `.js` extensions added)
-- **PR #81**: Build improvements (validation scripts added)
+- **PR #81**: Build improvements (validation scripts added to all Lambdas)
 - Error that triggered this: Lambda session deletion failing with `ERR_MODULE_NOT_FOUND`
+
