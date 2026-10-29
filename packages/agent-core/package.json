@@ -44,10 +44,12 @@
   },
   "scripts": {
     "build": "tsc",
+    "build:validate": "npm run build && npm run validate:esm",
     "watch": "tsc -w",
     "test": "vitest run",
     "format": "prettier --write \"src/**/*.ts\"",
-    "format:check": "prettier --check \"src/**/*.ts\""
+    "format:check": "prettier --check \"src/**/*.ts\"",
+    "validate:esm": "node --input-type=module --eval \"import('./dist/schema/index.js').then(m => { const exports = Object.keys(m); console.log('✓ Schema module imports correctly'); console.log('✓ Exports:', exports.length, 'symbols'); if (exports.length < 30) throw new Error('Unexpected: too few exports'); console.log('✓ ESM validation passed'); }).catch(e => { console.error('✗ ESM validation failed:', e.message); process.exit(1); })\""
   },
   "dependencies": {
     "@aws-sdk/client-bedrock-agentcore": "^3.864.0",

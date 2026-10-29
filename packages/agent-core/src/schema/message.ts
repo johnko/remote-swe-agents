@@ -1,4 +1,4 @@
-import { ModelType } from './model';
+import { ModelType } from './model.js';
 
 export type MessageItem = {
   /**

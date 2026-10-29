@@ -49,7 +49,8 @@ COPY packages/agent-core/package*.json ./packages/agent-core/
 COPY packages/worker/package*.json ./packages/worker/
 RUN npm ci
 COPY ./ ./
-RUN cd packages/agent-core && npm run build
+# Build and validate agent-core (catches ESM import issues early)
+RUN cd packages/agent-core && npm run build:validate
 
 WORKDIR /app/packages/worker
 EXPOSE 8080

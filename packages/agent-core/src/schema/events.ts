@@ -1,6 +1,6 @@
 import z from 'zod';
-import { agentStatusSchema } from './agent';
-import { instanceStatusSchema } from './session';
+import { agentStatusSchema } from './agent.js';
+import { instanceStatusSchema } from './session.js';
 
 export const webappEventSchema = z.discriminatedUnion('type', [
   z.object({
