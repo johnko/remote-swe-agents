@@ -2,6 +2,8 @@
   "name": "@remote-swe-agents/agent-core",
   "version": "1.0.0",
   "type": "module",
+  "main": "./dist/lib/index.js",
+  "types": "./dist/lib/index.d.ts",
   "exports": {
     "./package.json": "./package.json",
     "./lib": {
