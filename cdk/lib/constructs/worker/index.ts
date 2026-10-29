@@ -61,7 +61,7 @@ export class Worker extends Construct {
   public readonly launchTemplate: ec2.LaunchTemplate;
   public readonly bus: WorkerBus;
   public readonly logGroup: logs.LogGroup;
-  public readonly imageBuilder?: WorkerImageBuilder;
+  public readonly imageBuilder: WorkerImageBuilder;
   public readonly agentCoreRuntime: AgentCoreRuntime;
   public readonly eventTrigger: EventTrigger;
   public readonly ec2Role: iam.Role;
@@ -561,17 +561,14 @@ systemctl start myapp
     // Grant event trigger management to AgentCore role
     eventTrigger.grantManage(agentCoreRuntime);
 
-    // Only create EC2 image builder if microVM is not available
-    if (!props.previewMicrovmImageArn) {
-      this.imageBuilder = new WorkerImageBuilder(this, 'ImageBuilder', {
-        vpc,
-        installDependenciesCommand,
-        amiIdParameterName: props.amiIdParameterName,
-        amiIdParameter: props.amiIdParameter,
-        sourceBucket,
-        sourceAssetHash,
-      });
-    }
+    this.imageBuilder = new WorkerImageBuilder(this, 'ImageBuilder', {
+      vpc,
+      installDependenciesCommand,
+      amiIdParameterName: props.amiIdParameterName,
+      amiIdParameter: props.amiIdParameter,
+      sourceBucket,
+      sourceAssetHash,
+    });
 
     props.webappOriginSourceParameter.grantRead(role);
     role.addToPrincipalPolicy(
