@@ -1,5 +1,5 @@
 import yaml from 'js-yaml';
-import { SKILL_NAME_PATTERN, MAX_SKILL_NAME_LENGTH, MAX_SKILL_DESCRIPTION_LENGTH } from '../schema/skill/index.js';
+import { SKILL_NAME_PATTERN, MAX_SKILL_NAME_LENGTH, MAX_SKILL_DESCRIPTION_LENGTH } from '../schema/skill.js';
 
 export interface SkillFrontmatter {
   name: string;

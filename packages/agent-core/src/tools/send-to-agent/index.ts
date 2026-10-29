@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { ToolDefinition, zodToJsonSchemaBody } from '../../private/common/lib/index.js';
-import { sendAgentMessage } from '../../lib/agent-messaging/index.js';
+import { ToolDefinition, zodToJsonSchemaBody } from '../../private/common/lib.js';
+import { sendAgentMessage } from '../../lib/agent-messaging.js';
 
 const inputSchema = z.object({
   targetSessionIds: z.array(z.string()).min(1).describe('One or more session IDs to send the message to.'),

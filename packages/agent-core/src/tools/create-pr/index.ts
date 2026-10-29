@@ -1,11 +1,11 @@
 import { z } from 'zod';
 import { executeCommand } from '../command-execution/index.js';
-import { ToolDefinition, zodToJsonSchemaBody } from '../../private/common/lib/index.js';
+import { ToolDefinition, zodToJsonSchemaBody } from '../../private/common/lib.js';
 import { PutCommand, QueryCommand } from '@aws-sdk/lib-dynamodb';
-import { ddb, TableName } from '../../lib/aws/ddb/index.js';
+import { ddb, TableName } from '../../lib/aws/ddb.js';
 import { ciTool } from '../ci/index.js';
-import { appendWorkerIdMetadata } from '../../lib/worker-id/index.js';
-import { getWebappSessionUrl } from '../../lib/webapp-origin/index.js';
+import { appendWorkerIdMetadata } from '../../lib/worker-id.js';
+import { getWebappSessionUrl } from '../../lib/webapp-origin.js';
 import { GlobalPreferences } from '../../schema/index.js';
 
 const inputSchema = z.object({

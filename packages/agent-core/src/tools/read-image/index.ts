@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { ToolDefinition, zodToJsonSchemaBody } from '../../private/common/lib/index.js';
+import { ToolDefinition, zodToJsonSchemaBody } from '../../private/common/lib.js';
 import { promises as fs } from 'fs';
 import sharp from 'sharp';
 

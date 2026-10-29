@@ -7,7 +7,7 @@ import {
   MAX_LESSONS_PER_USER,
   LESSON_INJECTION_TOP_K,
   LESSON_RELEVANCE_THRESHOLD,
-} from '../schema/lesson/index.js';
+} from '../schema/lesson.js';
 import { randomBytes } from 'crypto';
 import { embedText, encodeEmbedding, decodeEmbedding, cosineSimilarity } from './embeddings.js';
 

@@ -1,7 +1,7 @@
 import { z } from 'zod';
-import { ToolDefinition, zodToJsonSchemaBody } from '../../private/common/lib/index.js';
-import { sendFileToSlack } from '../../lib/slack/index.js';
-import { s3, BucketName } from '../../lib/aws/s3/index.js';
+import { ToolDefinition, zodToJsonSchemaBody } from '../../private/common/lib.js';
+import { sendFileToSlack } from '../../lib/slack.js';
+import { s3, BucketName } from '../../lib/aws/s3.js';
 import { S3Client, PutObjectCommand, GetObjectCommand, GetBucketLocationCommand } from '@aws-sdk/client-s3';
 import { readFileSync, statSync, writeFileSync } from 'fs';
 import { extname, basename } from 'path';

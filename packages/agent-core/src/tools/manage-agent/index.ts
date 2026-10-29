@@ -1,12 +1,12 @@
 import { z } from 'zod';
-import { ToolDefinition, zodToJsonSchemaBody } from '../../private/common/lib/index.js';
+import { ToolDefinition, zodToJsonSchemaBody } from '../../private/common/lib.js';
 import {
   getAllCustomAgents,
   getCustomAgent,
   createCustomAgent,
   updateCustomAgent,
   deleteCustomAgent,
-} from '../../lib/custom-agent/index.js';
+} from '../../lib/custom-agent.js';
 import { modelTypeSchema, runtimeTypeSchema, inferenceModeSchema, kiroModelSchema } from '../../schema/index.js';
 import { savePendingCreateAgent } from '../confirm-create-agent/index.js';
 

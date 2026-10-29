@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { ToolDefinition, zodToJsonSchemaBody } from '../../private/common/lib/index.js';
-import { initializeTodoList, formatTodoList } from '../../lib/todo/index.js';
+import { ToolDefinition, zodToJsonSchemaBody } from '../../private/common/lib.js';
+import { initializeTodoList, formatTodoList } from '../../lib/todo.js';
 import { fileEditTool } from '../editor/index.js';
 
 const todoInitInputSchema = z.object({

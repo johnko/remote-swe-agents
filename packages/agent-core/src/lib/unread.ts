@@ -1,6 +1,6 @@
 import { UpdateCommand, QueryCommand, GetCommand, paginateQuery } from '@aws-sdk/lib-dynamodb';
 import { ddb, TableName, batchWriteWithRetry } from './aws/index.js';
-import { UnreadItem } from '../schema/unread/index.js';
+import { UnreadItem } from '../schema/unread.js';
 
 const pk = (userId: string) => `unread-${userId}`;
 

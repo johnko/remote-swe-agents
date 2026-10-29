@@ -1,5 +1,5 @@
 import { BedrockRuntimeClient, InvokeModelCommand } from '@aws-sdk/client-bedrock-runtime';
-import { LESSON_EMBEDDING_DIMENSIONS, LESSON_EMBEDDING_MODEL_ID } from '../schema/lesson/index.js';
+import { LESSON_EMBEDDING_DIMENSIONS, LESSON_EMBEDDING_MODEL_ID } from '../schema/lesson.js';
 
 /**
  * Text embedding support for the lesson (memory) store.

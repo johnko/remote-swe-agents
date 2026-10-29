@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { ToolDefinition, zodToJsonSchemaBody } from '../../private/common/lib/index.js';
-import { getSession, reparentSessions } from '../../lib/sessions/index.js';
+import { ToolDefinition, zodToJsonSchemaBody } from '../../private/common/lib.js';
+import { getSession, reparentSessions } from '../../lib/sessions.js';
 
 const inputSchema = z.object({
   sessionId: z.string().describe('The session ID to reparent (move under a new parent).'),
