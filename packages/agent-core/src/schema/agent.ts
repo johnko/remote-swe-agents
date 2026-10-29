@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { inferenceModeSchema, kiroModelSchema, ModelType, modelTypeSchema } from './model';
+import { inferenceModeSchema, kiroModelSchema, ModelType, modelTypeSchema } from './model.js';
 
 export const agentStatusSchema = z.union([z.literal('working'), z.literal('pending'), z.literal('completed')]);
 export const runtimeTypeSchema = z.union([z.literal('ec2'), z.literal('agent-core')]);

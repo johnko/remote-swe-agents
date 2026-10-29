@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { inferenceModeSchema, kiroModelSchema, modelTypeSchema } from './model';
+import { inferenceModeSchema, kiroModelSchema, modelTypeSchema } from './model.js';
 
 export const userPreferencesSchema = z.object({
   PK: z.literal('user-preferences'),

@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { agentStatusSchema, runtimeTypeSchema } from './agent';
-import { inferenceModeSchema, kiroModelSchema, modelTypeSchema } from './model';
+import { agentStatusSchema, runtimeTypeSchema } from './agent.js';
+import { inferenceModeSchema, kiroModelSchema, modelTypeSchema } from './model.js';
 
 export const instanceStatusSchema = z.union([
   z.literal('starting'),

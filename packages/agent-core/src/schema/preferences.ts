@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { modelTypeSchema } from './model';
+import { modelTypeSchema } from './model.js';
 
 export const globalPreferencesSchema = z.object({
   PK: z.literal('global-config'),
