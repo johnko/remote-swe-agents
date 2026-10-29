@@ -6,6 +6,13 @@ export interface CancellationToken {
   readonly isCancelled: boolean;
 }
 
+export interface ToolContext {
+  readonly workerId: string;
+  readonly toolUseId: string;
+  readonly globalPreferences: GlobalPreferences;
+  readonly cancellationToken?: CancellationToken;
+}
+
 export type ToolDefinition<Input> = {
   /**
    * Name of the tool. This is the identifier of the tool for the agent.
@@ -13,12 +20,7 @@ export type ToolDefinition<Input> = {
   readonly name: string;
   readonly handler: (
     input: Input,
-    context: {
-      workerId: string;
-      toolUseId: string;
-      globalPreferences: GlobalPreferences;
-      cancellationToken?: CancellationToken;
-    }
+    context: ToolContext
   ) => Promise<string | ToolResultContentBlock[]>;
   readonly schema: ZodType<Input>;
   readonly toolSpec: () => Promise<NonNullable<Tool['toolSpec']>>;

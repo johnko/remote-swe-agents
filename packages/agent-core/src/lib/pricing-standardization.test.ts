@@ -199,7 +199,7 @@ describe('Pricing Standardization Tests', () => {
     test('all new models support appropriate regions', () => {
       const newModels = ['qwen3-coder-30b-a3b', 'gpt-oss-20b', 'gpt-oss-120b'];
       for (const modelType of newModels) {
-        const config = modelConfigs[modelType as any];
+        const config = modelConfigs[modelType as keyof typeof modelConfigs];
         expect(config.supportedCriProfiles.length).toBeGreaterThan(0);
       }
     });
@@ -378,7 +378,7 @@ describe('Pricing Standardization Tests', () => {
       ];
 
       for (const testCase of testCases) {
-        const config = modelConfigs[testCase.modelKey as any];
+        const config = modelConfigs[testCase.modelKey as keyof typeof modelConfigs];
         const cost = calculateCost(testCase.modelId, 1_000_000, 1_000_000, 100_000, 50_000);
         const expectedCost =
           (1_000_000 * config.pricing.input +
