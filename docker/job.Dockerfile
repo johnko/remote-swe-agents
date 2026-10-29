@@ -7,7 +7,7 @@ RUN --mount=type=cache,target=/root/.npm npm ci
 COPY ./ ./
 # Build agent-core and validate ESM imports work (catches module resolution issues early)
 RUN cd packages/agent-core && npm run build:validate
-RUN cd packages/webapp && npx esbuild src/jobs/*.ts --bundle --outdir=dist --platform=node --format=esm --out-extension:.js=.mjs --charset=utf8 --packages=external
+RUN cd packages/webapp && npx esbuild src/jobs/*.ts --bundle --outdir=dist --platform=node --format=esm --out-extension:.js=.mjs --charset=utf8
 
 FROM public.ecr.aws/lambda/nodejs:22 AS runner
 
