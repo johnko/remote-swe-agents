@@ -511,6 +511,8 @@ describe('listAgentsTool - Integration with getAllCustomAgents', () => {
     expect(parsed).toHaveLength(150);
     expect(parsed[0].name).toBe('Agent 0');
     expect(parsed[149].name).toBe('Agent 149');
+  });
+});
 
 describe('iconKey feature', () => {
   const baseInput = {
