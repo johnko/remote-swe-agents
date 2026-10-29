@@ -1,5 +1,5 @@
 import { InferenceMode, KiroModelId, ModelType, modelConfigs, kiroModelConfigs } from '../schema/index.js';
-import { defaultAgentConfig } from '../schema/agent/index.js';
+import { defaultAgentConfig } from '../schema/agent.js';
 
 /**
  * Flat model-field input that a single source (session, custom agent, or user

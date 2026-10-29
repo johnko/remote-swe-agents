@@ -1,7 +1,7 @@
 import { setTimeout } from 'timers/promises';
 import { executeCommand } from '../command-execution/index.js';
 import { z } from 'zod';
-import { ToolDefinition, zodToJsonSchemaBody } from '../../private/common/lib/index.js';
+import { ToolDefinition, zodToJsonSchemaBody } from '../../private/common/lib.js';
 
 const inputSchema = z.object({
   owner: z.string().describe('GitHub repository owner'),

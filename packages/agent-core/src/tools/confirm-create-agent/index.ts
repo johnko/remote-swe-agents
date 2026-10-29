@@ -2,8 +2,8 @@ import { join } from 'path';
 import { tmpdir } from 'os';
 import { writeFileSync, readFileSync, unlinkSync } from 'fs';
 import { z } from 'zod';
-import { ToolDefinition, zodToJsonSchemaBody } from '../../private/common/lib/index.js';
-import { createCustomAgent } from '../../lib/custom-agent/index.js';
+import { ToolDefinition, zodToJsonSchemaBody } from '../../private/common/lib.js';
+import { createCustomAgent } from '../../lib/custom-agent.js';
 import { CustomAgent } from '../../schema/index.js';
 
 const PENDING_DIR = tmpdir();

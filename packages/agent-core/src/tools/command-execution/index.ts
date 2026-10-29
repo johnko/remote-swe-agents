@@ -5,7 +5,7 @@ import { homedir, tmpdir } from 'os';
 import { join } from 'path';
 import { mkdirSync, writeFileSync, unlinkSync } from 'fs';
 import { z } from 'zod';
-import { CancellationToken, ToolDefinition, truncate, zodToJsonSchemaBody } from '../../private/common/lib/index.js';
+import { CancellationToken, ToolDefinition, truncate, zodToJsonSchemaBody } from '../../private/common/lib.js';
 import { generateSuggestion } from './suggestion.js';
 
 const inputSchema = z.object({

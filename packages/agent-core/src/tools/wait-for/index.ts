@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { CancellationToken, ToolDefinition, truncate, zodToJsonSchemaBody } from '../../private/common/lib/index.js';
+import { CancellationToken, ToolDefinition, truncate, zodToJsonSchemaBody } from '../../private/common/lib.js';
 import { executeCommand, BACKGROUND_CANCELLATION_MARKER } from '../command-execution/index.js';
 
 /**

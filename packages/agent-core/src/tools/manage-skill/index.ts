@@ -1,15 +1,15 @@
 import { z } from 'zod';
-import { ToolDefinition, zodToJsonSchemaBody } from '../../private/common/lib/index.js';
+import { ToolDefinition, zodToJsonSchemaBody } from '../../private/common/lib.js';
 import {
   listSkills,
   getSkill,
   registerSkillFromFiles,
   updateSkillFromFiles,
   deleteSkillRecord,
-} from '../../lib/skills/index.js';
-import { deleteSkillFiles } from '../../lib/skill-s3/index.js';
-import { getSession } from '../../lib/sessions/index.js';
-import { SKILL_NAME_PATTERN, MAX_SKILL_NAME_LENGTH } from '../../schema/skill/index.js';
+} from '../../lib/skills.js';
+import { deleteSkillFiles } from '../../lib/skill-s3.js';
+import { getSession } from '../../lib/sessions.js';
+import { SKILL_NAME_PATTERN, MAX_SKILL_NAME_LENGTH } from '../../schema/skill.js';
 
 const resolveUserId = async (workerId: string): Promise<string> => {
   const session = await getSession(workerId);

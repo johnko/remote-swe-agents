@@ -1,9 +1,9 @@
 import { z } from 'zod';
 import { mkdirSync, writeFileSync } from 'fs';
 import path from 'path';
-import { ToolDefinition, zodToJsonSchemaBody } from '../../private/common/lib/index.js';
-import { getSession, getDescendantSessions } from '../../lib/sessions/index.js';
-import { getConversationHistory } from '../../lib/messages/index.js';
+import { ToolDefinition, zodToJsonSchemaBody } from '../../private/common/lib.js';
+import { getSession, getDescendantSessions } from '../../lib/sessions.js';
+import { getConversationHistory } from '../../lib/messages.js';
 import type { SessionItem, MessageItem } from '../../schema/index.js';
 
 const inputSchema = z.object({

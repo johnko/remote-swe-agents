@@ -1,4 +1,4 @@
-import type { ToolDefinition } from '../private/common/lib/index.js';
+import type { ToolDefinition } from '../private/common/lib.js';
 
 import { createPRTool } from '../tools/create-pr/index.js';
 import { createNewSessionTool } from '../tools/create-session/index.js';

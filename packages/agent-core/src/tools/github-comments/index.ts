@@ -1,8 +1,8 @@
 import { z } from 'zod';
-import { ToolDefinition, zodToJsonSchemaBody } from '../../private/common/lib/index.js';
+import { ToolDefinition, zodToJsonSchemaBody } from '../../private/common/lib.js';
 import { Octokit } from '@octokit/rest';
-import { authorizeGitHubCli } from '../command-execution/github/index.js';
-import { appendWorkerIdMetadata } from '../../lib/worker-id/index.js';
+import { authorizeGitHubCli } from '../command-execution/github.js';
+import { appendWorkerIdMetadata } from '../../lib/worker-id.js';
 
 const getPRCommentsSchema = z.object({
   owner: z.string().describe('GitHub repository owner'),

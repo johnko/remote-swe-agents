@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { existsSync, readFileSync, writeFileSync } from 'fs';
-import { ToolDefinition, zodToJsonSchemaBody } from '../../private/common/lib/index.js';
+import { ToolDefinition, zodToJsonSchemaBody } from '../../private/common/lib.js';
 
 const inputSchema = z.object({
   filePath: z.string().describe('The absolute path to the file to modify (must be absolute, not relative)'),

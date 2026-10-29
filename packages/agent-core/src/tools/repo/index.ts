@@ -3,8 +3,8 @@ import { randomBytes } from 'crypto';
 import { join } from 'path';
 import { existsSync } from 'fs';
 import { DefaultWorkingDirectory, executeCommand } from '../command-execution/index.js';
-import { ToolDefinition, zodToJsonSchemaBody } from '../../private/common/lib/index.js';
-import { writeMetadata } from '../../lib/metadata/index.js';
+import { ToolDefinition, zodToJsonSchemaBody } from '../../private/common/lib.js';
+import { writeMetadata } from '../../lib/metadata.js';
 
 const inputSchema = z.object({
   owner: z.string().describe('GitHub repository owner'),

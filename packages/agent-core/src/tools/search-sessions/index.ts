@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { ToolDefinition, zodToJsonSchemaBody } from '../../private/common/lib/index.js';
-import { searchSessionContent, SearchScope } from '../../lib/search-sessions/index.js';
+import { ToolDefinition, zodToJsonSchemaBody } from '../../private/common/lib.js';
+import { searchSessionContent, SearchScope } from '../../lib/search-sessions.js';
 
 const inputSchema = z.object({
   query: z.string().min(1).max(200).describe('The keyword or phrase to search for (case-insensitive partial match).'),

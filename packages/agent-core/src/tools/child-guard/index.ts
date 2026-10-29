@@ -2,9 +2,9 @@ import { join } from 'path';
 import { tmpdir } from 'os';
 import { writeFileSync, readFileSync, unlinkSync } from 'fs';
 import { z } from 'zod';
-import { ToolDefinition, zodToJsonSchemaBody } from '../../private/common/lib/index.js';
-import { getSession } from '../../lib/sessions/index.js';
-import { getConversationHistory } from '../../lib/messages/index.js';
+import { ToolDefinition, zodToJsonSchemaBody } from '../../private/common/lib.js';
+import { getSession } from '../../lib/sessions.js';
+import { getConversationHistory } from '../../lib/messages.js';
 import type { ToolResultContentBlock } from '@aws-sdk/client-bedrock-runtime';
 
 type ToolContext = {
