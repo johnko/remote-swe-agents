@@ -436,7 +436,7 @@ describe('listAgentsTool - Integration with getAllCustomAgents', () => {
 
     // WHEN
     const { listAgentsTool } = await import('./index');
-    const result = await listAgentsTool.handler({}, context);
+    const result = (await listAgentsTool.handler({}, context)) as string;
 
     // THEN
     expect(result).toContain('Test Agent 1');
@@ -473,7 +473,7 @@ describe('listAgentsTool - Integration with getAllCustomAgents', () => {
 
     // WHEN
     const { listAgentsTool } = await import('./index');
-    const result = await listAgentsTool.handler({}, context);
+    const result = (await listAgentsTool.handler({}, context)) as string;
 
     // THEN
     const parsed = JSON.parse(result);
@@ -504,7 +504,7 @@ describe('listAgentsTool - Integration with getAllCustomAgents', () => {
 
     // WHEN
     const { listAgentsTool } = await import('./index');
-    const result = await listAgentsTool.handler({}, context);
+    const result = (await listAgentsTool.handler({}, context)) as string;
 
     // THEN
     const parsed = JSON.parse(result);
@@ -767,7 +767,7 @@ describe('iconKey feature', () => {
         iconKey: 's3://bucket/icon.png',
       });
 
-      const result = await getAgentTool.handler({ agentId: 'agent-1' } as any, context);
+      const result = (await getAgentTool.handler({ agentId: 'agent-1' } as any, context)) as string;
       const parsed = JSON.parse(result);
 
       expect(parsed.iconKey).toBe('s3://bucket/icon.png');
@@ -781,8 +781,8 @@ describe('iconKey feature', () => {
         iconKey,
       });
 
-      const result1 = await getAgentTool.handler({ agentId: 'agent-1' } as any, context);
-      const result2 = await getAgentTool.handler({ agentId: 'agent-1' } as any, context);
+      const result1 = (await getAgentTool.handler({ agentId: 'agent-1' } as any, context)) as string;
+      const result2 = (await getAgentTool.handler({ agentId: 'agent-1' } as any, context)) as string;
 
       const parsed1 = JSON.parse(result1);
       const parsed2 = JSON.parse(result2);
@@ -801,7 +801,7 @@ describe('iconKey feature', () => {
         iconKey: testIconKey,
       });
 
-      const result = await getAgentTool.handler({ agentId: 'agent-with-icon' } as any, context);
+      const result = (await getAgentTool.handler({ agentId: 'agent-with-icon' } as any, context)) as string;
       const parsed = JSON.parse(result);
 
       expect(parsed.id).toBe('agent-with-icon');
@@ -849,7 +849,7 @@ describe('iconKey feature', () => {
         iconKey,
       });
 
-      const result = await getAgentTool.handler({ agentId: 'new-agent' } as any, context);
+      const result = (await getAgentTool.handler({ agentId: 'new-agent' } as any, context)) as string;
       const parsed = JSON.parse(result);
 
       expect(parsed.iconKey).toBe(iconKey);
@@ -897,7 +897,7 @@ describe('iconKey feature', () => {
         iconKey: updatedIcon,
       });
 
-      const result = await getAgentTool.handler({ agentId: 'lifecycle-agent' } as any, context);
+      const result = (await getAgentTool.handler({ agentId: 'lifecycle-agent' } as any, context)) as string;
       const parsed = JSON.parse(result);
 
       expect(parsed.iconKey).toBe(updatedIcon);

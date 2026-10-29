@@ -1,6 +1,6 @@
 import { describe, expect, test, vi, beforeEach } from 'vitest';
 import { uploadAgentIconTool } from './index.js';
-import type { ToolContext } from '../../private/common/types.js';
+import type { ToolContext } from '../../private/common/lib.js';
 
 const mockS3Send = vi.fn();
 const mockRandomBytes = vi.fn();
@@ -167,8 +167,8 @@ describe('uploadAgentIconTool', () => {
     );
 
     // Extract the hex IDs from the results
-    const match1 = result1.match(/worker-1\/([a-f0-9]+)\.png/);
-    const match2 = result2.match(/worker-1\/([a-f0-9]+)\.png/);
+    const match1 = (result1 as string).match(/worker-1\/([a-f0-9]+)\.png/);
+    const match2 = (result2 as string).match(/worker-1\/([a-f0-9]+)\.png/);
     
     expect(match1).toBeTruthy();
     expect(match2).toBeTruthy();
