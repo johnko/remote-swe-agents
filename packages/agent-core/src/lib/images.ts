@@ -6,7 +6,7 @@ import { basename, extname } from 'path';
 // `./attachments` package export) because the webapp client bundle
 // cannot import the `./lib` barrel — its other members transitively
 // pull in Node-only deps (`child_process`, `sharp`).
-export { buildAttachmentSentinel, parseAttachmentSentinel, type AttachmentSentinelPayload } from '@remote-swe-agents/agent-core/attachments';
+export { buildAttachmentSentinel, parseAttachmentSentinel, type AttachmentSentinelPayload } from '../attachments';
 
 export const getAttachedImageKey = (workerId: string, toolUseId: string, filePath: string) => {
   const ext = extname(filePath);
