@@ -31,11 +31,9 @@ export class AsyncJob extends Construct {
     });
 
     const handler = new DockerImageFunction(this, 'Handler', {
-      // The bundled handler is emitted by esbuild as `async-job-runner.js`
-      // (see docker/job.Dockerfile). The previous `async-handler.handler`
-      // entrypoint did not exist in the webapp bundle, so every invocation
-      // failed to start; correcting it here makes the async job path functional.
-      code: image.toLambdaDockerImageCode({ cmd: ['async-job-runner.mjs.handler'] }),
+      // Use a CommonJS wrapper (handler.cjs) that properly loads the ESM async-job-runner.mjs
+      // This wrapper handles dynamic import of the ESM module and delegates invocations to it.
+      code: image.toLambdaDockerImageCode({ cmd: ['handler.cjs'] }),
       memorySize: 256,
       timeout: Duration.minutes(10),
       architecture: Architecture.ARM_64,
