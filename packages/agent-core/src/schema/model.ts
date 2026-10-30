@@ -417,7 +417,7 @@ export const modelConfigs: Record<ModelType, z.infer<typeof modelConfigSchema>> 
   },
   'gpt-6-luna': {
     name: 'GPT-6 Luna',
-    modelId: 'us.openai.gpt-6-luna',
+    modelId: 'openai.gpt-6-luna',
     maxOutputTokens: 128_000,
     maxInputTokens: 1_050_000,
     cacheSupport: ['system', 'message'],
