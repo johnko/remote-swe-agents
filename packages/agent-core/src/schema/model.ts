@@ -59,6 +59,7 @@ export const modelTypeList = [
   'qwen3-coder-30b-a3b',
   'kimi-k2.5',
   'nemotron-super-120b',
+  'grok-4.7',
 ] as const;
 export const modelTypeSchema = z.enum(modelTypeList);
 export type ModelType = z.infer<typeof modelTypeSchema>;
@@ -519,6 +520,17 @@ export const modelConfigs: Record<ModelType, z.infer<typeof modelConfigSchema>> 
     toolChoiceSupport: ['auto'],
     supportedCriProfiles: ['us'],
     pricing: { input: 0.15, output: 0.65, cacheRead: 0.0, cacheWrite: 0.0 },
+  },
+  'grok-4.7': {
+    name: 'xAI Grok 4.7',
+    modelId: 'xai.grok-4.7',
+    maxOutputTokens: 128_000,
+    maxInputTokens: 524_288,
+    cacheSupport: [],
+    reasoningSupport: true,
+    toolChoiceSupport: ['auto'],
+    supportedCriProfiles: ['us'],
+    pricing: { input: 2.0, output: 6.0, cacheRead: 0.0, cacheWrite: 0.0 },
   },
 };
 
