@@ -526,7 +526,7 @@ export const modelConfigs: Record<ModelType, z.infer<typeof modelConfigSchema>> 
     modelId: 'xai.grok-4.7',
     maxOutputTokens: 128_000,
     maxInputTokens: 524_288,
-    cacheSupport: [],
+    cacheSupport: ['message'],
     reasoningSupport: true,
     toolChoiceSupport: ['auto'],
     supportedCriProfiles: ['us'],
