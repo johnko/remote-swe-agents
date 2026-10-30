@@ -605,6 +605,7 @@ systemctl start myapp
     role.addToPrincipalPolicy(
       new iam.PolicyStatement({
         actions: [
+          'bedrock:ListFoundationModels',
           'cloudformation:DescribeStackEvents',
           'cloudformation:DescribeStackResource',
           'ecr:DescribeImages',
