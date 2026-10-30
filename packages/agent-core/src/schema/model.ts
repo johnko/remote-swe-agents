@@ -530,7 +530,7 @@ export const modelConfigs: Record<ModelType, z.infer<typeof modelConfigSchema>> 
     reasoningSupport: true,
     toolChoiceSupport: ['auto'],
     supportedCriProfiles: ['us'],
-    pricing: { input: 2.0, output: 6.0, cacheRead: 0.0, cacheWrite: 0.0 },
+    pricing: { input: 2.2, output: 6.6, cacheRead: 0.55, cacheWrite: 0.0 },
   },
 };
 
