@@ -169,8 +169,11 @@ export class Worker extends Construct {
       sources: [Source.asset(assetProps.path, assetProps)],
     });
 
-    // Create a list of managed policies with the base SSM policy
-    const managedPolicies = [iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonSSMManagedInstanceCore')];
+    // Create a list of managed policies with the base SSM policy and ViewOnlyAccess for troubleshooting
+    const managedPolicies = [
+      iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonSSMManagedInstanceCore'),
+      iam.ManagedPolicy.fromAwsManagedPolicyName('job-function/ViewOnlyAccess'),
+    ];
 
     // Add any additional AWS managed policies if specified
     if (props.additionalManagedPolicies && props.additionalManagedPolicies.length > 0) {
