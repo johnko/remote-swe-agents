@@ -133,6 +133,7 @@ export class AgentCoreRuntime extends Construct implements IGrantable {
     role.addToPrincipalPolicy(
       new PolicyStatement({
         actions: [
+          'bedrock:ListFoundationModels',
           'cloudformation:DescribeStackEvents',
           'cloudformation:DescribeStackResource',
           'ecr:DescribeImages',
