@@ -169,8 +169,11 @@ export class Worker extends Construct {
       sources: [Source.asset(assetProps.path, assetProps)],
     });
 
-    // Create a list of managed policies with the base SSM policy
-    const managedPolicies = [iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonSSMManagedInstanceCore')];
+    // Create a list of managed policies with the base SSM policy and ViewOnlyAccess for troubleshooting
+    const managedPolicies = [
+      iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonSSMManagedInstanceCore'),
+      iam.ManagedPolicy.fromAwsManagedPolicyName('job-function/ViewOnlyAccess'),
+    ];
 
     // Add any additional AWS managed policies if specified
     if (props.additionalManagedPolicies && props.additionalManagedPolicies.length > 0) {
@@ -595,6 +598,29 @@ systemctl start myapp
             'aws:ARN': '${ec2:SourceInstanceARN}',
           },
         },
+      })
+    );
+    // Add troubleshooting permissions for AWS environment diagnostics.
+    // Keep in sync with AgentCoreRuntime troubleshooting permissions in agent-core-runtime.ts
+    role.addToPrincipalPolicy(
+      new iam.PolicyStatement({
+        actions: [
+          'cloudformation:DescribeStackEvents',
+          'cloudformation:DescribeStackResource',
+          'lambda:GetFunction',
+          'lambda:GetFunctionCode',
+          'logs:DescribeLogStreams',
+          'logs:DescribeLogGroups',
+          'logs:GetLogEvents',
+          'logs:FilterLogEvents',
+          's3:ListBucket',
+          'logs:GetLogEvents',
+          's3:GetBucketLocation',
+          's3:GetBucketVersioning',
+          's3:ListBucket',
+          'ssm:DescribeParameters',
+        ],
+        resources: ['*'],
       })
     );
     sourceBucket.grantRead(role);

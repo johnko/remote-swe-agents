@@ -129,16 +129,21 @@ export class AgentCoreRuntime extends Construct implements IGrantable {
     );
 
     // Add troubleshooting permissions for AWS environment diagnostics
+    // Keep in sync with Worker troubleshooting permissions in index.ts
     role.addToPrincipalPolicy(
       new PolicyStatement({
         actions: [
+          'cloudformation:DescribeStackEvents',
+          'cloudformation:DescribeStackResource',
+          'lambda:GetFunction',
+          'lambda:GetFunctionCode',
           'logs:DescribeLogStreams',
           'logs:DescribeLogGroups',
-          'logs:GetLogEvents',
           'logs:FilterLogEvents',
-          's3:ListBucket',
+          'logs:GetLogEvents',
           's3:GetBucketLocation',
           's3:GetBucketVersioning',
+          's3:ListBucket',
           'ssm:DescribeParameters',
         ],
         resources: ['*'],
