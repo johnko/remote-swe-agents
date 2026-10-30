@@ -48,3 +48,4 @@ export * from './user-delivery-dedup.js';
 export * from './self-narration-filter.js';
 export * from './self-narration-delivery.js';
 export * from './rewind-filter.js';
+export * from './hooks/index.js';
