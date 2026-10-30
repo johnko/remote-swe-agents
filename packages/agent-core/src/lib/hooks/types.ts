@@ -167,7 +167,7 @@ export interface HookResponse {
 }
 
 /**
- * Hook definition in .cursor/hooks.json
+ * Hook definition in .agents/hooks.json
  */
 export interface HookDefinition {
   name: string;

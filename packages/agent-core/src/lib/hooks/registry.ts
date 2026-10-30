@@ -10,7 +10,7 @@ export class HookRegistry {
   private hooksByEvent: Map<HookEvent, RegisteredHook[]> = new Map();
   private configPath: string;
 
-  constructor(configPath: string = '.cursor/hooks.json') {
+  constructor(configPath: string = '.agents/hooks.json') {
     this.configPath = configPath;
     // Initialize event map
     Object.values(HookEvent).forEach((event) => {
@@ -19,7 +19,7 @@ export class HookRegistry {
   }
 
   /**
-   * Load hooks from .cursor/hooks.json configuration file
+   * Load hooks from .agents/hooks.json configuration file
    */
   async loadFromFile(projectRoot: string = process.cwd()): Promise<void> {
     try {

@@ -43,7 +43,7 @@ Hooks are inspired by [Cursor's hooks system](https://cursor.com/docs/hooks) and
 
 ## Hook Configuration
 
-Define hooks in `.cursor/hooks.json` at the project root:
+Define hooks in `.agents/hooks.json` at the project root:
 
 ```json
 {
@@ -315,7 +315,7 @@ import {
   initializeHookRegistry,
 } from '@remote-swe-agents/agent-core';
 
-// Initialize from .cursor/hooks.json
+// Initialize from .agents/hooks.json
 const registry = await initializeHookRegistry();
 
 // Or register hooks programmatically
@@ -365,7 +365,7 @@ Hooks are integrated into rswea's core lifecycle points:
 
 ### Hook not firing
 
-1. Check `.cursor/hooks.json` exists and is valid JSON
+1. Check `.agents/hooks.json` exists and is valid JSON
 2. Verify hook is `enabled: true`
 3. Check hook event matches the lifecycle point
 4. Review rswea logs for hook registration
