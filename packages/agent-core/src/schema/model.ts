@@ -417,14 +417,14 @@ export const modelConfigs: Record<ModelType, z.infer<typeof modelConfigSchema>> 
   },
   'gpt-6-luna': {
     name: 'GPT-6 Luna',
-    modelId: 'us.openai.gpt-6-luna',
+    modelId: 'openai.gpt-6-luna',
     maxOutputTokens: 128_000,
     maxInputTokens: 1_050_000,
     cacheSupport: ['system', 'message'],
     reasoningSupport: false,
     toolChoiceSupport: ['auto'],
-    supportsCriProfiles: true,
-    supportedCriProfiles: ['us'],
+    supportsCriProfiles: false,
+    supportedCriProfiles: [],
     pricing: { input: 0.22, output: 0.55, cacheRead: 0.011, cacheWrite: 0.1375 },
   },
   opus4: {
