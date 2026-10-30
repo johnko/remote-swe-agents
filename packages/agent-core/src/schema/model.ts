@@ -60,6 +60,7 @@ export const modelTypeList = [
   'kimi-k2.5',
   'nemotron-super-120b',
   'grok-4.7',
+  'gemma-3-27b',
 ] as const;
 export const modelTypeSchema = z.enum(modelTypeList);
 export type ModelType = z.infer<typeof modelTypeSchema>;
@@ -531,6 +532,17 @@ export const modelConfigs: Record<ModelType, z.infer<typeof modelConfigSchema>> 
     toolChoiceSupport: ['auto'],
     supportedCriProfiles: ['us'],
     pricing: { input: 2.2, output: 6.6, cacheRead: 0.55, cacheWrite: 0.0 },
+  },
+  'gemma-3-27b': {
+    name: 'Google Gemma 3 27B',
+    modelId: 'google.gemma-3-27b-pt',
+    maxOutputTokens: 16_384,
+    maxInputTokens: 128_000,
+    cacheSupport: [],
+    reasoningSupport: false,
+    toolChoiceSupport: ['auto'],
+    supportedCriProfiles: ['us'],
+    pricing: { input: 0.23, output: 0.38, cacheRead: 0.0, cacheWrite: 0.0 },
   },
 };
 
