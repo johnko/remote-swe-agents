@@ -57,6 +57,7 @@ export const modelTypeList = [
   'gpt-oss-20b',
   'gpt-6-luna',
   'qwen3-coder-30b-a3b',
+  'kimi-k2.5',
 ] as const;
 export const modelTypeSchema = z.enum(modelTypeList);
 export type ModelType = z.infer<typeof modelTypeSchema>;
@@ -495,6 +496,17 @@ export const modelConfigs: Record<ModelType, z.infer<typeof modelConfigSchema>> 
     toolChoiceSupport: ['any', 'auto', 'tool'],
     supportedCriProfiles: ['us'],
     pricing: { input: 0.15, output: 0.6, cacheRead: 0.0, cacheWrite: 0.0 },
+  },
+  'kimi-k2.5': {
+    name: 'Kimi K2.5',
+    modelId: 'moonshotai.kimi-k2.5',
+    maxOutputTokens: 16_000,
+    maxInputTokens: 256_000,
+    cacheSupport: [],
+    reasoningSupport: false,
+    toolChoiceSupport: ['auto'],
+    supportedCriProfiles: ['us'],
+    pricing: { input: 0.6, output: 3.0, cacheRead: 0.0, cacheWrite: 0.0 },
   },
 };
 
