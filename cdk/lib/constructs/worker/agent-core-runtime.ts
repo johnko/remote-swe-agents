@@ -135,6 +135,8 @@ export class AgentCoreRuntime extends Construct implements IGrantable {
         actions: [
           'cloudformation:DescribeStackEvents',
           'cloudformation:DescribeStackResource',
+          'ecr:DescribeImages',
+          'ecr:DescribeRepositories',
           'lambda:GetFunction',
           'lambda:GetFunctionCode',
           'logs:DescribeLogStreams',

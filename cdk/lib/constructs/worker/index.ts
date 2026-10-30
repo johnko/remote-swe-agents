@@ -607,6 +607,8 @@ systemctl start myapp
         actions: [
           'cloudformation:DescribeStackEvents',
           'cloudformation:DescribeStackResource',
+          'ecr:DescribeImages',
+          'ecr:DescribeRepositories',
           'lambda:GetFunction',
           'lambda:GetFunctionCode',
           'logs:DescribeLogStreams',
