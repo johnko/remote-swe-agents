@@ -129,6 +129,7 @@ export class AgentCoreRuntime extends Construct implements IGrantable {
     );
 
     // Add troubleshooting permissions for AWS environment diagnostics
+    // Keep in sync with Worker troubleshooting permissions in index.ts
     role.addToPrincipalPolicy(
       new PolicyStatement({
         actions: [
