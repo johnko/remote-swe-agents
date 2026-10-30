@@ -58,6 +58,7 @@ export const modelTypeList = [
   'gpt-6-luna',
   'qwen3-coder-30b-a3b',
   'kimi-k2.5',
+  'nemotron-super-120b',
 ] as const;
 export const modelTypeSchema = z.enum(modelTypeList);
 export type ModelType = z.infer<typeof modelTypeSchema>;
@@ -507,6 +508,17 @@ export const modelConfigs: Record<ModelType, z.infer<typeof modelConfigSchema>> 
     toolChoiceSupport: ['auto'],
     supportedCriProfiles: ['us'],
     pricing: { input: 0.6, output: 3.0, cacheRead: 0.0, cacheWrite: 0.0 },
+  },
+  'nemotron-super-120b': {
+    name: 'NVIDIA Nemotron 3 Super 120B',
+    modelId: 'nvidia.nemotron-super-3-120b',
+    maxOutputTokens: 32_000,
+    maxInputTokens: 256_000,
+    cacheSupport: [],
+    reasoningSupport: true,
+    toolChoiceSupport: ['auto'],
+    supportedCriProfiles: ['us'],
+    pricing: { input: 0.15, output: 0.65, cacheRead: 0.0, cacheWrite: 0.0 },
   },
 };
 
