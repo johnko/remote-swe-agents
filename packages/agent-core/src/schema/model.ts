@@ -55,6 +55,7 @@ export const modelTypeList = [
   'nova-pro',
   'gpt-oss-120b',
   'gpt-oss-20b',
+  'gpt-6-luna',
   'qwen3-coder-30b-a3b',
 ] as const;
 export const modelTypeSchema = z.enum(modelTypeList);
@@ -413,6 +414,18 @@ export const modelConfigs: Record<ModelType, z.infer<typeof modelConfigSchema>> 
     supportsCriProfiles: false,
     supportedCriProfiles: ['us'],
     pricing: { input: 0.07, output: 0.3, cacheRead: 0.0, cacheWrite: 0.0 },
+  },
+  'gpt-6-luna': {
+    name: 'GPT-6 Luna',
+    modelId: 'us.openai.gpt-6-luna',
+    maxOutputTokens: 128_000,
+    maxInputTokens: 1_050_000,
+    cacheSupport: ['system', 'message'],
+    reasoningSupport: false,
+    toolChoiceSupport: ['auto'],
+    supportsCriProfiles: true,
+    supportedCriProfiles: ['us'],
+    pricing: { input: 0.22, output: 0.55, cacheRead: 0.011, cacheWrite: 0.1375 },
   },
   opus4: {
     name: 'Claude 4 Opus',
