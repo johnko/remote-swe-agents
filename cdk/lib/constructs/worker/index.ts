@@ -597,6 +597,22 @@ systemctl start myapp
         },
       })
     );
+    // Add troubleshooting permissions for AWS environment diagnostics.
+    // Keep in sync with AgentCoreRuntime troubleshooting permissions in agent-core-runtime.ts
+    role.addToPrincipalPolicy(
+      new iam.PolicyStatement({
+        actions: [
+          'logs:GetLogEvents',
+          'logs:DescribeLogStreams',
+          'logs:DescribeLogGroups',
+          'lambda:GetFunction',
+          'lambda:GetFunctionCode',
+          'cloudformation:DescribeStackEvents',
+          'cloudformation:DescribeStackResource',
+        ],
+        resources: ['*'],
+      })
+    );
     sourceBucket.grantRead(role);
     props.storageTable.grantReadWriteData(role);
     props.imageBucket.grantReadWrite(role);
