@@ -423,8 +423,8 @@ export const modelConfigs: Record<ModelType, z.infer<typeof modelConfigSchema>> 
     cacheSupport: ['system', 'message'],
     reasoningSupport: false,
     toolChoiceSupport: ['auto'],
-    supportsCriProfiles: false,
-    supportedCriProfiles: [],
+    supportsCriProfiles: true,
+    supportedCriProfiles: ['us'],
     pricing: { input: 0.22, output: 0.55, cacheRead: 0.011, cacheWrite: 0.1375 },
   },
   opus4: {
