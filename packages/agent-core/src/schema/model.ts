@@ -530,7 +530,7 @@ export const modelConfigs: Record<ModelType, z.infer<typeof modelConfigSchema>> 
     maxOutputTokens: 32_000,
     maxInputTokens: 256_000,
     cacheSupport: [],
-    reasoningSupport: true,
+    reasoningSupport: false,
     toolChoiceSupport: ['auto'],
     supportsCriProfiles: false,
     supportedCriProfiles: ['us'],
