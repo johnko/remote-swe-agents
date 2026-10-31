@@ -542,8 +542,8 @@ export const modelConfigs: Record<ModelType, z.infer<typeof modelConfigSchema>> 
   },
   'nemotron-super-120b': {
     cacheSupport: [],
-    maxInputTokens: 256_000,
-    maxOutputTokens: 32_000,
+    maxInputTokens: 262_144,
+    maxOutputTokens: 100_000,
     modelId: 'nvidia.nemotron-super-3-120b',
     name: 'NVIDIA Nemotron 3 Super 120B',
     pricing: { cacheRead: 0, cacheWrite: 0, input: 0.15, output: 0.65 },
