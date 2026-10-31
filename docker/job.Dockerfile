@@ -18,29 +18,4 @@ COPY --from=builder /build/packages/agent-core/dist ./packages/agent-core/dist
 RUN --mount=type=cache,target=/root/.npm npm ci --omit=dev
 COPY --from=builder /build/packages/webapp/dist/. ./
 
-# Create a CommonJS wrapper file that re-exports the ESM handler
-COPY <<EOF handler.cjs
-// Dynamic import wrapper for ESM module in CommonJS context
-let _handler = null;
-let _loading = null;
-
-async function loadHandler() {
-  if (_handler) return _handler;
-  if (_loading) return _loading;
-  
-  _loading = import('./async-job-runner.mjs').then(m => {
-    _handler = m.handler;
-    return _handler;
-  });
-  
-  return _loading;
-}
-
-// Export a handler that loads and delegates to the ESM handler
-module.exports.handler = async (event, context) => {
-  const handler = await loadHandler();
-  return handler(event, context);
-};
-EOF
-
-CMD ["handler.cjs"]
+CMD ["async-job-runner.handler"]
