@@ -150,6 +150,7 @@ export const modelConfigs: Record<ModelType, z.infer<typeof modelConfigSchema>> 
     interleavedThinkingSupport: true,
     adaptiveThinkingOnly: true,
     assistantPrefillSupport: false,
+    isHidden: true,
     supportedCriProfiles: ['global', 'us', 'eu', 'au'],
     pricing: { input: 3.0, output: 15.0, cacheRead: 0.3, cacheWrite: 3.75 },
   },
@@ -164,9 +165,10 @@ export const modelConfigs: Record<ModelType, z.infer<typeof modelConfigSchema>> 
     interleavedThinkingSupport: true,
     adaptiveThinkingOnly: true,
     assistantPrefillSupport: false,
+    isHidden: true,
     supportedCriProfiles: ['global', 'us', 'eu', 'au'],
     pricing: { input: 3000.0, output: 15000.0, cacheRead: 300.0, cacheWrite: 3750.0 },
-  },
+  }
   'sonnet4.6': {
     name: 'Claude Sonnet 4.6',
     modelId: 'anthropic.claude-sonnet-4-6',
@@ -177,6 +179,7 @@ export const modelConfigs: Record<ModelType, z.infer<typeof modelConfigSchema>> 
     toolChoiceSupport: ['any', 'auto', 'tool'],
     interleavedThinkingSupport: true,
     assistantPrefillSupport: false,
+    isHidden: true,
     supportedCriProfiles: ['global', 'us', 'eu', 'jp', 'au'],
     pricing: { input: 3.0, output: 15.0, cacheRead: 0.3, cacheWrite: 6.0 },
   },
@@ -332,9 +335,10 @@ export const modelConfigs: Record<ModelType, z.infer<typeof modelConfigSchema>> 
     reasoningSupport: true,
     toolChoiceSupport: ['any', 'auto', 'tool'],
     interleavedThinkingSupport: true,
+    isHidden: true,
     supportedCriProfiles: ['global', 'us', 'eu', 'jp', 'au'],
     pricing: { input: 1000.0, output: 5000.0, cacheRead: 100.0, cacheWrite: 1250.0 },
-  },
+  }
   'sonnet3.5v1': {
     name: 'Claude 3.5 Sonnet v1',
     modelId: 'anthropic.claude-3-5-sonnet-20240620-v1:0',
