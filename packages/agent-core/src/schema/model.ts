@@ -550,18 +550,6 @@ export const modelConfigs: Record<ModelType, z.infer<typeof modelConfigSchema>> 
     supportedCriProfiles: ['us'],
     pricing: { input: 0.23, output: 0.38, cacheRead: 0.0, cacheWrite: 0.0 },
   },
-  'gemma-3-12b-it': {
-    name: 'Google Gemma 3 12B IT',
-    modelId: 'google.gemma-3-12b-it',
-    maxOutputTokens: 8_192,
-    maxInputTokens: 128_000,
-    cacheSupport: [],
-    reasoningSupport: false,
-    toolChoiceSupport: ['auto'],
-    supportsCriProfiles: false,
-    supportedCriProfiles: ['us'],
-    pricing: { input: 0.12, output: 0.18, cacheRead: 0.0, cacheWrite: 0.0 },
-  },
 };
 
 export const getAvailableModelTypes = (): ModelType[] => {
