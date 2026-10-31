@@ -340,7 +340,7 @@ describe(' native block support — SDK Message round-trip', () => {
       expect(imgSource.bytes).toBe(originalBytes); // same reference
     });
 
-    it('sanitizes invisible Unicode characters from tool names (Bedrock → Strands)', () => {
+    it('sanitizes invisible Unicode from tool names (Bedrock → Strands)', () => {
       // Tool name with zero-width space: "execute_command​" (U+200B after d)
       const msg: BedrockMessage = {
         role: 'assistant',
@@ -351,25 +351,42 @@ describe(' native block support — SDK Message round-trip', () => {
       expect(toolUse.name).toBe('execute_command'); // Zero-width space removed
     });
 
-    it('sanitizes invisible Unicode characters from tool names (Strands → Bedrock)', () => {
-      // Tool name with multiple invisible characters
+    it('sanitizes invisible Unicode from tool IDs (Bedrock → Strands)', () => {
+      // Tool ID with zero-width joiner
+      const msg: BedrockMessage = {
+        role: 'assistant',
+        content: [{ toolUse: { toolUseId: 'call\u200D1', name: 'execute_command', input: {} } }],
+      };
+      const converted = bedrockToStrandsMessage(msg, ctx);
+      const toolUse = (converted.content[0] as any).toolUse;
+      expect(toolUse.toolUseId).toBe('call1'); // Zero-width joiner removed
+    });
+
+    it('sanitizes invisible Unicode from tool names and IDs (Strands → Bedrock)', () => {
+      // Both name and ID with invisible characters
       const block = {
-        toolUse: { toolUseId: 'call-1', name: 'executes\u200B\u200Ccommand', input: {} }
+        toolUse: { toolUseId: 'call\u200B2', name: 'executes\u200C\u200Dcommand', input: {} }
       };
       const result = strandsBlockToBedrock(block as any, ctx);
+      expect((result as any).toolUse.toolUseId).toBe('call2');
       expect((result as any).toolUse.name).toBe('executescommand');
     });
 
-    it('preserves valid tool names during sanitization', () => {
-      const validNames = ['execute_command', 'send_message_to_user', 'clone-github-repository', 'foo123'];
-      for (const name of validNames) {
+    it('preserves valid tool names and IDs during sanitization', () => {
+      const validPairs = [
+        { name: 'execute_command', id: 'call-1' },
+        { name: 'send_message_to_user', id: 'tool_001' },
+        { name: 'clone-github-repository', id: 'abc123' },
+      ];
+      for (const { name, id } of validPairs) {
         const msg: BedrockMessage = {
           role: 'assistant',
-          content: [{ toolUse: { toolUseId: 'call-1', name, input: {} } }],
+          content: [{ toolUse: { toolUseId: id, name, input: {} } }],
         };
         const converted = bedrockToStrandsMessage(msg, ctx);
         const toolUse = (converted.content[0] as any).toolUse;
         expect(toolUse.name).toBe(name);
+        expect(toolUse.toolUseId).toBe(id);
       }
     });
   });
