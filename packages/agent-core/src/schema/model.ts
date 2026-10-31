@@ -61,7 +61,6 @@ export const modelTypeList = [
   'nemotron-super-120b',
   'grok-4.7',
   'gemma-3-27b',
-  'gemma-3-12b-it',
 ] as const;
 export const modelTypeSchema = z.enum(modelTypeList);
 export type ModelType = z.infer<typeof modelTypeSchema>;
