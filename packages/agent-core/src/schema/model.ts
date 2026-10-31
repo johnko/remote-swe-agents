@@ -549,7 +549,7 @@ export const modelConfigs: Record<ModelType, z.infer<typeof modelConfigSchema>> 
   },
   'gemma-3-27b': {
     name: 'Google Gemma 3 27B',
-    modelId: 'google.gemma-3-27b-pt',
+    modelId: 'google.gemma-3-27b-it',
     maxOutputTokens: 16_384,
     maxInputTokens: 128_000,
     cacheSupport: [],
