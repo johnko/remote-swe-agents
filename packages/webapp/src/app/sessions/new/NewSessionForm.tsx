@@ -386,7 +386,7 @@ export default function NewSessionForm({
                     <SelectContent>
                       {getAvailableModelTypes().map((type) => (
                         <SelectItem key={type} value={type}>
-                          {modelConfigs[type].name}
+                          {modelConfigs[type].name} (${modelConfigs[type].pricing.input}/1M)
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -411,11 +411,18 @@ export default function NewSessionForm({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {getKiroModelIds().map((model) => (
-                        <SelectItem key={model} value={model}>
-                          {kiroModelConfigs[model]?.name ?? model}
-                        </SelectItem>
-                      ))}
+                      {getKiroModelIds().map((model) => {
+                        const config = kiroModelConfigs[model];
+                        if (!config) return <SelectItem key={model} value={model}>{model}</SelectItem>;
+                        
+                        // For Kiro models, we don't have pricing in the config, so we'll just show the name
+                        // or we could fetch it from somewhere else if needed
+                        return (
+                          <SelectItem key={model} value={model}>
+                            {config.name}
+                          </SelectItem>
+                        );
+                      })}
                     </SelectContent>
                   </Select>
                 )}
