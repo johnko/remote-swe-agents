@@ -342,7 +342,7 @@ export const modelConfigs: Record<ModelType, z.infer<typeof modelConfigSchema>> 
     isHidden: true,
     supportedCriProfiles: ['global', 'us', 'eu', 'jp', 'au'],
     pricing: { input: 1000.0, output: 5000.0, cacheRead: 100.0, cacheWrite: 1250.0 },
-  }
+  },
   'sonnet3.5v1': {
     name: 'Claude 3.5 Sonnet v1',
     modelId: 'anthropic.claude-3-5-sonnet-20240620-v1:0',
