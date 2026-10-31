@@ -64,10 +64,30 @@ function s3UriToKey(uri: string, ctx?: ConverterS3Context): string {
 // Bedrock → Strands (loading history)
 // ---------------------------------------------------------------------------
 
-/** Sanitize tool name by removing invisible Unicode characters. */
-function sanitizeToolName(name: string): string {
-  // Remove zero-width spaces, zero-width joiners, soft hyphens, and other invisible characters
-  return name
+/**
+ * Sanitize identifiers by removing invisible Unicode characters.
+ *
+ * CONTEXT: Some models (particularly GPT OSS 120B via Bedrock) enforce strict API
+ * validation on tool names/IDs using regex patterns like [a-zA-Z0-9_-]+. If a model
+ * hallucinates or generates a corrupted identifier with invisible Unicode characters,
+ * the API will reject the entire request with a validation error.
+ *
+ * CASE: In one session, the model hallucinated `executes​` (with zero-width space)
+ * instead of `execute_command`. This caused a critical failure when the message was
+ * later sent to GPT OSS 120B: "Member must satisfy regular expression pattern: [a-zA-Z0-9_-]+"
+ *
+ * SOLUTION: Defensively strip invisible characters from identifiers that flow through
+ * API boundaries (tool names, tool IDs, etc.) to prevent such failures.
+ *
+ * CHARACTERS REMOVED:
+ * - U+200B: Zero-width space
+ * - U+200C: Zero-width non-joiner
+ * - U+200D: Zero-width joiner
+ * - U+FEFF: Zero-width no-break space (BOM)
+ * - U+2060-U+2063: Word joiner, function application, invisible separator, invisible times
+ */
+function sanitizeIdentifier(id: string): string {
+  return id
     .replace(/\u200B/g, '') // Zero-width space
     .replace(/\u200C/g, '') // Zero-width non-joiner
     .replace(/\u200D/g, '') // Zero-width joiner
@@ -84,8 +104,8 @@ export function bedrockBlockToStrands(block: BedrockContentBlock, ctx?: Converte
     const tu = block.toolUse;
     return {
       toolUse: {
-        name: sanitizeToolName(tu.name ?? ''),
-        toolUseId: tu.toolUseId ?? '',
+        name: sanitizeIdentifier(tu.name ?? ''),
+        toolUseId: sanitizeIdentifier(tu.toolUseId ?? ''),
         input: (tu.input ?? {}) as ContentBlockData extends never ? never : any, // JSONValue
       },
     } as ContentBlockData;
@@ -260,7 +280,7 @@ export function strandsBlockToBedrock(block: ContentBlockData, ctx?: ConverterS3
   if ('toolUse' in block && block.toolUse) {
     const tu = block.toolUse;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return { toolUse: { toolUseId: tu.toolUseId, name: sanitizeToolName(tu.name), input: tu.input as any } };
+    return { toolUse: { toolUseId: sanitizeIdentifier(tu.toolUseId), name: sanitizeIdentifier(tu.name), input: tu.input as any } };
   }
   if ('toolResult' in block && block.toolResult) {
     const tr = block.toolResult;
