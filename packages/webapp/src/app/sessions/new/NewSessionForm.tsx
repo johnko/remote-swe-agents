@@ -386,7 +386,7 @@ export default function NewSessionForm({
                     <SelectContent>
                       {getAvailableModelTypes().map((type) => (
                         <SelectItem key={type} value={type}>
-                          {modelConfigs[type].name}
+                          {modelConfigs[type].name} (${modelConfigs[type].pricing.input}/1M)
                         </SelectItem>
                       ))}
                     </SelectContent>
