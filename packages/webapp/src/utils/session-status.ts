@@ -6,7 +6,8 @@ export type StatusI18nKey =
   | 'agentStatus.working'
   | 'agentStatus.unknown'
   | 'sessionStatus.stopped'
-  | 'sessionStatus.starting';
+  | 'sessionStatus.starting'
+  | 'sessionStatus.terminated';
 
 export interface UnifiedStatusResult {
   i18nKey: StatusI18nKey;
@@ -23,8 +24,11 @@ export function getUnifiedStatus(
   if (agentStatus === 'completed') {
     return { i18nKey: 'agentStatus.completed', color: 'bg-gray-500' };
   }
-  if (instanceStatus === 'stopped' || instanceStatus === 'terminated') {
-    return { i18nKey: 'sessionStatus.stopped', color: 'bg-gray-500' };
+  if (instanceStatus === 'stopped') {
+    return { i18nKey: 'sessionStatus.stopped', color: 'bg-purple-500' };
+  }
+  if (instanceStatus === 'terminated') {
+    return { i18nKey: 'sessionStatus.terminated', color: 'bg-purple-500' };
   }
   if (agentStatus === 'pending') {
     return { i18nKey: 'agentStatus.pending', color: 'bg-yellow-500' };
