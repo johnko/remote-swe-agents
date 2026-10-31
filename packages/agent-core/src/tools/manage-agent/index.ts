@@ -148,6 +148,8 @@ export const listAgentsTool: ToolDefinition<z.infer<typeof listAgentsSchema>> = 
       iconKey: a.iconKey,
       tools: a.tools,
       parentAgentId: a.parentAgentId,
+      includeDefaultKnowledge: a.includeDefaultKnowledge !== false,
+      inferenceMode: a.inferenceMode,
       createdAt: new Date(a.createdAt).toISOString(),
       updatedAt: new Date(a.updatedAt).toISOString(),
     }));
