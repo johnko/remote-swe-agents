@@ -507,6 +507,7 @@ export const modelConfigs: Record<ModelType, z.infer<typeof modelConfigSchema>> 
     cacheSupport: [],
     reasoningSupport: false,
     toolChoiceSupport: ['auto'],
+    isHidden: true,
     supportsCriProfiles: false,
     supportedCriProfiles: ['us'],
     pricing: { input: 0.15, output: 0.6, cacheRead: 0.0, cacheWrite: 0.0 },
@@ -550,7 +551,7 @@ export const modelConfigs: Record<ModelType, z.infer<typeof modelConfigSchema>> 
   },
   'gemma-3-27b': {
     name: 'Google Gemma 3 27B',
-    modelId: 'google.gemma-3-27b-pt',
+    modelId: 'google.gemma-3-27b-it',
     maxOutputTokens: 16_384,
     maxInputTokens: 128_000,
     cacheSupport: [],
