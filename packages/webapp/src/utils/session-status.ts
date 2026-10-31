@@ -6,8 +6,7 @@ export type StatusI18nKey =
   | 'agentStatus.working'
   | 'agentStatus.unknown'
   | 'sessionStatus.stopped'
-  | 'sessionStatus.starting'
-  | 'sessionStatus.terminated';
+  | 'sessionStatus.starting';
 
 export interface UnifiedStatusResult {
   i18nKey: StatusI18nKey;
