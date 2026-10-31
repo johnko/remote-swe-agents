@@ -833,7 +833,7 @@ export default function MessageForm({
                   >
                     {getAvailableModelTypes().map((type) => (
                       <option key={type} value={type}>
-                        {modelConfigs[type].name}
+                        {modelConfigs[type].name} ($${modelConfigs[type].pricing.input}/1M)
                       </option>
                     ))}
                   </select>
