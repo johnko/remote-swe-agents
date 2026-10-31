@@ -86,6 +86,7 @@
  * NOT wired into production yet (flag off).
  */
 import type { ToolEventSink, TurnContext, TurnResult } from '@remote-swe-agents/agent-core/lib';
+import { toolNameInSet } from '@remote-swe-agents/agent-core/tool-name-utils';
 import {
   getPreferences,
   sendSystemMessage,
@@ -177,6 +178,15 @@ export async function resolveModelTypes(ctx: TurnContext): Promise<ModelType[]> 
   }
   return [modelType];
 }
+
+/** Names treated as "sendMessageToUser" for the webappMessageAlreadyEmitted gate. */
+const SEND_MESSAGE_TO_USER_NAMES = new Set([
+  'send_message_to_user',
+  'sendMessageToUser',
+  'sendMessageToUserIfNecessary',
+  'Send Message To User',
+  'Send_Message_To_User',
+]);
 
 export const bedrockStrandsAgentLoop = async (ctx: TurnContext, sink: ToolEventSink): Promise<TurnResult> => {
   const { workerId, systemPrompt, customAgent } = ctx;
@@ -329,6 +339,9 @@ export const bedrockStrandsAgentLoop = async (ctx: TurnContext, sink: ToolEventS
   // and runInvokeLoop reference the same state (mid-loop reset works correctly).
   const errorState: InvokeLoopState = { consecutiveErrorCount: 0, lastErrorType: '' };
 
+  // Track if send_message_to_user was called to prevent duplicate end-of-turn delivery
+  let sendMessageToUserCalled = false;
+
   // double-persist guard: retry lives INSIDE RemoteSweBedrockModel.stream()
   // (the pRetry loop is below the Agent loop boundary), so the Agent never sees
   // a partial/retried response. BeforeToolsEvent/AfterToolsEvent fire exactly
@@ -394,6 +407,11 @@ export const bedrockStrandsAgentLoop = async (ctx: TurnContext, sink: ToolEventS
   agent.addHook(BeforeToolCallEvent, async (event) => {
     const toolName = event.toolUse.name;
     const toolUseId = event.toolUse.toolUseId;
+
+    // Track send_message_to_user to prevent duplicate end-of-turn delivery
+    if (toolNameInSet(toolName, SEND_MESSAGE_TO_USER_NAMES)) {
+      sendMessageToUserCalled = true;
+    }
     const input = event.toolUse.input;
     await sink.emitToolUseEvent(workerId, {
       toolName,
@@ -562,5 +580,6 @@ export const bedrockStrandsAgentLoop = async (ctx: TurnContext, sink: ToolEventS
     previewText,
     contextUsagePercentage: lastContextUsagePercentage,
     messageSK: savedItem.SK,
+    webappMessageAlreadyEmitted: sendMessageToUserCalled,
   };
 };
