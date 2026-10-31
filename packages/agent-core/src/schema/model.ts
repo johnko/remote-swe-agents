@@ -554,8 +554,8 @@ export const modelConfigs: Record<ModelType, z.infer<typeof modelConfigSchema>> 
   },
   'nemotron-nano-30b': {
     cacheSupport: [],
-    maxInputTokens: 131_072,
-    maxOutputTokens: 131_072,
+    maxInputTokens: 256_000,
+    maxOutputTokens: 8_000,
     modelId: 'nvidia.nemotron-nano-3-30b',
     name: 'NVIDIA Nemotron 3 Nano 30B',
     pricing: { cacheRead: 0, cacheWrite: 0, input: 0.06, output: 0.24 },
