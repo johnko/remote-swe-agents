@@ -554,6 +554,7 @@ export const modelConfigs: Record<ModelType, z.infer<typeof modelConfigSchema>> 
   },
   'nemotron-nano-30b': {
     cacheSupport: [],
+    isHidden: true,
     maxInputTokens: 256_000,
     maxOutputTokens: 8_000,
     modelId: 'nvidia.nemotron-nano-3-30b',
@@ -563,7 +564,6 @@ export const modelConfigs: Record<ModelType, z.infer<typeof modelConfigSchema>> 
     supportedCriProfiles: ['us'],
     supportsCriProfiles: false,
     toolChoiceSupport: ['auto'],
-    isHidden: true,
   },
   'grok-4.7': {
     cacheSupport: ['message'],
