@@ -566,6 +566,7 @@ export const modelConfigs: Record<ModelType, z.infer<typeof modelConfigSchema>> 
   },
   'gemma-3-27b': {
     cacheSupport: [],
+    isHidden: true,
     maxInputTokens: 128_000,
     maxOutputTokens: 16_384,
     modelId: 'google.gemma-3-27b-it',
