@@ -559,7 +559,7 @@ export const modelConfigs: Record<ModelType, z.infer<typeof modelConfigSchema>> 
     modelId: 'nvidia.nemotron-nano-3-30b',
     name: 'NVIDIA Nemotron 3 Nano 30B',
     pricing: { cacheRead: 0, cacheWrite: 0, input: 0.06, output: 0.24 },
-    reasoningSupport: true,
+    reasoningSupport: false,
     supportedCriProfiles: ['us'],
     supportsCriProfiles: false,
     toolChoiceSupport: ['auto'],
