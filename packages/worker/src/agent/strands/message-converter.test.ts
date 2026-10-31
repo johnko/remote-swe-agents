@@ -331,12 +331,46 @@ describe(' native block support — SDK Message round-trip', () => {
       expect(Array.from(docSource.bytes)).toEqual([0x25, 0x50, 0x44, 0x46]);
     });
 
+
     it('passes through Uint8Array bytes unchanged (no double-decode)', () => {
       const originalBytes = new Uint8Array([0x89, 0x50, 0x4e, 0x47]);
       const block = { image: { format: 'png', source: { bytes: originalBytes } } };
       const result = strandsBlockToBedrock(block as any, ctx);
       const imgSource = (result as any)?.image?.source;
       expect(imgSource.bytes).toBe(originalBytes); // same reference
+    });
+
+    it('sanitizes invisible Unicode characters from tool names (Bedrock → Strands)', () => {
+      // Tool name with zero-width space: "execute_command​" (U+200B after d)
+      const msg: BedrockMessage = {
+        role: 'assistant',
+        content: [{ toolUse: { toolUseId: 'call-1', name: 'execute_command\u200B', input: {} } }],
+      };
+      const converted = bedrockToStrandsMessage(msg, ctx);
+      const toolUse = (converted.content[0] as any).toolUse;
+      expect(toolUse.name).toBe('execute_command'); // Zero-width space removed
+    });
+
+    it('sanitizes invisible Unicode characters from tool names (Strands → Bedrock)', () => {
+      // Tool name with multiple invisible characters
+      const block = {
+        toolUse: { toolUseId: 'call-1', name: 'executes\u200B\u200Ccommand', input: {} }
+      };
+      const result = strandsBlockToBedrock(block as any, ctx);
+      expect((result as any).toolUse.name).toBe('executescommand');
+    });
+
+    it('preserves valid tool names during sanitization', () => {
+      const validNames = ['execute_command', 'send_message_to_user', 'clone-github-repository', 'foo123'];
+      for (const name of validNames) {
+        const msg: BedrockMessage = {
+          role: 'assistant',
+          content: [{ toolUse: { toolUseId: 'call-1', name, input: {} } }],
+        };
+        const converted = bedrockToStrandsMessage(msg, ctx);
+        const toolUse = (converted.content[0] as any).toolUse;
+        expect(toolUse.name).toBe(name);
+      }
     });
   });
 });
