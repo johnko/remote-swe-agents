@@ -64,6 +64,17 @@ function s3UriToKey(uri: string, ctx?: ConverterS3Context): string {
 // Bedrock → Strands (loading history)
 // ---------------------------------------------------------------------------
 
+/** Sanitize tool name by removing invisible Unicode characters. */
+function sanitizeToolName(name: string): string {
+  // Remove zero-width spaces, zero-width joiners, soft hyphens, and other invisible characters
+  return name
+    .replace(/\u200B/g, '') // Zero-width space
+    .replace(/\u200C/g, '') // Zero-width non-joiner
+    .replace(/\u200D/g, '') // Zero-width joiner
+    .replace(/\uFEFF/g, '') // Zero-width no-break space
+    .replace(/[\u2060\u2061\u2062\u2063]/g, ''); // Other invisible format characters
+}
+
 /** Convert one Bedrock ContentBlock to a Strands ContentBlockData, or null to drop. */
 export function bedrockBlockToStrands(block: BedrockContentBlock, ctx?: ConverterS3Context): ContentBlockData | null {
   if ('text' in block && typeof block.text === 'string') {
@@ -73,7 +84,7 @@ export function bedrockBlockToStrands(block: BedrockContentBlock, ctx?: Converte
     const tu = block.toolUse;
     return {
       toolUse: {
-        name: tu.name ?? '',
+        name: sanitizeToolName(tu.name ?? ''),
         toolUseId: tu.toolUseId ?? '',
         input: (tu.input ?? {}) as ContentBlockData extends never ? never : any, // JSONValue
       },
@@ -249,7 +260,7 @@ export function strandsBlockToBedrock(block: ContentBlockData, ctx?: ConverterS3
   if ('toolUse' in block && block.toolUse) {
     const tu = block.toolUse;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return { toolUse: { toolUseId: tu.toolUseId, name: tu.name, input: tu.input as any } };
+    return { toolUse: { toolUseId: tu.toolUseId, name: sanitizeToolName(tu.name), input: tu.input as any } };
   }
   if ('toolResult' in block && block.toolResult) {
     const tr = block.toolResult;
