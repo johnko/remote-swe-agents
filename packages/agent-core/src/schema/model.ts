@@ -61,6 +61,7 @@ export const modelTypeList = [
   'nemotron-super-120b',
   'grok-4.7',
   'gemma-3-27b',
+  'gemma-3-12b-it',
 ] as const;
 export const modelTypeSchema = z.enum(modelTypeList);
 export type ModelType = z.infer<typeof modelTypeSchema>;
@@ -497,6 +498,7 @@ export const modelConfigs: Record<ModelType, z.infer<typeof modelConfigSchema>> 
     cacheSupport: [],
     reasoningSupport: false,
     toolChoiceSupport: ['auto'],
+    supportsCriProfiles: false,
     supportedCriProfiles: ['us'],
     pricing: { input: 0.15, output: 0.6, cacheRead: 0.0, cacheWrite: 0.0 },
   },
@@ -508,6 +510,7 @@ export const modelConfigs: Record<ModelType, z.infer<typeof modelConfigSchema>> 
     cacheSupport: [],
     reasoningSupport: false,
     toolChoiceSupport: ['auto'],
+    supportsCriProfiles: false,
     supportedCriProfiles: ['us'],
     pricing: { input: 0.6, output: 3.0, cacheRead: 0.0, cacheWrite: 0.0 },
   },
@@ -519,6 +522,7 @@ export const modelConfigs: Record<ModelType, z.infer<typeof modelConfigSchema>> 
     cacheSupport: [],
     reasoningSupport: true,
     toolChoiceSupport: ['auto'],
+    supportsCriProfiles: false,
     supportedCriProfiles: ['us'],
     pricing: { input: 0.15, output: 0.65, cacheRead: 0.0, cacheWrite: 0.0 },
   },
@@ -530,6 +534,7 @@ export const modelConfigs: Record<ModelType, z.infer<typeof modelConfigSchema>> 
     cacheSupport: ['message'],
     reasoningSupport: true,
     toolChoiceSupport: ['auto'],
+    supportsCriProfiles: false,
     supportedCriProfiles: ['us'],
     pricing: { input: 2.2, output: 6.6, cacheRead: 0.55, cacheWrite: 0.0 },
   },
@@ -541,8 +546,21 @@ export const modelConfigs: Record<ModelType, z.infer<typeof modelConfigSchema>> 
     cacheSupport: [],
     reasoningSupport: false,
     toolChoiceSupport: ['auto'],
+    supportsCriProfiles: false,
     supportedCriProfiles: ['us'],
     pricing: { input: 0.23, output: 0.38, cacheRead: 0.0, cacheWrite: 0.0 },
+  },
+  'gemma-3-12b-it': {
+    name: 'Google Gemma 3 12B IT',
+    modelId: 'google.gemma-3-12b-it',
+    maxOutputTokens: 8_192,
+    maxInputTokens: 128_000,
+    cacheSupport: [],
+    reasoningSupport: false,
+    toolChoiceSupport: ['auto'],
+    supportsCriProfiles: false,
+    supportedCriProfiles: ['us'],
+    pricing: { input: 0.12, output: 0.18, cacheRead: 0.0, cacheWrite: 0.0 },
   },
 };
 
