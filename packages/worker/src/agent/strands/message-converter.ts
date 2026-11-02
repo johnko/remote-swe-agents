@@ -65,19 +65,31 @@ function s3UriToKey(uri: string, ctx?: ConverterS3Context): string {
 // ---------------------------------------------------------------------------
 
 /**
- * Sanitize identifiers by removing invisible Unicode characters.
+ * Bedrock API tool name pattern: [a-zA-Z0-9_-]+
+ * All tool names must match this regex or the API will reject the request.
+ */
+const BEDROCK_TOOL_NAME_PATTERN = /^[a-zA-Z0-9_-]+$/;
+
+/**
+ * Sanitize identifiers by removing invisible Unicode characters and ensuring
+ * the result matches the Bedrock API validation pattern [a-zA-Z0-9_-]+.
  *
  * CONTEXT: Some models (particularly GPT OSS 120B via Bedrock) enforce strict API
  * validation on tool names/IDs using regex patterns like [a-zA-Z0-9_-]+. If a model
- * hallucinates or generates a corrupted identifier with invisible Unicode characters,
- * the API will reject the entire request with a validation error.
+ * hallucinates or generates a corrupted identifier with invisible Unicode characters
+ * or other invalid characters (like braces), the API will reject the entire request
+ * with a validation error.
  *
  * CASE: In one session, the model hallucinated `executes​` (with zero-width space)
  * instead of `execute_command`. This caused a critical failure when the message was
  * later sent to GPT OSS 120B: "Member must satisfy regular expression pattern: [a-zA-Z0-9_-]+"
  *
+ * Another case: the model generated `create_file}` (with a trailing brace), which also
+ * violates the pattern.
+ *
  * SOLUTION: Defensively strip invisible characters from identifiers that flow through
- * API boundaries (tool names, tool IDs, etc.) to prevent such failures.
+ * API boundaries (tool names, tool IDs, etc.) and remove any characters that don't
+ * match the allowed pattern. This ensures the tool name is always valid for Bedrock.
  *
  * CHARACTERS REMOVED:
  * - U+200B: Zero-width space
@@ -85,14 +97,31 @@ function s3UriToKey(uri: string, ctx?: ConverterS3Context): string {
  * - U+200D: Zero-width joiner
  * - U+FEFF: Zero-width no-break space (BOM)
  * - U+2060-U+2063: Word joiner, function application, invisible separator, invisible times
+ * - Any character not matching [a-zA-Z0-9_-]
  */
 function sanitizeIdentifier(id: string): string {
-  return id
+  // First, strip invisible characters
+  let cleaned = id
     .replace(/\u200B/g, '') // Zero-width space
     .replace(/\u200C/g, '') // Zero-width non-joiner
     .replace(/\u200D/g, '') // Zero-width joiner
     .replace(/\uFEFF/g, '') // Zero-width no-break space
     .replace(/[\u2060\u2061\u2062\u2063]/g, ''); // Other invisible format characters
+
+  // Then, validate against the Bedrock pattern - strip any characters that don't match
+  // This handles cases like trailing braces `}`, newline characters, etc.
+  if (!BEDROCK_TOOL_NAME_PATTERN.test(cleaned)) {
+    // Remove any characters that don't match the allowed pattern
+    cleaned = cleaned.replace(/[^a-zA-Z0-9_-]/g, '');
+  }
+
+  // If the result is empty (e.g., if input was all invalid chars), return a fallback
+  // This prevents empty strings from being passed through to the API
+  if (cleaned.length === 0) {
+    return 'unknown_tool';
+  }
+
+  return cleaned;
 }
 
 /** Convert one Bedrock ContentBlock to a Strands ContentBlockData, or null to drop. */
