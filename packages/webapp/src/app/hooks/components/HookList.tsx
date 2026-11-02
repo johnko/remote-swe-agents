@@ -15,6 +15,7 @@ import { deleteUserHook, updateUserHook, type ClientHook } from '@/actions/hook/
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import LocalDateTime from '@/components/LocalDateTime';
+import { getHookRuntimesDisplay } from '@/lib/hook-runtime-map';
 
 type HookListProps = {
   initialHooks: ClientHook[];
@@ -158,6 +159,9 @@ export default function HookList({ initialHooks }: HookListProps) {
                     <span className="px-2 py-0.5 text-xs bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200 rounded">
                       {hook.event}
                     </span>
+                    <span className="px-2 py-0.5 text-xs bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded">
+                      {getHookRuntimesDisplay(hook.event)}
+                    </span>
                     <span className="px-2 py-0.5 text-xs bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 rounded">
                       {t(`createdBy.${hook.createdBy ?? 'user'}`)}
                     </span>
@@ -239,7 +243,7 @@ export default function HookList({ initialHooks }: HookListProps) {
                       >
                         {eventTypes.map((evt) => (
                           <option key={evt} value={evt}>
-                            {evt}
+                            {evt} — {getHookRuntimesDisplay(evt)}
                           </option>
                         ))}
                       </select>

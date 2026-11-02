@@ -15,6 +15,7 @@ import {
   hookEventTypeSchema,
 } from '@remote-swe-agents/agent-core/schema';
 import { createUserHook } from '@/actions/hook/action';
+import { getHookRuntimesDisplay } from '@/lib/hook-runtime-map';
 
 const eventTypes = hookEventTypeSchema.options;
 
@@ -80,7 +81,7 @@ export default function HookCreateForm() {
         >
           {eventTypes.map((evt) => (
             <option key={evt} value={evt}>
-              {evt}
+              {evt} — {getHookRuntimesDisplay(evt)}
             </option>
           ))}
         </select>
