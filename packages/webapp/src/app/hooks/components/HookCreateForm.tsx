@@ -15,7 +15,7 @@ import {
   hookEventTypeSchema,
 } from '@remote-swe-agents/agent-core/schema';
 import { createUserHook } from '@/actions/hook/action';
-import { getHookRuntimesDisplay } from '@/lib/hook-runtime-map';
+import { getHookRuntimes, getRuntimeBadgeColor } from '@/lib/hook-runtime-map';
 
 const eventTypes = hookEventTypeSchema.options;
 
@@ -79,11 +79,17 @@ export default function HookCreateForm() {
           disabled={isPending}
           className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
-          {eventTypes.map((evt) => (
-            <option key={evt} value={evt}>
-              {evt} — {getHookRuntimesDisplay(evt)}
-            </option>
-          ))}
+          {eventTypes.map((evt) => {
+            const runtimes = getHookRuntimes(evt);
+            const runtimesLabel = runtimes
+              .map((r) => (r === 'agentcore' ? 'Agent Core' : r.charAt(0).toUpperCase() + r.slice(1)))
+              .join(', ');
+            return (
+              <option key={evt} value={evt}>
+                {evt} — {runtimesLabel}
+              </option>
+            );
+          })}
         </select>
       </div>
 
