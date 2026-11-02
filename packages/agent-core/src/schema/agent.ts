@@ -16,8 +16,8 @@ export type RuntimeType = z.infer<typeof runtimeTypeSchema>;
 export const defaultAgentConfig: { runtimeType: RuntimeType; defaultModel: ModelType; bedrockDefaultModel: ModelType } =
   {
     runtimeType: 'agent-core',
-    defaultModel: 'haiku4.5',
-    bedrockDefaultModel: 'haiku4.5',
+    defaultModel: 'kimi-k2.5',
+    bedrockDefaultModel: 'kimi-k2.5',
   };
 
 export const customAgentSchema = z.object({

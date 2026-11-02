@@ -4,7 +4,7 @@ import { modelTypeSchema } from './model.js';
 export const globalPreferencesSchema = z.object({
   PK: z.literal('global-config'),
   SK: z.literal('general'),
-  modelOverride: modelTypeSchema.default('haiku4.5'),
+  modelOverride: modelTypeSchema.default('kimi-k2.5'),
   enableLinkInPr: z.boolean().default(false),
   defaultAgentName: z.string().default(''),
   defaultAgentIconKey: z.string().default(''),
