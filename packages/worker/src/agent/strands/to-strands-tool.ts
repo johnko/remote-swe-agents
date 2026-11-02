@@ -25,7 +25,7 @@
 import type { ToolResultContentBlock } from '@aws-sdk/client-bedrock-runtime';
 import { tool, type ToolContext } from '@strands-agents/sdk';
 import type { z, ZodType } from 'zod';
-import { renderToolResult, getSession, executeHooksForEventWithSession } from '@remote-swe-agents/agent-core/lib';
+import { renderToolResult, getSession, executeHooksForEventWithSession, HookContextData } from '@remote-swe-agents/agent-core/lib';
 import { reportProgressTool, sendToAgentTool, acknowledgeAgentTool } from '@remote-swe-agents/agent-core/tools';
 
 /** Sanitize tool names: Strands ToolRegistry requires ^[a-zA-Z0-9_-]+$ */
@@ -232,7 +232,8 @@ export async function toStrandsTool<Input>(def: RemoteSweToolLike<Input>, deps: 
       // Execute preToolUse hook
       if (session) {
         try {
-          await executeHooksForEventWithSession(session, 'preToolUse', process.cwd());
+          const contextData: HookContextData = { toolName: def.name };
+          await executeHooksForEventWithSession(session, 'preToolUse', process.cwd(), contextData);
         } catch (e) {
           console.error(`[toStrandsTool] preToolUse hook failed for tool "${def.name}":`, e);
           // Don't throw - continue with tool execution even if hook fails
@@ -252,7 +253,8 @@ export async function toStrandsTool<Input>(def: RemoteSweToolLike<Input>, deps: 
         // Execute postToolUse hook on success
         if (session) {
           try {
-            await executeHooksForEventWithSession(session, 'postToolUse', process.cwd());
+            const contextData: HookContextData = { toolName: def.name };
+            await executeHooksForEventWithSession(session, 'postToolUse', process.cwd(), contextData);
           } catch (e) {
             console.error(`[toStrandsTool] postToolUse hook failed for tool "${def.name}":`, e);
             // Don't throw - hook errors don't affect tool result
@@ -262,7 +264,8 @@ export async function toStrandsTool<Input>(def: RemoteSweToolLike<Input>, deps: 
         // Execute postToolUseFailure hook on error
         if (session) {
           try {
-            await executeHooksForEventWithSession(session, 'postToolUseFailure', process.cwd());
+            const contextData: HookContextData = { toolName: def.name };
+            await executeHooksForEventWithSession(session, 'postToolUseFailure', process.cwd(), contextData);
           } catch (e) {
             console.error(`[toStrandsTool] postToolUseFailure hook failed for tool "${def.name}":`, e);
             // Don't throw - hook errors don't affect error handling
