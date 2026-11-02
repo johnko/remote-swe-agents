@@ -7,6 +7,7 @@ import { mkdirSync, writeFileSync, unlinkSync } from 'fs';
 import { z } from 'zod';
 import { CancellationToken, ToolDefinition, truncate, zodToJsonSchemaBody } from '../../private/common/lib.js';
 import { generateSuggestion } from './suggestion.js';
+import { getSession, executeHooksForEventWithSession } from '../../lib/index.js';
 
 const inputSchema = z.object({
   command: z.string().describe('The command to execute.'),
@@ -264,13 +265,33 @@ export const executeCommand = async (
 
 const handler = async (
   input: { command: string; cwd?: string; longRunningProcess?: boolean; timeoutMs?: number },
-  context: { toolUseId: string; cancellationToken?: CancellationToken }
+  context: { toolUseId: string; cancellationToken?: CancellationToken; workerId?: string }
 ) => {
   // Validate that timeoutMs and longRunningProcess are not used together
   if (input.timeoutMs !== undefined && input.longRunningProcess === true) {
     throw new Error(
       "Cannot use both 'timeoutMs' and 'longRunningProcess' options together. Use 'timeoutMs' for one-time tasks that need longer execution time, and 'longRunningProcess' for daemon processes that should continue running in the background."
     );
+  }
+
+  // Get session for hook execution if workerId available
+  let session;
+  if (context.workerId) {
+    try {
+      session = await getSession(context.workerId);
+    } catch (e) {
+      console.error('[command-execution] Failed to get session for hooks:', e);
+    }
+  }
+
+  // Execute beforeShellExecution hook
+  if (session) {
+    try {
+      await executeHooksForEventWithSession(session, 'beforeShellExecution', input.cwd || process.cwd());
+    } catch (e) {
+      console.error('[command-execution] beforeShellExecution hook failed:', e);
+      // Don't throw - continue with command execution even if hook fails
+    }
   }
 
   const res = await executeCommand(
@@ -281,6 +302,17 @@ const handler = async (
     context.toolUseId,
     context.cancellationToken
   );
+
+  // Execute afterShellExecution hook after command completes (whether successful or failed)
+  if (session) {
+    try {
+      await executeHooksForEventWithSession(session, 'afterShellExecution', input.cwd || process.cwd());
+    } catch (e) {
+      console.error('[command-execution] afterShellExecution hook failed:', e);
+      // Don't throw - hook errors don't affect command result
+    }
+  }
+
   return JSON.stringify(res, undefined, 1);
 };
 

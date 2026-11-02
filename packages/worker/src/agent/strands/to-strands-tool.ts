@@ -25,7 +25,7 @@
 import type { ToolResultContentBlock } from '@aws-sdk/client-bedrock-runtime';
 import { tool, type ToolContext } from '@strands-agents/sdk';
 import type { z, ZodType } from 'zod';
-import { renderToolResult } from '@remote-swe-agents/agent-core/lib';
+import { renderToolResult, getSession, executeHooksForEventWithSession } from '@remote-swe-agents/agent-core/lib';
 import { reportProgressTool, sendToAgentTool, acknowledgeAgentTool } from '@remote-swe-agents/agent-core/tools';
 
 /** Sanitize tool names: Strands ToolRegistry requires ^[a-zA-Z0-9_-]+$ */
@@ -219,12 +219,59 @@ export async function toStrandsTool<Input>(def: RemoteSweToolLike<Input>, deps: 
     inputSchema: def.schema as unknown as z.ZodType,
     callback: async (input: unknown, ctx?: ToolContext) => {
       const toolUseId = ctx?.toolUse?.toolUseId ?? '';
-      const result = await def.handler(input as Input, {
-        workerId: deps.workerId,
-        toolUseId,
-        globalPreferences: deps.globalPreferences,
-        cancellationToken: deps.cancellationToken,
-      });
+      const workerId = deps.workerId;
+      
+      // Get session for hook execution
+      let session;
+      try {
+        session = await getSession(workerId);
+      } catch (e) {
+        console.error('[toStrandsTool] Failed to get session for hooks:', e);
+      }
+
+      // Execute preToolUse hook
+      if (session) {
+        try {
+          await executeHooksForEventWithSession(session, 'preToolUse', process.cwd());
+        } catch (e) {
+          console.error(`[toStrandsTool] preToolUse hook failed for tool "${def.name}":`, e);
+          // Don't throw - continue with tool execution even if hook fails
+        }
+      }
+
+      let result: string | ToolResultContentBlock[];
+      try {
+        // Execute the actual tool
+        result = await def.handler(input as Input, {
+          workerId,
+          toolUseId,
+          globalPreferences: deps.globalPreferences,
+          cancellationToken: deps.cancellationToken,
+        });
+
+        // Execute postToolUse hook on success
+        if (session) {
+          try {
+            await executeHooksForEventWithSession(session, 'postToolUse', process.cwd());
+          } catch (e) {
+            console.error(`[toStrandsTool] postToolUse hook failed for tool "${def.name}":`, e);
+            // Don't throw - hook errors don't affect tool result
+          }
+        }
+      } catch (toolError) {
+        // Execute postToolUseFailure hook on error
+        if (session) {
+          try {
+            await executeHooksForEventWithSession(session, 'postToolUseFailure', process.cwd());
+          } catch (e) {
+            console.error(`[toStrandsTool] postToolUseFailure hook failed for tool "${def.name}":`, e);
+            // Don't throw - hook errors don't affect error handling
+          }
+        }
+        // Return error as string result instead of throwing
+        const errorMsg = toolError instanceof Error ? toolError.message : String(toolError);
+        result = `[Tool Error] ${def.name} failed: ${errorMsg}`;
+      }
 
       // forceReport timer — reset on communication tools
       const frs = deps.forceReportState;
