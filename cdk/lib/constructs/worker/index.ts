@@ -204,6 +204,8 @@ export class Worker extends Construct {
         vpc,
       }),
     });
+    const userData = launchTemplate.userData!;
+
     userData.addCommands(
       `
 apt-get -o DPkg::Lock::Timeout=-1 update
@@ -537,6 +539,7 @@ systemctl start myapp
       additionalManagedPolicies: props.additionalManagedPolicies,
       vapidKeys: props.vapidKeys,
       eventTrigger,
+    });
     this.agentCoreRuntime = agentCoreRuntime;
 
     // Grant event trigger management to AgentCore role

@@ -48,6 +48,8 @@ export interface AgentCoreRuntimeProps {
   bedrockCriRegionOverride?: string;
   additionalManagedPolicies?: string[];
   vapidKeys: VapidKeys;
+  eventTrigger: EventTrigger;
+  previewMicrovmImageArn?: string;
 }
 
 export class AgentCoreRuntime extends Construct implements IGrantable {
@@ -231,6 +233,8 @@ export class AgentCoreRuntime extends Construct implements IGrantable {
         EVENT_TRIGGER_TTL_SFN_ROLE_ARN: props.eventTrigger.schedulerRole.roleArn,
         EVENT_TRIGGER_RESOURCE_PREFIX: props.eventTrigger.resourcePrefix,
         ...(props.previewMicrovmImageArn ? { PREVIEW_MICROVM_IMAGE_ARN: props.previewMicrovmImageArn } : {}),
+        STACK_NAME: Stack.of(this).stackName,
+        ...workerLaunchEnv,
       },
     });
     runtime.node.addDependency(role);
