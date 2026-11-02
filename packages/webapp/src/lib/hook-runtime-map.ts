@@ -2,11 +2,11 @@
  * Mapping of hook event types to their supported runtime environments.
  * Used to display runtime badges in the hooks UI.
  * 
- * Note: Some hooks work across multiple runtimes. For example:
- * - Lifecycle hooks (sessionStart, sessionEnd, etc.) work on agentcore
- * - Tool/file execution hooks work on agentcore
- * - Kiro-specific hooks (prompt/MCP) only work with kiro runtime
- * - Some hooks like preCompact and stop could theoretically work with multiple runtimes
+ * Some hooks work across multiple runtimes:
+ * - Session lifecycle hooks work on all runtimes (universal session management)
+ * - Tool/file/shell hooks work on agentcore
+ * - Kiro-specific hooks only work with kiro (prompt submission, MCP, etc.)
+ * - Stop event is agentcore fundamental
  */
 
 import { HookEventType } from '@remote-swe-agents/agent-core/schema';
@@ -14,22 +14,22 @@ import { HookEventType } from '@remote-swe-agents/agent-core/schema';
 export type RuntimeType = 'agentcore' | 'kiro';
 
 export const hookRuntimeMap: Record<HookEventType, RuntimeType[]> = {
-  // Session lifecycle (agentcore fundamental)
-  sessionStart: ['agentcore'],
-  sessionEnd: ['agentcore'],
-  subagentStart: ['agentcore'],
-  subagentStop: ['agentcore'],
+  // Session lifecycle (universal - all runtimes)
+  sessionStart: ['agentcore', 'kiro'],
+  sessionEnd: ['agentcore', 'kiro'],
+  subagentStart: ['agentcore', 'kiro'],
+  subagentStop: ['agentcore', 'kiro'],
 
-  // Tool use hooks (agentcore fundamental)
+  // Tool use hooks (agentcore)
   preToolUse: ['agentcore'],
   postToolUse: ['agentcore'],
   postToolUseFailure: ['agentcore'],
 
-  // Shell/command execution (agentcore fundamental)
+  // Shell/command execution (agentcore)
   beforeShellExecution: ['agentcore'],
   afterShellExecution: ['agentcore'],
 
-  // File operations (agentcore fundamental)
+  // File operations (agentcore)
   beforeReadFile: ['agentcore'],
   afterFileEdit: ['agentcore'],
 
@@ -42,7 +42,7 @@ export const hookRuntimeMap: Record<HookEventType, RuntimeType[]> = {
   afterAgentResponse: ['kiro'],
   afterAgentThought: ['kiro'],
 
-  // Context management (kiro for now, but could expand)
+  // Context management
   preCompact: ['kiro'],
   stop: ['agentcore'],
 };
