@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { Menu, Languages, LogOut, Check, Key, Settings, Bot, Puzzle, Brain, Plug } from 'lucide-react';
+import { Menu, Languages, LogOut, Check, Key, Settings, Bot, Puzzle, Brain, FishingHook } from 'lucide-react';
 import ThemeToggle from './ThemeToggle';
 import {
   DropdownMenu,
@@ -131,7 +131,7 @@ export default function Header({
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <Link href="/hooks" className="w-full cursor-default flex items-center" prefetch={false}>
-                    <Plug className="mr-2 h-4 w-4" />
+                    <FishingHook className="mr-2 h-4 w-4" />
                     <span>{t('hooks')}</span>
                   </Link>
                 </DropdownMenuItem>
