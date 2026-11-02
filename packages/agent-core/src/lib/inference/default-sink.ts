@@ -52,6 +52,7 @@ export const defaultToolEventSink: ToolEventSink = {
       toolUseId: payload.toolUseId,
       output: payload.output,
       ...(payload.imageKeys && payload.imageKeys.length > 0 ? { imageKeys: payload.imageKeys } : {}),
+      ...(payload.messageSK ? { messageSK: payload.messageSK } : {}),
     });
   },
 };

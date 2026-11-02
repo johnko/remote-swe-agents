@@ -100,4 +100,36 @@ describe('defaultToolEventSink', () => {
       output: 'hello',
     });
   });
+
+  test('emitToolResultEvent includes messageSK when provided', async () => {
+    await defaultToolEventSink.emitToolResultEvent('w1', {
+      toolUseId: 't1',
+      toolName: 'execute_command',
+      output: 'done',
+      messageSK: '000000000000101',
+    });
+    expect(sendWebappEvent).toHaveBeenCalledWith('w1', {
+      type: 'toolResult',
+      toolName: 'execute_command',
+      toolUseId: 't1',
+      output: 'done',
+      messageSK: '000000000000101',
+    });
+  });
+
+  test('emitToolResultEvent includes imageKeys when provided', async () => {
+    await defaultToolEventSink.emitToolResultEvent('w1', {
+      toolUseId: 't1',
+      toolName: 'read_local_image',
+      output: 'image data',
+      imageKeys: ['w1/image1.png'],
+    });
+    expect(sendWebappEvent).toHaveBeenCalledWith('w1', {
+      type: 'toolResult',
+      toolName: 'read_local_image',
+      toolUseId: 't1',
+      output: 'image data',
+      imageKeys: ['w1/image1.png'],
+    });
+  });
 });

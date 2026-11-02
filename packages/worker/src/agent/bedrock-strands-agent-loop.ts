@@ -391,6 +391,8 @@ export const bedrockStrandsAgentLoop = async (ctx: TurnContext, sink: ToolEventS
   // Legacy emits individual toolUse/toolResult events for each tool. The webapp
   // uses these for: (1) real-time tool cards, (2) sendMessageToUser special-case
   // rendering as assistant messages (not tool cards).
+  // Track parentSK per toolUseId so the toolResult emit includes the messageSK.
+  const toolUseParentSK = new Map<string, string>();
   agent.addHook(BeforeToolCallEvent, async (event) => {
     const toolName = event.toolUse.name;
     const toolUseId = event.toolUse.toolUseId;
@@ -403,6 +405,10 @@ export const bedrockStrandsAgentLoop = async (ctx: TurnContext, sink: ToolEventS
       reasoningText: lastReasoningText,
       messageSK: parentSK,
     });
+    // Remember the parentSK for this toolUseId so we can correlate later.
+    if (parentSK) {
+      toolUseParentSK.set(toolUseId, parentSK);
+    }
   });
 
   // Skill activation detection — records activated skill IDs for future use.
@@ -430,7 +436,9 @@ export const bedrockStrandsAgentLoop = async (ctx: TurnContext, sink: ToolEventS
       toolName,
       toolUseId,
       output,
+      messageSK: toolUseParentSK.get(toolUseId),
     });
+    toolUseParentSK.delete(toolUseId);
 
     // Skill activation detection: record activated skill IDs
     if (output && !output.startsWith('Error')) {

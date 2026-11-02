@@ -73,6 +73,8 @@ export interface ToolResultEmit {
   toolName: string;
   output: string;
   imageKeys?: string[];
+  /** Optional: the SK of the toolResult message when known (enables precise client-side matching). */
+  messageSK?: string;
 }
 
 /** Handle for a previously-persisted toolUse item. Carries the DynamoDB SK so

@@ -19,6 +19,12 @@ export type MessageView = {
   imageKeys?: string[];
   fileKeys?: string[];
   /**
+   * For toolUse/toolResult messages: the toolUseId enables precise matching
+   * of results to their corresponding tool invocations when multiple tools
+   * are in flight.
+   */
+  toolUseId?: string;
+  /**
    * Blob object URLs (`URL.createObjectURL`) for a just-submitted message's
    * image attachments, keyed by S3 object key. Set ONLY on the submitter's
    * own optimistic bubble so `ImageViewer` can paint the image instantly
