@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { ToolDefinition, zodToJsonSchemaBody } from '../../private/common/lib.js';
-import { getSession, updateSessionAgentStatus, stopWorkerInstance } from '../../lib/index.js';
+import { getSession, updateSessionAgentStatus, stopWorkerInstance, executeHooksForEventWithSession } from '../../lib/index.js';
 import { sendWebappEvent } from '../../lib/events.js';
 import { savePendingCompleteSession } from '../confirm-complete-session/index.js';
 import { terminatePreview } from '../preview/index.js';
@@ -50,6 +50,14 @@ export const completeSessionTool: ToolDefinition<z.infer<typeof inputSchema>> = 
         `To proceed: call confirm_complete_session.`,
         `To abort: simply do not call confirm_complete_session and continue working.`,
       ].join('\n');
+    }
+
+    // Execute stop hook before session completion
+    try {
+      await executeHooksForEventWithSession(targetSession, 'stop', process.cwd());
+    } catch (e) {
+      console.error('[completeSession] stop hook failed:', e);
+      // Don't throw - hook errors don't prevent session completion
     }
 
     await updateSessionAgentStatus(targetSessionId, 'completed');
