@@ -15,6 +15,7 @@ import { deleteUserHook, updateUserHook, type ClientHook } from '@/actions/hook/
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import LocalDateTime from '@/components/LocalDateTime';
+import { getHookRuntimesDisplay, getHookRuntimes, getRuntimeBadgeColor } from '@/lib/hook-runtime-map';
 
 type HookListProps = {
   initialHooks: ClientHook[];
@@ -158,6 +159,14 @@ export default function HookList({ initialHooks }: HookListProps) {
                     <span className="px-2 py-0.5 text-xs bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200 rounded">
                       {hook.event}
                     </span>
+                    {getHookRuntimes(hook.event).map((runtime) => (
+                      <span
+                        key={runtime}
+                        className={`px-2 py-0.5 text-xs rounded ${getRuntimeBadgeColor(runtime)}`}
+                      >
+                        {runtime === 'agentcore' ? 'Agent Core' : runtime.charAt(0).toUpperCase() + runtime.slice(1)}
+                      </span>
+                    ))}
                     <span className="px-2 py-0.5 text-xs bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 rounded">
                       {t(`createdBy.${hook.createdBy ?? 'user'}`)}
                     </span>
@@ -237,11 +246,17 @@ export default function HookList({ initialHooks }: HookListProps) {
                         disabled={busyId === hook.SK}
                         className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                       >
-                        {eventTypes.map((evt) => (
-                          <option key={evt} value={evt}>
-                            {evt}
-                          </option>
-                        ))}
+                        {eventTypes.map((evt) => {
+                          const runtimes = getHookRuntimes(evt);
+                          const runtimesLabel = runtimes
+                            .map((r) => (r === 'agentcore' ? 'Agent Core' : r.charAt(0).toUpperCase() + r.slice(1)))
+                            .join(', ');
+                          return (
+                            <option key={evt} value={evt}>
+                              {evt} — {runtimesLabel}
+                            </option>
+                          );
+                        })}
                       </select>
                     </div>
                     <div>
