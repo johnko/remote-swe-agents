@@ -435,7 +435,8 @@
         "label": "System Prompt",
         "placeholder": "You are a helpful assistant specialized in...",
         "description": "Define the agent's behavior, expertise, and response style",
-        "includeDefaultKnowledge": "Include default SWE knowledge (communication style, Git workflow, coding conventions, etc.)"
+        "includeDefaultKnowledge": "Include default SWE knowledge (communication style, Git workflow, coding conventions, etc.)",
+        "includeDefaultKnowledgeShort": "Default Knowledge"
       },
       "tools": {
         "label": "Tools",
@@ -475,7 +476,8 @@
       "confirmDelete": "Are you sure you want to delete this agent?",
       "icon": {
         "label": "Agent Icon",
-        "description": "Upload a custom icon for this agent (PNG, JPEG, or WebP)"
+        "description": "Upload a custom icon for this agent (PNG, JPEG, or WebP)",
+        "presetAriaLabel": "Select {label} preset icon"
       },
       "sections": {
         "basic": {
