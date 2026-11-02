@@ -22,7 +22,8 @@
     "costAnalysis": "Cost Analysis",
     "customAgent": "Custom Agents",
     "skills": "Skills",
-    "lessons": "Lessons"
+    "lessons": "Lessons",
+    "hooks": "Hooks"
   },
   "sessions": {
     "title": "Sessions",
