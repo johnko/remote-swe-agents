@@ -32,13 +32,9 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { KEYBOARD_OPEN_VIEWPORT_DELTA_PX, PINCH_ZOOM_SCALE_THRESHOLD } from '@/hooks/use-viewport-state';
 import {
   ModelType,
-  InferenceMode,
   getAvailableModelTypes,
   modelConfigs,
-  kiroModelConfigs,
-  getKiroModelIds,
   AgentStatus,
-  KiroModelId,
 } from '@remote-swe-agents/agent-core/schema';
 
 const MAX_TEXTAREA_HEIGHT = 600;
@@ -155,18 +151,6 @@ type MessageFormProps = {
    * — important for `MessageList` grouping (see `getMessageSenderKey`).
    */
   currentUserId?: string;
-  /**
-   * Effective inference mode for this session. When `'kiro-cli'` the Bedrock
-   * model selector is replaced with a Kiro model selector that lets the user
-   * swap the model per message via the `/model` slash command in kiro-cli.
-   */
-  inferenceMode?: InferenceMode;
-  /**
-   * Default Kiro model for this session, resolved server-side as
-   * `session.kiroModel > userPrefs.kiroModel > 'auto'`. Used as the initial
-   * value of the per-message selector on Kiro sessions.
-   */
-  kiroModel?: string;
   agentStatus?: AgentStatus;
   onInterrupt?: () => void;
 };
@@ -179,17 +163,11 @@ export default function MessageForm({
   defaultModelOverride,
   currentUserDisplayName,
   currentUserId,
-  inferenceMode,
-  kiroModel,
   agentStatus,
   onInterrupt,
 }: MessageFormProps) {
   const t = useTranslations('sessions');
   const draftStorageKey = `draft-message-${workerId}`;
-
-  const isKiroSession = inferenceMode === 'kiro-cli';
-  const kiroModelIds = getKiroModelIds();
-  const defaultKiroModel = kiroModel && kiroModel in kiroModelConfigs ? kiroModel : 'auto';
 
   const isAgentWorking = agentStatus === 'working';
 
@@ -199,7 +177,7 @@ export default function MessageForm({
     },
   });
   const modelUpdateTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const pendingModelChangeRef = useRef<{ field: 'bedrock' | 'kiro'; value: string } | null>(null);
+  const pendingModelChangeRef = useRef<{ field: 'bedrock'; value: string } | null>(null);
 
   const flushModelChange = useCallback(() => {
     if (modelUpdateTimeoutRef.current) {
@@ -211,8 +189,6 @@ export default function MessageForm({
       pendingModelChangeRef.current = null;
       if (pending.field === 'bedrock') {
         executeUpdateModel({ workerId, bedrockDefaultModel: pending.value as ModelType });
-      } else {
-        executeUpdateModel({ workerId, kiroDefaultModel: pending.value as KiroModelId });
       }
     }
   }, [workerId, executeUpdateModel]);
@@ -224,7 +200,7 @@ export default function MessageForm({
   }, [flushModelChange]);
 
   const handleModelChange = useCallback(
-    (field: 'bedrock' | 'kiro', value: string) => {
+    (field: 'bedrock', value: string) => {
       pendingModelChangeRef.current = { field, value };
       if (modelUpdateTimeoutRef.current) {
         clearTimeout(modelUpdateTimeoutRef.current);
@@ -234,8 +210,6 @@ export default function MessageForm({
         pendingModelChangeRef.current = null;
         if (field === 'bedrock') {
           executeUpdateModel({ workerId, bedrockDefaultModel: value as ModelType });
-        } else {
-          executeUpdateModel({ workerId, kiroDefaultModel: value as KiroModelId });
         }
       }, 300);
     },
@@ -287,7 +261,6 @@ export default function MessageForm({
         } catch {}
         reset();
         setValue('modelOverride', args.input.modelOverride);
-        setValue('kiroModelOverride', args.input.kiroModelOverride);
         clearImagesRef.current();
         try {
           localStorage.removeItem(draftStorageKey);
@@ -392,7 +365,6 @@ export default function MessageForm({
         imageKeys: [],
         fileKeys: [],
         modelOverride: defaultModelOverride,
-        kiroModelOverride: defaultKiroModel,
       },
     },
   });
@@ -510,7 +482,6 @@ export default function MessageForm({
     const fileKeys = extractStringArray(raw.fileKeys);
     const { values: optionals, dropped } = salvageOptionalFields(sendMessageToAgentSchema.shape, raw, [
       'modelOverride',
-      'kiroModelOverride',
     ]);
     const parsed = sendMessageToAgentSchema.safeParse({ workerId, message, imageKeys, fileKeys, ...optionals });
     const canResend = pending.mode === 'resend' && parsed.success;
@@ -524,9 +495,6 @@ export default function MessageForm({
       setValue('message', values.message, { shouldValidate: true });
       if ('modelOverride' in values && values.modelOverride) {
         setValue('modelOverride', values.modelOverride);
-      }
-      if ('kiroModelOverride' in values && values.kiroModelOverride) {
-        setValue('kiroModelOverride', values.kiroModelOverride);
       }
       if (textareaRef.current) {
         adjustTextareaHeightWithScrollAnchor(textareaRef.current);
@@ -808,36 +776,19 @@ export default function MessageForm({
               </div>
 
               <div className="flex gap-2 items-center">
-                {isKiroSession ? (
-                  <select
-                    {...register('kiroModelOverride', {
-                      onChange: (e) => handleModelChange('kiro', e.target.value),
-                    })}
-                    disabled={isExecuting}
-                    aria-label={t('kiroModelSelector')}
-                    className="text-xs px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 dark:text-white focus:outline-none"
-                  >
-                    {kiroModelIds.map((id) => (
-                      <option key={id} value={id}>
-                        {kiroModelConfigs[id]?.name ?? id}
-                      </option>
-                    ))}
-                  </select>
-                ) : (
-                  <select
-                    {...register('modelOverride', {
-                      onChange: (e) => handleModelChange('bedrock', e.target.value),
-                    })}
-                    disabled={isExecuting}
-                    className="text-xs px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 dark:text-white focus:outline-none"
-                  >
-                    {getAvailableModelTypes().map((type) => (
-                      <option key={type} value={type}>
-                        {modelConfigs[type].name} (${modelConfigs[type].pricing.input}/1M)
-                      </option>
-                    ))}
-                  </select>
-                )}
+                <select
+                  {...register('modelOverride', {
+                    onChange: (e) => handleModelChange('bedrock', e.target.value),
+                  })}
+                  disabled={isExecuting}
+                  className="text-xs px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 dark:text-white focus:outline-none"
+                >
+                  {getAvailableModelTypes().map((type) => (
+                    <option key={type} value={type}>
+                      {modelConfigs[type].name} (${modelConfigs[type].pricing.input}/1M)
+                    </option>
+                  ))}
+                </select>
                 {isAgentWorking && !isExecuting && !messageValue?.trim() ? (
                   <TooltipProvider delayDuration={100}>
                     <Tooltip>

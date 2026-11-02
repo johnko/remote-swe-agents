@@ -173,16 +173,16 @@ describe('salvageOptionalFields', () => {
   const shape = {
     modelOverride: z.enum(['sonnet', 'opus']).optional(),
     customAgentId: z.string().optional(),
-    inferenceMode: z.enum(['bedrock', 'kiro-cli']).optional(),
+    inferenceMode: z.enum(['bedrock']).optional(),
   };
 
   it('drops only the fields that are actually invalid, keeping valid siblings', () => {
     const { values, dropped } = salvageOptionalFields(
       shape,
-      { modelOverride: 'removed-model', customAgentId: 'agent-1', inferenceMode: 'kiro-cli' },
+      { modelOverride: 'removed-model', customAgentId: 'agent-1' },
       ['modelOverride', 'customAgentId', 'inferenceMode']
     );
-    expect(values).toEqual({ customAgentId: 'agent-1', inferenceMode: 'kiro-cli' });
+    expect(values).toEqual({ customAgentId: 'agent-1' });
     expect(dropped).toEqual(['modelOverride']);
   });
 

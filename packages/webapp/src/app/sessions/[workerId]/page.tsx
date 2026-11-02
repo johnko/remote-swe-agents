@@ -393,7 +393,6 @@ export default async function SessionPage({ params }: { params: Promise<{ worker
       inferenceMode: session.inferenceMode,
       bedrockDefaultModel: session.bedrockDefaultModel,
       kiroDefaultModel: session.kiroDefaultModel,
-      kiroModel: session.kiroModel,
     },
     customAgent: customAgent
       ? {
@@ -401,13 +400,11 @@ export default async function SessionPage({ params }: { params: Promise<{ worker
           bedrockDefaultModel: customAgent.bedrockDefaultModel,
           defaultModel: customAgent.defaultModel,
           kiroDefaultModel: customAgent.kiroDefaultModel,
-          kiroModel: customAgent.kiroModel,
         }
       : undefined,
     env: { inferenceMode: process.env.INFERENCE_MODE },
   });
   const effectiveInferenceMode = resolvedModel.inferenceMode;
-  const effectiveKiroModel = effectiveInferenceMode === 'kiro-cli' ? resolvedModel.kiroModel : undefined;
   const effectiveBedrockModel = resolvedModel.bedrockModel;
 
   // Load persisted port mappings (hostname + opened ports) so message
@@ -459,8 +456,6 @@ export default async function SessionPage({ params }: { params: Promise<{ worker
         unreadMap={unreadMap}
         lastReadAt={lastReadAt}
         parentSessionId={session.parentSessionId}
-        inferenceMode={effectiveInferenceMode}
-        kiroModel={effectiveKiroModel}
         bedrockModel={effectiveBedrockModel}
         sessionBedrockDefaultModel={session.bedrockDefaultModel}
         initialPortMapping={initialPortMapping}

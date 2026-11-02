@@ -1,7 +1,6 @@
 import { z } from 'zod';
 import {
   inferenceModeSchema,
-  kiroModelSchema,
   mcpConfigSchema,
   modelTypeSchema,
 } from '@remote-swe-agents/agent-core/schema';
@@ -12,7 +11,6 @@ export const upsertCustomAgentSchema = z.object({
   description: z.string().default(''),
   defaultModel: modelTypeSchema,
   bedrockDefaultModel: modelTypeSchema.optional(),
-  kiroDefaultModel: kiroModelSchema.optional(),
   systemPrompt: z.string().default(''),
   tools: z.array(z.string()),
   useAllTools: z.boolean().optional().default(false),
@@ -34,7 +32,6 @@ export const upsertCustomAgentSchema = z.object({
   iconKey: z.string().optional().default(''),
   includeDefaultKnowledge: z.boolean().optional().default(true),
   inferenceMode: inferenceModeSchema.nullable().optional(),
-  kiroModel: z.string().optional(),
   parentAgentId: z.string().optional(),
 });
 

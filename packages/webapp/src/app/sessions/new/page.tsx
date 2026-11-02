@@ -28,8 +28,7 @@ export default async function NewSessionPage() {
   const preferences = await getPreferences();
   const customAgents = await getAllCustomAgents();
   const session = await getSession();
-  const userPreferences = await getUserPreferences(session.userId);
-  const kiroModel = userPreferences.kiroDefaultModel || userPreferences.kiroModel || 'auto';
+
 
   templates = (result.Items ?? []) as PromptTemplate[];
 
@@ -81,7 +80,6 @@ export default async function NewSessionPage() {
                   preferences={preferences}
                   customAgents={customAgents}
                   agentIconUrls={agentIconUrls}
-                  kiroModel={kiroModel}
                 />
               </div>
             </div>

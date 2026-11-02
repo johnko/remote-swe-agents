@@ -109,15 +109,9 @@ interface SessionPageClientProps {
   /**
    * Effective inference mode for this session, resolved server-side using the
    * same priority chain as the worker (session > customAgent > userPrefs >
-   * env > default). When `'kiro-cli'`, the chat input should show a read-only
-   * Kiro badge instead of the Bedrock model picker.
+   * env > default).
    */
   inferenceMode?: InferenceMode;
-  /**
-   * Kiro model baked into the session (or inherited from user preferences for
-   * legacy sessions). Only meaningful when `inferenceMode === 'kiro-cli'`.
-   */
-  kiroModel?: string;
   /**
    * Effective Bedrock model for this session, resolved server-side via the
    * priority chain (session > customAgent > env > default). User preferences
@@ -156,7 +150,6 @@ export default function SessionPageClient({
   lastReadAt,
   parentSessionId,
   inferenceMode,
-  kiroModel,
   bedrockModel,
   sessionBedrockDefaultModel,
   initialPortMapping,
@@ -180,8 +173,6 @@ export default function SessionPageClient({
         unreadMap={unreadMap}
         lastReadAt={lastReadAt}
         parentSessionId={parentSessionId}
-        inferenceMode={inferenceMode}
-        kiroModel={kiroModel}
         bedrockModel={bedrockModel}
         sessionBedrockDefaultModel={sessionBedrockDefaultModel}
         initialRewindHiddenCount={initialRewindHiddenCount}
@@ -206,8 +197,6 @@ function SessionPageClientInner({
   unreadMap,
   lastReadAt,
   parentSessionId,
-  inferenceMode,
-  kiroModel,
   bedrockModel,
   sessionBedrockDefaultModel,
   initialRewindHiddenCount,
@@ -1114,21 +1103,12 @@ function SessionPageClientInner({
             // For Kiro sessions, do NOT seed the Bedrock model selector from
             // message history: legacy Kiro sessions (created before Phase 2b)
             // carry non-Bedrock `modelOverride` values on their messages that
-            // would fail the strict `ModelType` zod schema on the client and
-            // permanently disable the submit button. The Kiro branch of the
-            // form uses its own `kiroModelOverride` selector instead, so
-            // seeding `defaultModelOverride` from preferences here is purely
-            // defensive and never user-visible on Kiro sessions.
             defaultModelOverride={
-              inferenceMode === 'kiro-cli'
-                ? preferences.modelOverride
-                : (sessionBedrockDefaultModel ??
-                  messages.findLast((m) => m.modelOverride)?.modelOverride ??
-                  bedrockModel ??
-                  preferences.modelOverride)
+              sessionBedrockDefaultModel ??
+              messages.findLast((m) => m.modelOverride)?.modelOverride ??
+              bedrockModel ??
+              preferences.modelOverride
             }
-            inferenceMode={inferenceMode}
-            kiroModel={kiroModel}
             agentStatus={agentStatus}
             onInterrupt={handleInterrupt}
           />

@@ -11,13 +11,11 @@ export function mcpServersCount(agent: CustomAgent): number {
 }
 
 export function effectiveModel(agent: CustomAgent): string {
-  if (agent.inferenceMode === 'kiro-cli') return agent.kiroDefaultModel ?? agent.kiroModel ?? 'auto';
   return agent.bedrockDefaultModel ?? agent.defaultModel;
 }
 
 export function inferenceModeLabel(mode: CustomAgent['inferenceMode']): string {
   if (mode === 'bedrock') return 'Bedrock';
-  if (mode === 'kiro-cli') return 'Kiro';
   return 'Default';
 }
 
