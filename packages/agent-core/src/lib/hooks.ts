@@ -87,10 +87,16 @@ export const createHook = async (
   return hook;
 };
 
+export interface UpdateHookInput {
+  content?: string;
+  category?: string;
+  status?: HookStatus;
+}
+
 export const updateHook = async (
   userId: string,
   hookId: string,
-  input: Partial<Omit<Hook, 'PK' | 'SK' | 'createdAt' | 'updatedAt'>>
+  input: UpdateHookInput
 ): Promise<Hook> => {
   const existing = await getHook(userId, hookId);
   if (!existing) {
