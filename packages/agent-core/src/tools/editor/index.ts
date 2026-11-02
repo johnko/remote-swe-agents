@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { existsSync, readFileSync, writeFileSync } from 'fs';
 import { ToolDefinition, zodToJsonSchemaBody } from '../../private/common/lib.js';
+import { getSession, executeHooksForEventWithSession } from '../../lib/index.js';
 
 const inputSchema = z.object({
   filePath: z.string().describe('The absolute path to the file to modify (must be absolute, not relative)'),
@@ -14,19 +15,54 @@ const inputSchema = z.object({
 
 const name = 'file_editor';
 
-const editFile = async (input: z.infer<typeof inputSchema>) => {
+const editFile = async (
+  input: z.infer<typeof inputSchema>,
+  context?: { workerId?: string; toolUseId?: string }
+) => {
   const { filePath, oldString, newString } = input;
+  
+  // Get session for hook execution if workerId available
+  let session;
+  if (context?.workerId) {
+    try {
+      session = await getSession(context.workerId);
+    } catch (e) {
+      console.error('[file-editor] Failed to get session for hooks:', e);
+    }
+  }
+
   if (existsSync(filePath) === false) {
     if (oldString) {
       return `The file does not exist. Please check again.`;
     }
     writeFileSync(filePath, newString);
+    
+    // Execute afterFileEdit hook on file creation
+    if (session) {
+      try {
+        await executeHooksForEventWithSession(session, 'afterFileEdit', process.cwd());
+      } catch (e) {
+        console.error('[file-editor] afterFileEdit hook failed:', e);
+        // Don't throw - hook errors don't affect file write
+      }
+    }
+    
     return 'successfully created the file.';
   }
 
   // When oldString is empty and file already exists, prevent overwriting existing files
   if (!oldString) {
     return `The file already exists. Please provide a non-empty oldString to edit it.`;
+  }
+
+  // Execute beforeReadFile hook before reading the file
+  if (session) {
+    try {
+      await executeHooksForEventWithSession(session, 'beforeReadFile', process.cwd());
+    } catch (e) {
+      console.error('[file-editor] beforeReadFile hook failed:', e);
+      // Don't throw - continue with file read even if hook fails
+    }
   }
 
   const fileContents = readFileSync(filePath, 'utf8');
@@ -40,6 +76,17 @@ const editFile = async (input: z.infer<typeof inputSchema>) => {
 
   const updatedContents = fileContents.replace(oldString, newString);
   writeFileSync(filePath, updatedContents);
+  
+  // Execute afterFileEdit hook after file modification
+  if (session) {
+    try {
+      await executeHooksForEventWithSession(session, 'afterFileEdit', process.cwd());
+    } catch (e) {
+      console.error('[file-editor] afterFileEdit hook failed:', e);
+      // Don't throw - hook errors don't affect file write result
+    }
+  }
+  
   return 'successfully edited the file.';
 };
 
@@ -52,7 +99,7 @@ const isSingleOccurrence = (str: string, substr: string) => {
 
 export const fileEditTool: ToolDefinition<z.infer<typeof inputSchema>> = {
   name,
-  handler: editFile,
+  handler: (input, context) => editFile(input, context as any),
   schema: inputSchema,
   toolSpec: async () => ({
     name,
