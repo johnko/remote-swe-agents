@@ -180,7 +180,8 @@
   "home": {
     "title": "Remote SWE Agents へようこそ",
     "description": "Remote SWE Agents では、AIを搭載したソフトウェアエンジニアがあなたのプロジェクトをサポートします。",
-    "costAnalysis": "コスト分析"
+    "costAnalysis": "コスト分析",
+    "getStarted": "始める"
   },
   "cost": {
     "title": "コスト分析",
@@ -397,7 +398,9 @@
     "description": "特定の動作と機能を持つカスタムAIエージェントを作成・管理",
     "list": {
       "title": "作成済みカスタムエージェント",
-      "description": "これまでに作成されたカスタムAIエージェントの一覧"
+      "description": "これまでに作成されたカスタムAIエージェントの一覧",
+      "loadMore": "さらに読み込む",
+      "loading": "読み込み中..."
     },
     "create": {
       "title": "カスタムエージェントを作成",
