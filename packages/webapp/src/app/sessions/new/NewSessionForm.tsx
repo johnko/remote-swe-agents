@@ -82,7 +82,7 @@ export default function NewSessionForm({
 
   const {
     form,
-    action: { isPending },
+    action: { isPending, executeAsync },
     handleSubmitWithAction,
   } = useHookFormAction(createNewWorker, zodResolver(createNewWorkerSchema), {
     actionProps: {
@@ -178,7 +178,9 @@ export default function NewSessionForm({
       }
       if (canResend) {
         toast.info(sessionsT('reloadedAfterUpdate'));
-        handleSubmitWithAction();
+        void handleSubmitWithAction().catch(() => {
+          // Errors are handled by onError callback
+        });
       } else {
         resendAttachmentsRef.current = null;
         void restoreFromKeysRef.current(imageKeys, fileKeys);
@@ -251,6 +253,20 @@ export default function NewSessionForm({
     setIsTemplateModalOpen(false);
   };
 
+  // Wrap the form submission to properly handle promise rejections.
+  // react-hook-form's handleSubmit may not properly catch rejections from
+  // next-safe-action's executeAsync in all scenarios, leading to unhandled
+  // promise rejection warnings when the server returns a non-RSC response.
+  const handleFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    try {
+      await handleSubmitWithAction(e);
+    } catch {
+      // Errors are already handled by onError callback in useHookFormAction.
+      // This catch block prevents unhandled promise rejection warnings.
+    }
+  };
+
   const handleSelectMode = (mode: InferenceMode) => {
     if (isModeLocked) return;
     if (mode === 'kiro-cli' && !hasApiKey) return;
@@ -262,7 +278,7 @@ export default function NewSessionForm({
 
   return (
     <Form {...form}>
-      <form onSubmit={handleSubmitWithAction} className="space-y-6">
+      <form onSubmit={handleFormSubmit} className="space-y-6">
         <div className="text-left">
           <ImagePreviewList />
 
@@ -474,7 +490,9 @@ export default function NewSessionForm({
                 formState.isValid &&
                 !isUploading
               ) {
-                handleSubmitWithAction();
+                void handleSubmitWithAction().catch(() => {
+                  // Errors are handled by onError callback
+                });
               }
             }}
           />
