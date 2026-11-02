@@ -572,8 +572,13 @@ function SessionPageClientInner({
                 // re-rendering (the previously-shipped bug where tool output
                 // never appeared until a full refresh). Copy the target bubble
                 // into a new array instead.
+                // Prefer matching by toolUseId when available (precise correlation);
+                // fall back to finding the last toolUse without output (legacy heuristic).
                 let next = prev;
-                const toolUseIdx = prev.findLastIndex((msg) => msg.type == 'toolUse');
+                const toolUseIdx =
+                  'toolUseId' in event && event.toolUseId
+                    ? prev.findLastIndex((msg) => msg.type === 'toolUse' && msg.toolUseId === event.toolUseId)
+                    : prev.findLastIndex((msg) => msg.type === 'toolUse');
                 if (toolUseIdx >= 0 && prev[toolUseIdx].output == undefined) {
                   next = [...prev];
                   next[toolUseIdx] = { ...next[toolUseIdx], output: event.output };
@@ -708,6 +713,7 @@ function SessionPageClientInner({
                     timestamp: event.messageSK ? new Date(parseInt(event.messageSK)) : new Date(event.timestamp),
                     type: 'toolUse',
                     thinkingBudget: event.thinkingBudget,
+                    toolUseId: event.toolUseId,
                   },
                 ]);
               }

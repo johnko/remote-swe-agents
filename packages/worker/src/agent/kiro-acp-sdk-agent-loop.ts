@@ -646,11 +646,13 @@ export const kiroAcpSdkAgentLoop = async (ctx: TurnContext, sink: ToolEventSink)
         }
       }
     }
+    let toolResultSK: string | undefined;
     if (tracked) {
       if (tracked.hadNonEmptyDiscard) {
         toolResultMsg.content![0]!.toolResult!.content!.push({ text: NON_EMPTY_DISCARD_WARNING });
       }
-      await sink.persistToolResultMessage(workerId, toolResultMsg, tracked.persisted.SK);
+      const persisted = await sink.persistToolResultMessage(workerId, toolResultMsg, tracked.persisted.SK);
+      toolResultSK = persisted.SK;
       inFlight.delete(toolCallId);
     }
     await sink.emitToolResultEvent(workerId, {
@@ -658,6 +660,7 @@ export const kiroAcpSdkAgentLoop = async (ctx: TurnContext, sink: ToolEventSink)
       toolName,
       output: resolved,
       ...(imageKeys ? { imageKeys } : {}),
+      ...(toolResultSK ? { messageSK: toolResultSK } : {}),
     });
   };
 

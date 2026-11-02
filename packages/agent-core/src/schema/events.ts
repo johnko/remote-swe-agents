@@ -56,6 +56,12 @@ export const webappEventSchema = z.discriminatedUnion('type', [
     output: z.string(),
     imageKeys: z.array(z.string()).optional(),
     timestamp: z.number(),
+    /**
+     * Optional: the SK of the persisted toolResult message. Enables precise
+     * client-side matching of tool results to their corresponding tool uses.
+     * Populated by backends that emit tool results after persistence.
+     */
+    messageSK: z.string().optional(),
   }),
   z.object({
     type: z.literal('instanceStatusChanged'),
