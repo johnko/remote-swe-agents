@@ -448,7 +448,15 @@
         "description": "Optional MCP (Model Context Protocol) configuration for advanced integrations",
         "formatJson": "Format JSON",
         "formatSuccess": "JSON formatted successfully",
-        "formatError": "Invalid JSON format"
+        "formatError": "Invalid JSON format",
+        "noServers": "No MCP servers configured",
+        "serverNamePlaceholder": "Server name (e.g., filesystem)",
+        "commandPlaceholder": "Command (e.g., npx)",
+        "argsPlaceholder": "Arguments (comma-separated)",
+        "removeServer": "Remove server",
+        "addServer": "Add MCP Server",
+        "advancedToggle": "Show MCP Configuration",
+        "structuredUnavailable": "Structured MCP configuration is not available"
       },
       "runtimeType": {
         "label": "Runtime Type",
@@ -467,6 +475,47 @@
       "icon": {
         "label": "Agent Icon",
         "description": "Upload a custom icon for this agent (PNG, JPEG, or WebP)"
+      },
+      "sections": {
+        "basic": {
+          "title": "Basic Information",
+          "description": "Name, description, and icon for your agent"
+        },
+        "model": {
+          "title": "Model Settings",
+          "description": "Configure the AI model and inference mode"
+        },
+        "behavior": {
+          "title": "Behavior",
+          "description": "Define how the agent behaves and responds"
+        },
+        "capabilities": {
+          "title": "Capabilities",
+          "description": "Select tools and MCP servers the agent can use"
+        },
+        "runtime": {
+          "title": "Runtime",
+          "description": "Configure the runtime environment"
+        }
+      },
+      "inferenceMode": {
+        "label": "Inference Mode",
+        "inherit": "Inherit from user preferences",
+        "bedrock": "Bedrock",
+        "kiro": "Kiro CLI",
+        "tabDescription": "Choose how the agent processes requests",
+        "inheritDescription": "Uses your default inference mode setting",
+        "retentionNote": "Model settings are retained for future sessions"
+      },
+      "bedrockModel": {
+        "label": "Bedrock Model",
+        "placeholder": "Select a Bedrock model",
+        "description": "The AWS Bedrock model for inference"
+      },
+      "kiroModel": {
+        "label": "Kiro Model",
+        "placeholder": "Select a Kiro model",
+        "description": "The Kiro CLI model for inference"
       }
     },
     "duplicate": "Duplicate",
