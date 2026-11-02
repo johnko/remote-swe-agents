@@ -600,5 +600,54 @@
     "updateSuccess": "Lesson updated successfully",
     "updateError": "Failed to update lesson",
     "deleteError": "Failed to delete lesson"
+  },
+  "hooks": {
+    "title": "Hooks",
+    "description": "Manage hooks that execute custom scripts at specific agent lifecycle events",
+    "create": {
+      "title": "Create Hook",
+      "description": "Define a custom hook that runs when specific events occur during agent execution",
+      "button": "Create Hook"
+    },
+    "list": {
+      "title": "Registered Hooks",
+      "description": "Hooks are executed at specific lifecycle events to extend agent behavior"
+    },
+    "fields": {
+      "name": "Name",
+      "description": "Description",
+      "event": "Event Type",
+      "command": "Command",
+      "script": "Script",
+      "isActive": "Active",
+      "sourceSession": "Source Session"
+    },
+    "namePlaceholder": "Enter hook name (e.g., 'Log File Changes')",
+    "descriptionPlaceholder": "Optional description of what this hook does",
+    "commandPlaceholder": "e.g., node or python or /path/to/script.sh",
+    "commandHelp": "Command to execute when the hook fires (the script will be passed via stdin)",
+    "scriptPlaceholder": "#!/usr/bin/env node\n// Your hook script here\n// Receives event data via stdin as JSON",
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "createdBy": {
+      "agent": "Agent",
+      "user": "You"
+    },
+    "creating": "Creating...",
+    "edit": "Edit",
+    "delete": "Delete",
+    "save": "Save",
+    "cancel": "Cancel",
+    "archive": "Archive",
+    "activate": "Activate",
+    "noHooks": "No hooks registered yet",
+    "confirmDelete": "Are you sure you want to delete this hook?",
+    "createSuccess": "Hook created successfully",
+    "createError": "Failed to create hook",
+    "updateSuccess": "Hook updated successfully",
+    "updateError": "Failed to update hook",
+    "deleteError": "Failed to delete hook"
   }
 }

@@ -22,7 +22,8 @@
     "costAnalysis": "コスト分析",
     "customAgent": "カスタムエージェント",
     "skills": "スキル",
-    "lessons": "レッスン"
+    "lessons": "レッスン",
+    "hooks": "フック"
   },
   "sessions": {
     "title": "セッション一覧",
@@ -597,5 +598,54 @@
     "updateSuccess": "レッスンを更新しました",
     "updateError": "レッスンの更新に失敗しました",
     "deleteError": "レッスンの削除に失敗しました"
+  },
+  "hooks": {
+    "title": "フック",
+    "description": "エージェントのライフサイクルイベントでカスタムスクリプトを実行するフックを管理します",
+    "create": {
+      "title": "フックを作成",
+      "description": "エージェント実行時の特定イベントで実行されるカスタムフックを定義します",
+      "button": "フックを作成"
+    },
+    "list": {
+      "title": "登録済みフック",
+      "description": "特定のライフサイクルイベントで実行され、エージェントの動作を拡張するフック"
+    },
+    "fields": {
+      "name": "名前",
+      "description": "説明",
+      "event": "イベントタイプ",
+      "command": "コマンド",
+      "script": "スクリプト",
+      "isActive": "有効",
+      "sourceSession": "元セッション"
+    },
+    "namePlaceholder": "フック名を入力（例：'ファイル変更を記録'）",
+    "descriptionPlaceholder": "このフックが何をするかの説明（任意）",
+    "commandPlaceholder": "例：node、python、/path/to/script.sh",
+    "commandHelp": "フック実行時に実行するコマンド（スクリプトはstdin経由で渡されます）",
+    "scriptPlaceholder": "#!/usr/bin/env node\n// フックスクリプトをここに記述\n// イベントデータはJSON形式でstdinから受け取ります",
+    "status": {
+      "active": "有効",
+      "inactive": "無効"
+    },
+    "createdBy": {
+      "agent": "エージェント",
+      "user": "あなた"
+    },
+    "creating": "作成中...",
+    "edit": "編集",
+    "delete": "削除",
+    "save": "保存",
+    "cancel": "キャンセル",
+    "archive": "アーカイブ",
+    "activate": "有効化",
+    "noHooks": "フックはまだ登録されていません",
+    "confirmDelete": "このフックを削除しますか?",
+    "createSuccess": "フックを作成しました",
+    "createError": "フックの作成に失敗しました",
+    "updateSuccess": "フックを更新しました",
+    "updateError": "フックの更新に失敗しました",
+    "deleteError": "フックの削除に失敗しました"
   }
 }
