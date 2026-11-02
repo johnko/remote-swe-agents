@@ -124,6 +124,30 @@ function sanitizeIdentifier(id: string): string {
   return cleaned;
 }
 
+/**
+ * Normalize tool use ID to match Bedrock's canonical format.
+ *
+ * CONTEXT: Different model providers (Kiro, Bedrock native) use slightly different
+ * tool ID formats. Kiro generates IDs like `functionslist_lessons0` while Bedrock
+ * expects `functions.list_lessons:0` format. When tool results come back from
+ * Bedrock, the IDs are in the latter format, causing validation failures if the
+ * original tool use IDs don't match.
+ *
+ * This function converts various ID formats to Bedrock's canonical format:
+ * - `functionslist_lessons0` → `functions.list_lessons:0`
+ * - `functions.list_lessons:0` → `functions.list_lessons:0` (unchanged)
+ * - `call-1` → `call-1` (unchanged, non-functions format)
+ */
+function normalizeToolUseId(id: string): string {
+  // Only transform IDs that match the functions<toolname><number> pattern
+  const match = id.match(/^functions([a-z_]+)(\d+)$/);
+  if (match) {
+    const [, toolName, number] = match;
+    return `functions.${toolName}:${number}`;
+  }
+  return id;
+}
+
 /** Convert one Bedrock ContentBlock to a Strands ContentBlockData, or null to drop. */
 export function bedrockBlockToStrands(block: BedrockContentBlock, ctx?: ConverterS3Context): ContentBlockData | null {
   if ('text' in block && typeof block.text === 'string') {
@@ -134,7 +158,7 @@ export function bedrockBlockToStrands(block: BedrockContentBlock, ctx?: Converte
     return {
       toolUse: {
         name: sanitizeIdentifier(tu.name ?? ''),
-        toolUseId: sanitizeIdentifier(tu.toolUseId ?? ''),
+        toolUseId: normalizeToolUseId(sanitizeIdentifier(tu.toolUseId ?? '')),
         input: (tu.input ?? {}) as ContentBlockData extends never ? never : any, // JSONValue
       },
     } as ContentBlockData;
@@ -309,7 +333,7 @@ export function strandsBlockToBedrock(block: ContentBlockData, ctx?: ConverterS3
   if ('toolUse' in block && block.toolUse) {
     const tu = block.toolUse;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return { toolUse: { toolUseId: sanitizeIdentifier(tu.toolUseId), name: sanitizeIdentifier(tu.name), input: tu.input as any } };
+    return { toolUse: { toolUseId: normalizeToolUseId(sanitizeIdentifier(tu.toolUseId)), name: sanitizeIdentifier(tu.name), input: tu.input as any } };
   }
   if ('toolResult' in block && block.toolResult) {
     const tr = block.toolResult;
