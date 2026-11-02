@@ -45,16 +45,6 @@ export interface WorkerProps {
   userPool: UserPool;
   cognitoDomainName: string;
   vapidKeys: VapidKeys;
-  /**
-   * SSM parameter holding the stack-wide Kiro CLI API key. When set, workers
-   * can run sessions in kiro-cli inference mode. Omit for Bedrock-only.
-   */
-  kiroApiKeyParameter?: IStringParameter;
-  /**
-   * Default inference mode for workers ('bedrock' or 'kiro-cli').
-   * @default 'bedrock'
-   */
-  inferenceMode?: string;
 }
 
 export class Worker extends Construct {
@@ -214,15 +204,6 @@ export class Worker extends Construct {
         vpc,
       }),
     });
-    const userData = launchTemplate.userData!;
-
-    // Kiro CLI inference mode wiring. Users can enable Kiro CLI mode per
-    // session from the webapp (with a per-user API key) regardless of the
-    // stack-level opt-in props, so the CLI install and the env plumbing are
-    // always present; only the stack-wide defaults remain prop-driven.
-    const kiroEnvironmentLines = `\nEnvironment=STACK_NAME=${Stack.of(this).stackName}\nEnvironment=INFERENCE_MODE=${props.inferenceMode ?? ''}`;
-    const kiroInstallCommands = `\n\n# Install kiro-cli\nsudo -u ubuntu bash -c 'curl -fsSL https://cli.kiro.dev/install | bash'`;
-
     userData.addCommands(
       `
 apt-get -o DPkg::Lock::Timeout=-1 update
@@ -447,7 +428,7 @@ Environment=EVENT_TRIGGER_SFN_ARN=${eventTrigger.handlerStateMachine.stateMachin
 Environment=EVENT_TRIGGER_SFN_ROLE_ARN=${eventTrigger.schedulerRole.roleArn}
 Environment=EVENT_TRIGGER_TTL_SFN_ARN=${eventTrigger.ttlStateMachine.stateMachineArn}
 Environment=EVENT_TRIGGER_TTL_SFN_ROLE_ARN=${eventTrigger.schedulerRole.roleArn}
-Environment=EVENT_TRIGGER_RESOURCE_PREFIX=${eventTrigger.resourcePrefix}${kiroEnvironmentLines}
+Environment=EVENT_TRIGGER_RESOURCE_PREFIX=${eventTrigger.resourcePrefix}
 
 [Install]
 WantedBy=multi-user.target
@@ -518,7 +499,7 @@ EOF
 
 systemctl daemon-reload
 systemctl enable fluent-bit
-systemctl enable myapp${kiroInstallCommands}
+systemctl enable myapp
       `);
 
     const installDependenciesCommand = userData.render();
@@ -556,9 +537,6 @@ systemctl start myapp
       additionalManagedPolicies: props.additionalManagedPolicies,
       vapidKeys: props.vapidKeys,
       eventTrigger,
-      kiroApiKeyParameter: props.kiroApiKeyParameter,
-      inferenceMode: props.inferenceMode,
-    });
     this.agentCoreRuntime = agentCoreRuntime;
 
     // Grant event trigger management to AgentCore role
