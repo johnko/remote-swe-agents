@@ -49,3 +49,4 @@ export * from './self-narration-filter.js';
 export * from './self-narration-delivery.js';
 export * from './rewind-filter.js';
 export * from './hooks.js';
+export * from './hook-execution.js';

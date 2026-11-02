@@ -21,6 +21,7 @@ import { getChildSessions, getSession } from './sessions.js';
 import { resolveAgentDisplayName } from './agent-messaging.js';
 import { randomBytes } from 'crypto';
 import { addSessionParticipant } from './session-participants.js';
+import { executeHooksForEventWithSession } from './hook-execution.js';
 
 export interface CreateSessionParams {
   message: string;
@@ -298,6 +299,14 @@ export const createSession = async (params: CreateSessionParams): Promise<string
   );
 
   try {
+    // Fire subagentStart hook for child sessions before worker starts
+    if (parentSessionId) {
+      const newSession = await getSession(workerId);
+      if (newSession) {
+        await executeHooksForEventWithSession(newSession, 'subagentStart', process.cwd());
+      }
+    }
+
     // Track the session creator as a participant (webapp users only)
     if (senderUserId && !parentSessionId) {
       try {
