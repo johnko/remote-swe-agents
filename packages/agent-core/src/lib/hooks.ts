@@ -6,6 +6,7 @@ import {
   HookStatus,
   MAX_HOOKS_PER_USER,
 } from '../schema/hook.js';
+import { randomBytes } from 'crypto';
 
 /**
  * Hook (memory) store. Hooks are durable, user-scoped notes that capture
@@ -62,7 +63,7 @@ export const createHook = async (
   }
 
   const now = Date.now();
-  const hookId = `hook-${Math.random().toString(36).substring(2, 10)}-${now}`;
+  const hookId = randomBytes(6).toString('base64url');
 
   const hook: Hook = {
     PK: hookPK(userId),
