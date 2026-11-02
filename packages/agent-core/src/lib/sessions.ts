@@ -13,7 +13,7 @@ import { AgentStatus, SessionItem, sessionItemSchema } from '../schema/index.js'
 import { deleteAllEventTriggers } from './event-triggers.js';
 import { deleteUnreadByWorkerId } from './unread.js';
 import { sendWebappEvent } from './events.js';
-import { executeHooksForEventWithSession } from './hook-execution.js';
+import { executeHooksForEventWithSession, HookContextData } from './hook-execution.js';
 
 /**
  * Get session information from DynamoDB
@@ -98,11 +98,13 @@ export const updateSessionAgentStatus = async (workerId: string, agentStatus: Ag
     const session = await getSession(workerId);
     if (session) {
       // Fire sessionEnd for all sessions
-      await executeHooksForEventWithSession(session, 'sessionEnd', process.cwd());
+      const contextData: HookContextData = { sessionId: workerId };
+      await executeHooksForEventWithSession(session, 'sessionEnd', process.cwd(), contextData);
       
       // Fire subagentStop if this is a child session
       if (session.parentSessionId) {
-        await executeHooksForEventWithSession(session, 'subagentStop', process.cwd());
+        const subagentContextData: HookContextData = { sessionId: workerId, subagentId: workerId };
+        await executeHooksForEventWithSession(session, 'subagentStop', process.cwd(), subagentContextData);
       }
     }
   }
