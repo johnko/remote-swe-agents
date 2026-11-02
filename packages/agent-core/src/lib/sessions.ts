@@ -13,6 +13,7 @@ import { AgentStatus, SessionItem, sessionItemSchema } from '../schema/index.js'
 import { deleteAllEventTriggers } from './event-triggers.js';
 import { deleteUnreadByWorkerId } from './unread.js';
 import { sendWebappEvent } from './events.js';
+import { executeHooksForEventWithSession } from './hook-execution.js';
 
 /**
  * Get session information from DynamoDB
@@ -92,6 +93,20 @@ export const getSessions = async (
  * @param agentStatus New agent status
  */
 export const updateSessionAgentStatus = async (workerId: string, agentStatus: AgentStatus): Promise<void> => {
+  // Execute hooks before updating status to 'completed'
+  if (agentStatus === 'completed') {
+    const session = await getSession(workerId);
+    if (session) {
+      // Fire sessionEnd for all sessions
+      await executeHooksForEventWithSession(session, 'sessionEnd', process.cwd());
+      
+      // Fire subagentStop if this is a child session
+      if (session.parentSessionId) {
+        await executeHooksForEventWithSession(session, 'subagentStop', process.cwd());
+      }
+    }
+  }
+  
   await updateSession(workerId, { agentStatus });
 };
 

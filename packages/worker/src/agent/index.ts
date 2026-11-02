@@ -1,4 +1,4 @@
-import { getConversationHistory, getSession, getCustomAgent } from '@remote-swe-agents/agent-core/lib';
+import { getConversationHistory, getSession, getCustomAgent, executeHooksForEventWithSession } from '@remote-swe-agents/agent-core/lib';
 import { resolveInferenceMode } from '@remote-swe-agents/agent-core/lib';
 import { resolveModelConfig } from '@remote-swe-agents/agent-core/lib';
 export { resolveInferenceMode };
@@ -120,6 +120,15 @@ export const onMessageReceived = async (workerId: string, cancellationToken: Can
   await updateAgentStatusWithEvent(workerId, 'working');
 
   try {
+    // Check if this is the first turn and fire sessionStart hooks if so
+    const { items } = await getConversationHistory(workerId);
+    const isFirstTurn = items.length <= 1; // Only seed message or empty
+    
+    if (isFirstTurn) {
+      const session = await getSession(workerId);
+      await executeHooksForEventWithSession(session, 'sessionStart', process.cwd());
+    }
+
     // Resolve inferenceMode and dispatch to the matching backend.
     const { mode: inferenceMode, senderUserId } = await detectInferenceMode(workerId);
     const backend = isKiroCliMode(inferenceMode) ? kiroBackend : bedrockBackend;
