@@ -7,6 +7,7 @@ import { mkdirSync, writeFileSync, unlinkSync } from 'fs';
 import { z } from 'zod';
 import { CancellationToken, ToolDefinition, truncate, zodToJsonSchemaBody } from '../../private/common/lib.js';
 import { generateSuggestion } from './suggestion.js';
+import { getSession, executeHooksForEventWithSession } from '../../lib/index.js';
 
 const inputSchema = z.object({
   command: z.string().describe('The command to execute.'),
@@ -264,7 +265,7 @@ export const executeCommand = async (
 
 const handler = async (
   input: { command: string; cwd?: string; longRunningProcess?: boolean; timeoutMs?: number },
-  context: { toolUseId: string; cancellationToken?: CancellationToken }
+  context: { toolUseId: string; cancellationToken?: CancellationToken; workerId?: string }
 ) => {
   // Validate that timeoutMs and longRunningProcess are not used together
   if (input.timeoutMs !== undefined && input.longRunningProcess === true) {
@@ -273,14 +274,59 @@ const handler = async (
     );
   }
 
-  const res = await executeCommand(
-    input.command,
-    input.cwd,
-    input.timeoutMs ?? 60000,
-    input.longRunningProcess,
-    context.toolUseId,
-    context.cancellationToken
-  );
+  // Get session for hook execution if workerId available
+  let session;
+  if (context.workerId) {
+    try {
+      session = await getSession(context.workerId);
+    } catch (e) {
+      console.error('[command-execution] Failed to get session for hooks:', e);
+    }
+  }
+
+  // Execute beforeShellExecution hook
+  if (session) {
+    try {
+      await executeHooksForEventWithSession(session, 'beforeShellExecution', input.cwd || process.cwd());
+    } catch (e) {
+      console.error('[command-execution] beforeShellExecution hook failed:', e);
+      // Don't throw - continue with command execution even if hook fails
+    }
+  }
+
+  let res;
+  try {
+    res = await executeCommand(
+      input.command,
+      input.cwd,
+      input.timeoutMs ?? 60000,
+      input.longRunningProcess,
+      context.toolUseId,
+      context.cancellationToken
+    );
+
+    // Execute afterShellExecution hook on success
+    if (session) {
+      try {
+        await executeHooksForEventWithSession(session, 'afterShellExecution', input.cwd || process.cwd());
+      } catch (e) {
+        console.error('[command-execution] afterShellExecution hook failed:', e);
+        // Don't throw - hook errors don't affect command result
+      }
+    }
+  } catch (e) {
+    // Execute afterShellExecution hook even on error (to allow cleanup hooks)
+    if (session) {
+      try {
+        await executeHooksForEventWithSession(session, 'afterShellExecution', input.cwd || process.cwd());
+      } catch (hookError) {
+        console.error('[command-execution] afterShellExecution hook failed:', hookError);
+        // Don't throw - hook errors don't affect error propagation
+      }
+    }
+    throw e;
+  }
+
   return JSON.stringify(res, undefined, 1);
 };
 
