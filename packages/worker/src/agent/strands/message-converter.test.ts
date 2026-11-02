@@ -351,6 +351,39 @@ describe(' native block support — SDK Message round-trip', () => {
       expect(toolUse.name).toBe('execute_command'); // Zero-width space removed
     });
 
+    it('sanitizes invalid characters like trailing braces from tool names (Bedrock → Strands)', () => {
+      // Tool name with trailing brace: "create_file}" after model hallucination
+      const msg: BedrockMessage = {
+        role: 'assistant',
+        content: [{ toolUse: { toolUseId: 'call-1', name: 'create_file}', input: {} } }],
+      };
+      const converted = bedrockToStrandsMessage(msg, ctx);
+      const toolUse = (converted.content[0] as any).toolUse;
+      expect(toolUse.name).toBe('create_file'); // Trailing brace removed
+    });
+
+    it('sanitizes tool names with newlines and invalid characters', () => {
+      // Tool name with newline and other invalid chars
+      const msg: BedrockMessage = {
+        role: 'assistant',
+        content: [{ toolUse: { toolUseId: 'call-1', name: 'execute\ncommand</parameter', input: {} } }],
+      };
+      const converted = bedrockToStrandsMessage(msg, ctx);
+      const toolUse = (converted.content[0] as any).toolUse;
+      expect(toolUse.name).toBe('executecommandparameter'); // All invalid chars removed
+    });
+
+    it('fallbacks to "unknown_tool" when tool name is completely invalid', () => {
+      // Tool name with only invalid characters
+      const msg: BedrockMessage = {
+        role: 'assistant',
+        content: [{ toolUse: { toolUseId: 'call-1', name: '###<>', input: {} } }],
+      };
+      const converted = bedrockToStrandsMessage(msg, ctx);
+      const toolUse = (converted.content[0] as any).toolUse;
+      expect(toolUse.name).toBe('unknown_tool'); // Fallback name used
+    });
+
     it('sanitizes invisible Unicode from tool IDs (Bedrock → Strands)', () => {
       // Tool ID with zero-width joiner
       const msg: BedrockMessage = {
@@ -370,6 +403,16 @@ describe(' native block support — SDK Message round-trip', () => {
       const result = strandsBlockToBedrock(block as any, ctx);
       expect((result as any).toolUse.toolUseId).toBe('call2');
       expect((result as any).toolUse.name).toBe('executescommand');
+    });
+
+    it('sanitizes invalid characters from tool names and IDs (Strands → Bedrock)', () => {
+      // Both name and ID with invalid characters
+      const block = {
+        toolUse: { toolUseId: 'call-1}', name: 'create_file}', input: {} }
+      };
+      const result = strandsBlockToBedrock(block as any, ctx);
+      expect((result as any).toolUse.toolUseId).toBe('call-1');
+      expect((result as any).toolUse.name).toBe('create_file');
     });
 
     it('preserves valid tool names and IDs during sanitization', () => {
