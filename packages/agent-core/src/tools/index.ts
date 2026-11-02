@@ -20,6 +20,7 @@ export * from './wait-for';
 export * from './read-image';
 export * from './todo';
 export * from './session-title';
+export * from './get_session_title';
 export * from './complete-session';
 export * from './confirm-complete-session';
 export * from './confirm-create-agent';
@@ -50,6 +51,7 @@ import { confirmSendToUserTool } from './confirm-send-to-user';
 import { confirmSendFileToUserTool } from './confirm-send-file-to-user';
 import { readImageTool } from './read-image';
 import { todoInitTool, todoUpdateTool } from './todo';
+import { getSessionTitleTool } from './get_session_title';
 import { updateSessionTitleTool } from './session-title';
 import { waitForConditionTool } from './wait-for';
 import { completeSessionTool } from './complete-session';
@@ -145,6 +147,7 @@ export const optionalTools = [
   getLessonTool,
   createLessonTool,
   updateLessonTool,
+  getSessionTitleTool,
   deleteLessonTool,
   uploadAgentIconTool,
 ];
