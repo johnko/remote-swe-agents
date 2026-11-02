@@ -601,4 +601,47 @@
     "updateError": "Failed to update lesson",
     "deleteError": "Failed to delete lesson"
   }
+,
+  "hooks": {
+    "title": "Hooks",
+    "description": "View and manage custom hooks that modify agent behavior",
+    "create": {
+      "title": "Add Hook",
+      "description": "Create a new hook to customize agent behavior",
+      "button": "Add Hook"
+    },
+    "list": {
+      "title": "Your Hooks",
+      "description": "Custom hooks that modify how your agent behaves"
+    },
+    "fields": {
+      "content": "Content",
+      "category": "Category",
+      "sourceSession": "Source Session"
+    },
+    "contentPlaceholder": "What should the hook do?",
+    "categoryPlaceholder": "Optional category label",
+    "status": {
+      "active": "Active",
+      "archived": "Disabled"
+    },
+    "createdBy": {
+      "agent": "Agent",
+      "user": "You"
+    },
+    "creating": "Adding...",
+    "edit": "Edit",
+    "delete": "Delete",
+    "save": "Save",
+    "cancel": "Cancel",
+    "enable": "Enable",
+    "disable": "Disable",
+    "noHooks": "No hooks yet",
+    "confirmDelete": "Are you sure you want to delete this hook?",
+    "createSuccess": "Hook added successfully",
+    "createError": "Failed to add hook",
+    "updateSuccess": "Hook updated successfully",
+    "updateError": "Failed to update hook",
+    "deleteError": "Failed to delete hook"
+  }
 }

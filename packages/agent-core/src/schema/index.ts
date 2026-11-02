@@ -14,3 +14,4 @@ export * from './unread.js';
 export * from './skill.js';
 export * from './lesson.js';
 export * from './user-preferences.js';
+export * from './hook.js';
