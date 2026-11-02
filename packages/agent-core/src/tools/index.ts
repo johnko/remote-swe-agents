@@ -31,6 +31,7 @@ export * from './export-session-diagnostics';
 export * from './manage-skill';
 export * from './preview';
 export * from './manage-memory';
+export * from './manage-hooks';
 export * from './upload-agent-icon';
 
 import { ciTool } from './ci';
@@ -64,6 +65,7 @@ import { exportSessionDiagnosticsTool } from './export-session-diagnostics';
 import { listSkillsTool, getSkillTool, createSkillTool, updateSkillTool, deleteSkillTool } from './manage-skill';
 import { openPreviewTool, closePreviewTool, registerPreviewExitHandlers } from './preview';
 import { listLessonsTool, getLessonTool, createLessonTool, updateLessonTool, deleteLessonTool } from './manage-memory';
+import { listHooksTool, getHookTool, createHookTool, updateHookTool, deleteHookTool } from './manage-hooks';
 import { uploadAgentIconTool } from './upload-agent-icon';
 
 /**
@@ -150,6 +152,11 @@ export const optionalTools = [
   getSessionTitleTool,
   deleteLessonTool,
   uploadAgentIconTool,
+  listHooksTool,
+  getHookTool,
+  createHookTool,
+  updateHookTool,
+  deleteHookTool,
 ];
 
 /**
