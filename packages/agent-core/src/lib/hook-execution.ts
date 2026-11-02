@@ -15,11 +15,36 @@ export const extractUserIdFromSession = (session: SessionItem | undefined): stri
   return session.initiator.includes('#') ? session.initiator.split('#').pop() : session.initiator;
 };
 
+/**
+ * Context data available to hooks as environment variables.
+ */
+export interface HookContextData {
+  /** The name of the tool being used (for preToolUse, postToolUse, postToolUseFailure) */
+  toolName?: string;
+  /** The file path being accessed (for beforeReadFile, afterFileEdit) */
+  filePath?: string;
+  /** The shell command being executed (for beforeShellExecution, afterShellExecution) */
+  command?: string;
+  /** The exit code of the shell command (for afterShellExecution) */
+  exitCode?: number;
+  /** The MCP server name (for beforeMCPExecution, afterMCPExecution) */
+  mcpServer?: string;
+  /** The MCP tool name (for beforeMCPExecution, afterMCPExecution) */
+  mcpTool?: string;
+  /** The session ID */
+  sessionId?: string;
+  /** The subagent session ID (for subagentStart, subagentStop) */
+  subagentId?: string;
+  /** The prompt text (for beforeSubmitPrompt, afterAgentResponse, afterAgentThought) */
+  prompt?: string;
+}
+
 export interface HookExecutionContext {
   sessionId: string;
   event: HookEventType;
   userId: string;
   workingDirectory?: string;
+  contextData?: HookContextData;
 }
 
 export interface HookExecutionResult {
@@ -36,6 +61,46 @@ export interface HookExecutionResult {
  * @param context Hook execution context (sessionId, event, userId, optional workingDirectory)
  * @returns Execution result with counts and any errors/logs
  */
+/**
+ * Build environment variables for hook execution based on context data.
+ */
+const buildHookEnv = (contextData?: HookContextData): NodeJS.ProcessEnv => {
+  const env: NodeJS.ProcessEnv = { ...process.env };
+  
+  if (!contextData) return env;
+  
+  // Add HOOK_ prefixed environment variables without KIRO_ prefix
+  if (contextData.toolName !== undefined) {
+    env.HOOK_TOOL_NAME = contextData.toolName;
+  }
+  if (contextData.filePath !== undefined) {
+    env.HOOK_FILE_PATH = contextData.filePath;
+  }
+  if (contextData.command !== undefined) {
+    env.HOOK_COMMAND = contextData.command;
+  }
+  if (contextData.exitCode !== undefined) {
+    env.HOOK_EXIT_CODE = String(contextData.exitCode);
+  }
+  if (contextData.mcpServer !== undefined) {
+    env.HOOK_MCP_SERVER = contextData.mcpServer;
+  }
+  if (contextData.mcpTool !== undefined) {
+    env.HOOK_MCP_TOOL = contextData.mcpTool;
+  }
+  if (contextData.sessionId !== undefined) {
+    env.HOOK_SESSION_ID = contextData.sessionId;
+  }
+  if (contextData.subagentId !== undefined) {
+    env.HOOK_SUBAGENT_ID = contextData.subagentId;
+  }
+  if (contextData.prompt !== undefined) {
+    env.HOOK_PROMPT = contextData.prompt;
+  }
+  
+  return env;
+};
+
 export const executeHooksForEvent = async (context: HookExecutionContext): Promise<HookExecutionResult> => {
   const result: HookExecutionResult = {
     hooksExecuted: 0,
@@ -54,6 +119,9 @@ export const executeHooksForEvent = async (context: HookExecutionContext): Promi
     }
 
     console.log(`[hook-execution] Found ${hooks.length} hook(s) for event: ${context.event}`);
+
+    // Build environment with hook context data
+    const hookEnv = buildHookEnv(context.contextData);
 
     // Execute each hook sequentially
     for (const hook of hooks) {
@@ -81,6 +149,7 @@ export const executeHooksForEvent = async (context: HookExecutionContext): Promi
               encoding: 'utf-8',
               stdio: ['pipe', 'pipe', 'pipe'],
               timeout: 30000, // 30 second timeout for hook execution
+              env: hookEnv,
             });
           } catch (e: any) {
             // Inline scripts that error should still report the output
@@ -98,6 +167,7 @@ export const executeHooksForEvent = async (context: HookExecutionContext): Promi
               encoding: 'utf-8',
               stdio: ['pipe', 'pipe', 'pipe'],
               timeout: 30000, // 30 second timeout for hook execution
+              env: hookEnv,
             });
           } catch (e: any) {
             output = e.stdout ? e.stdout.toString('utf-8') : '';
@@ -142,7 +212,8 @@ export const executeHooksForEvent = async (context: HookExecutionContext): Promi
 export const executeHooksForEventWithSession = async (
   session: SessionItem | undefined,
   event: HookEventType,
-  workingDirectory?: string
+  workingDirectory?: string,
+  contextData?: HookContextData
 ): Promise<HookExecutionResult> => {
   const userId = extractUserIdFromSession(session);
   if (!userId) {
@@ -160,5 +231,6 @@ export const executeHooksForEventWithSession = async (
     event,
     userId,
     workingDirectory,
+    contextData,
   });
 };
