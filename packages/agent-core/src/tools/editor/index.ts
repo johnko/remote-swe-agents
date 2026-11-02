@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { existsSync, readFileSync, writeFileSync } from 'fs';
 import { ToolDefinition, zodToJsonSchemaBody } from '../../private/common/lib.js';
 import { getSession, executeHooksForEventWithSession } from '../../lib/index.js';
+import type { HookContextData } from '../../lib/hook-execution.js';
 
 const inputSchema = z.object({
   filePath: z.string().describe('The absolute path to the file to modify (must be absolute, not relative)'),
@@ -40,7 +41,8 @@ const editFile = async (
     // Execute afterFileEdit hook on file creation
     if (session) {
       try {
-        await executeHooksForEventWithSession(session, 'afterFileEdit', process.cwd());
+        const contextData: HookContextData = { filePath };
+        await executeHooksForEventWithSession(session, 'afterFileEdit', process.cwd(), contextData);
       } catch (e) {
         console.error('[file-editor] afterFileEdit hook failed:', e);
         // Don't throw - hook errors don't affect file write
@@ -58,7 +60,8 @@ const editFile = async (
   // Execute beforeReadFile hook before reading the file
   if (session) {
     try {
-      await executeHooksForEventWithSession(session, 'beforeReadFile', process.cwd());
+      const contextData: HookContextData = { filePath };
+      await executeHooksForEventWithSession(session, 'beforeReadFile', process.cwd(), contextData);
     } catch (e) {
       console.error('[file-editor] beforeReadFile hook failed:', e);
       // Don't throw - continue with file read even if hook fails
@@ -80,7 +83,8 @@ const editFile = async (
   // Execute afterFileEdit hook after file modification
   if (session) {
     try {
-      await executeHooksForEventWithSession(session, 'afterFileEdit', process.cwd());
+      const contextData: HookContextData = { filePath };
+      await executeHooksForEventWithSession(session, 'afterFileEdit', process.cwd(), contextData);
     } catch (e) {
       console.error('[file-editor] afterFileEdit hook failed:', e);
       // Don't throw - hook errors don't affect file write result

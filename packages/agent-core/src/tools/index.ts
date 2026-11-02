@@ -2,6 +2,7 @@ export * from './ci';
 export * from './command-execution';
 export * from './create-pr';
 export * from './create-session';
+export type { HookContextData } from '../lib/hook-execution.js';
 export * from './editor';
 export * from './event-trigger';
 export * from './github-comments';

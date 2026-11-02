@@ -287,7 +287,9 @@ const handler = async (
   // Execute beforeShellExecution hook
   if (session) {
     try {
-      await executeHooksForEventWithSession(session, 'beforeShellExecution', input.cwd || process.cwd());
+      await executeHooksForEventWithSession(session, 'beforeShellExecution', input.cwd || process.cwd(), {
+        command: input.command,
+      });
     } catch (e) {
       console.error('[command-execution] beforeShellExecution hook failed:', e);
       // Don't throw - continue with command execution even if hook fails
@@ -306,7 +308,10 @@ const handler = async (
   // Execute afterShellExecution hook after command completes (whether successful or failed)
   if (session) {
     try {
-      await executeHooksForEventWithSession(session, 'afterShellExecution', input.cwd || process.cwd());
+      await executeHooksForEventWithSession(session, 'afterShellExecution', input.cwd || process.cwd(), {
+        command: input.command,
+        exitCode: res.exitCode,
+      });
     } catch (e) {
       console.error('[command-execution] afterShellExecution hook failed:', e);
       // Don't throw - hook errors don't affect command result
