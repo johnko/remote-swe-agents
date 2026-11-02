@@ -432,5 +432,26 @@ describe(' native block support — SDK Message round-trip', () => {
         expect(toolUse.toolUseId).toBe(id);
       }
     });
+
+    it('normalizes functions<toolname><number> IDs to Bedrock format', () => {
+      // Test the ID format normalization that prevents Bedrock validation errors
+      const testCases = [
+        { input: 'functionslist_lessons0', expected: 'functions.list_lessons:0' },
+        { input: 'functionsexecute_command1', expected: 'functions.execute_command:1' },
+        { input: 'functionslist_agents123', expected: 'functions.list_agents:123' },
+        { input: 'functions.send_message_to_user:0', expected: 'functions.send_message_to_user:0' }, // Already in correct format
+        { input: 'call-1', expected: 'call-1' }, // Non-functions format unchanged
+        { input: 'tool_001', expected: 'tool_001' }, // Non-functions format unchanged
+      ];
+      for (const { input, expected } of testCases) {
+        const msg: BedrockMessage = {
+          role: 'assistant',
+          content: [{ toolUse: { toolUseId: input, name: 'test_tool', input: {} } }],
+        };
+        const converted = bedrockToStrandsMessage(msg, ctx);
+        const toolUse = (converted.content[0] as any).toolUse;
+        expect(toolUse.toolUseId).toBe(expected);
+      }
+    });
   });
 });
