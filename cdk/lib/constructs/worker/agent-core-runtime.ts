@@ -48,19 +48,6 @@ export interface AgentCoreRuntimeProps {
   bedrockCriRegionOverride?: string;
   additionalManagedPolicies?: string[];
   vapidKeys: VapidKeys;
-  eventTrigger: EventTrigger;
-  previewMicrovmImageArn?: string;
-  /**
-   * SSM parameter holding the stack-wide Kiro CLI API key. When set, the
-   * runtime can resolve it via `KIRO_API_KEY_SSM_PARAM` to run sessions in
-   * kiro-cli inference mode. Omit to run Bedrock-only (no Kiro wiring at all).
-   */
-  kiroApiKeyParameter?: IStringParameter;
-  /**
-   * Default inference mode for the worker ('bedrock' or 'kiro-cli').
-   * @default 'bedrock'
-   */
-  inferenceMode?: string;
 }
 
 export class AgentCoreRuntime extends Construct implements IGrantable {
@@ -162,7 +149,6 @@ export class AgentCoreRuntime extends Construct implements IGrantable {
     props.vapidKeys.grantRead(role);
     props.bus.api.grantPublishAndSubscribe(role);
     props.bus.api.grantConnect(role);
-    props.kiroApiKeyParameter?.grantRead(role);
     // Grant SSM read access for per-user Kiro API keys. These parameters are
     // created at runtime by the webapp (via `ssm:PutParameter`), outside of
     // CloudFormation, so the grant is expressed as a wildcard on the per-user

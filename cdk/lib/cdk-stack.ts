@@ -19,7 +19,6 @@ import { IRepository } from 'aws-cdk-lib/aws-ecr';
 import { VapidKeys } from './constructs/vapid-keys';
 import { Preview } from './constructs/preview';
 import { PolicyStatement } from 'aws-cdk-lib/aws-iam';
-import { UserParamsCleaner } from './constructs/user-params-cleaner';
 
 export interface MainStackProps extends cdk.StackProps {
   readonly signPayloadHandler: EdgeFunction;
@@ -62,7 +61,9 @@ export interface MainStackProps extends cdk.StackProps {
    */
   readonly bedrockCriRegionOverride?: string;
 
-
+  /**
+   * SSM parameter name for Kiro CLI API key. When set, enables Kiro CLI mode support.
+   */
 }
 
 export class MainStack extends cdk.Stack {
@@ -142,6 +143,10 @@ export class MainStack extends cdk.Stack {
           proxyCodeDirectory: join(__dirname, '../../packages/microvm-preview-proxy'),
         })
       : undefined;
+    // Sweep runtime-created per-user SSM parameters (e.g. Kiro API keys) on
+
+    const worker = new Worker(this, 'Worker', {
+      vpc,
       storageTable: storage.table,
       imageBucket: storage.bucket,
       skillBucket: storage.skillBucket,
@@ -177,6 +182,8 @@ export class MainStack extends cdk.Stack {
       userPool: auth.userPool,
       cognitoDomainName: auth.domainName,
       vapidKeys,
+      kiroApiKeyParameter,
+      inferenceMode: props.inferenceMode,
     });
 
     worker.bus.addUserPoolProvider(auth.userPool);
