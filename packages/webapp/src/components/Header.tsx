@@ -124,13 +124,13 @@ export default function Header({
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link href="/lessons" className="w-full cursor-default flex items-center" prefetch={false}>
-                <DropdownMenuItem asChild>
                   <Link href="/hooks" className="w-full cursor-default flex items-center" prefetch={false}>
                     <Zap className="mr-2 h-4 w-4" />
                     <span>{t('hooks')}</span>
                   </Link>
                 </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/lessons" className="w-full cursor-default flex items-center" prefetch={false}>
                     <Brain className="mr-2 h-4 w-4" />
                     <span>{t('lessons')}</span>
                   </Link>
