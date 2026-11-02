@@ -294,37 +294,23 @@ const handler = async (
     }
   }
 
-  let res;
-  try {
-    res = await executeCommand(
-      input.command,
-      input.cwd,
-      input.timeoutMs ?? 60000,
-      input.longRunningProcess,
-      context.toolUseId,
-      context.cancellationToken
-    );
+  const res = await executeCommand(
+    input.command,
+    input.cwd,
+    input.timeoutMs ?? 60000,
+    input.longRunningProcess,
+    context.toolUseId,
+    context.cancellationToken
+  );
 
-    // Execute afterShellExecution hook on success
-    if (session) {
-      try {
-        await executeHooksForEventWithSession(session, 'afterShellExecution', input.cwd || process.cwd());
-      } catch (e) {
-        console.error('[command-execution] afterShellExecution hook failed:', e);
-        // Don't throw - hook errors don't affect command result
-      }
+  // Execute afterShellExecution hook after command completes (whether successful or failed)
+  if (session) {
+    try {
+      await executeHooksForEventWithSession(session, 'afterShellExecution', input.cwd || process.cwd());
+    } catch (e) {
+      console.error('[command-execution] afterShellExecution hook failed:', e);
+      // Don't throw - hook errors don't affect command result
     }
-  } catch (e) {
-    // Execute afterShellExecution hook even on error (to allow cleanup hooks)
-    if (session) {
-      try {
-        await executeHooksForEventWithSession(session, 'afterShellExecution', input.cwd || process.cwd());
-      } catch (hookError) {
-        console.error('[command-execution] afterShellExecution hook failed:', hookError);
-        // Don't throw - hook errors don't affect error propagation
-      }
-    }
-    throw e;
   }
 
   return JSON.stringify(res, undefined, 1);

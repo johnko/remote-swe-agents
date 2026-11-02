@@ -265,10 +265,12 @@ export async function toStrandsTool<Input>(def: RemoteSweToolLike<Input>, deps: 
             await executeHooksForEventWithSession(session, 'postToolUseFailure', process.cwd());
           } catch (e) {
             console.error(`[toStrandsTool] postToolUseFailure hook failed for tool "${def.name}":`, e);
-            // Don't throw - hook errors don't affect tool error propagation
+            // Don't throw - hook errors don't affect error handling
           }
         }
-        throw toolError;
+        // Return error as string result instead of throwing
+        const errorMsg = toolError instanceof Error ? toolError.message : String(toolError);
+        result = `[Tool Error] ${def.name} failed: ${errorMsg}`;
       }
 
       // forceReport timer — reset on communication tools
