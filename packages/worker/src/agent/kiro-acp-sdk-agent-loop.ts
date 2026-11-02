@@ -701,16 +701,6 @@ export const kiroAcpSdkAgentLoop = async (ctx: TurnContext, sink: ToolEventSink)
     }
   };
 
-  // Execute preCompact hook before building the prompt (context preparation)
-  if (session) {
-    try {
-      await executeHooksForEventWithSession(session, 'preCompact', cwd);
-    } catch (e) {
-      console.error('[kiro-acp-sdk-loop] preCompact hook failed:', e);
-      // Don't throw - hook errors don't prevent prompt building
-    }
-  }
-
   const promptBlocks = await buildKiroPromptBlocks({
     systemPrompt: (() => {
       let effective = composeSystemPrompt(systemPrompt, ctx.environmentBlock);
@@ -791,16 +781,6 @@ export const kiroAcpSdkAgentLoop = async (ctx: TurnContext, sink: ToolEventSink)
   // paths). Rebuilt per attempt via the serialised `chain` closure so a
   // respawn starts from a clean stream; `tag` labels the dispatch in logs.
   const runPromptOnce = async (agentInstance: KiroAcpAgent, tag: string) => {
-    // Execute beforeSubmitPrompt hook
-    if (session) {
-      try {
-        await executeHooksForEventWithSession(session, 'beforeSubmitPrompt', cwd);
-      } catch (e) {
-        console.error('[kiro-acp-sdk-loop] beforeSubmitPrompt hook failed:', e);
-        // Don't throw - continue with prompt execution even if hook fails
-      }
-    }
-
     return agentInstance.promptCompat(
       promptBlocks as unknown as KiroAcpPromptInput,
       onChunk,
@@ -859,16 +839,6 @@ export const kiroAcpSdkAgentLoop = async (ctx: TurnContext, sink: ToolEventSink)
   while (true) {
     try {
       result = await runPromptOnce(agent!, retryAttempted ? 'ladder-retry' : 'initial');
-
-      // Execute afterAgentResponse hook
-      if (session) {
-        try {
-          await executeHooksForEventWithSession(session, 'afterAgentResponse', cwd);
-        } catch (e) {
-          console.error('[kiro-acp-sdk-loop] afterAgentResponse hook failed:', e);
-          // Don't throw - hook errors don't affect response processing
-        }
-      }
 
       // Empty-response class: when enabled, treat a successful-but-empty
       // response (end_turn, not cancelled, no renderable text — after the
@@ -1066,17 +1036,7 @@ export const kiroAcpSdkAgentLoop = async (ctx: TurnContext, sink: ToolEventSink)
       : flushState.bufferedRawText;
 
     let responseText = stripThinkBlocks(rawResponseText);
-    
-    // Execute afterAgentThought hook after thinking is extracted
-    if (session) {
-      try {
-        await executeHooksForEventWithSession(session, 'afterAgentThought', cwd);
-      } catch (e) {
-        console.error('[kiro-acp-sdk-loop] afterAgentThought hook failed:', e);
-        // Don't throw - hook errors don't affect response processing
-      }
-    }
-    
+
     if (containsLeakedTemplateTokens(responseText)) {
       responseText = stripLeakedTemplateTokens(responseText);
     }
