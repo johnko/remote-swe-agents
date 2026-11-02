@@ -10,7 +10,7 @@ describe('resolveModelConfig', () => {
 
   describe('bedrockModel resolution', () => {
     test('defaults to defaultAgentConfig.defaultModel when nothing is set', () => {
-      expect(resolveModelConfig({}).bedrockModel).toBe('sonnet4.6');
+      expect(resolveModelConfig({}).bedrockModel).toBe('kimi-k2.5');
     });
 
     test('new field bedrockDefaultModel takes priority over legacy defaultModel within same source', () => {
