@@ -27,16 +27,10 @@ export interface HookContextData {
   command?: string;
   /** The exit code of the shell command (for afterShellExecution) */
   exitCode?: number;
-  /** The MCP server name (for beforeMCPExecution, afterMCPExecution) */
-  mcpServer?: string;
-  /** The MCP tool name (for beforeMCPExecution, afterMCPExecution) */
-  mcpTool?: string;
   /** The session ID */
   sessionId?: string;
   /** The subagent session ID (for subagentStart, subagentStop) */
   subagentId?: string;
-  /** The prompt text (for beforeSubmitPrompt, afterAgentResponse, afterAgentThought) */
-  prompt?: string;
 }
 
 export interface HookExecutionContext {
@@ -82,22 +76,13 @@ const buildHookEnv = (contextData?: HookContextData): NodeJS.ProcessEnv => {
   if (contextData.exitCode !== undefined) {
     env.HOOK_EXIT_CODE = String(contextData.exitCode);
   }
-  if (contextData.mcpServer !== undefined) {
-    env.HOOK_MCP_SERVER = contextData.mcpServer;
-  }
-  if (contextData.mcpTool !== undefined) {
-    env.HOOK_MCP_TOOL = contextData.mcpTool;
-  }
   if (contextData.sessionId !== undefined) {
     env.HOOK_SESSION_ID = contextData.sessionId;
   }
   if (contextData.subagentId !== undefined) {
     env.HOOK_SUBAGENT_ID = contextData.subagentId;
   }
-  if (contextData.prompt !== undefined) {
-    env.HOOK_PROMPT = contextData.prompt;
-  }
-  
+
   return env;
 };
 

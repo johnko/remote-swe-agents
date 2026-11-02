@@ -35,18 +35,10 @@ export const hookEventTypeSchema = z.enum([
   // Shell/command execution
   'beforeShellExecution',
   'afterShellExecution',
-  // MCP execution
-  'beforeMCPExecution',
-  'afterMCPExecution',
   // File operations
   'beforeReadFile',
   'afterFileEdit',
-  // Prompt lifecycle
-  'beforeSubmitPrompt',
-  'afterAgentResponse',
-  'afterAgentThought',
   // Context management
-  'preCompact',
   'stop',
 ]);
 export type HookEventType = z.infer<typeof hookEventTypeSchema>;
