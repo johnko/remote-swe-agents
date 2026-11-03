@@ -46,7 +46,7 @@ import {
   updateSession,
 } from '@remote-swe-agents/agent-core/lib';
 import { sendWorkerEvent, updateSessionAgentStatus, sendWebappEvent } from '@remote-swe-agents/agent-core/lib';
-import { MessageItem, ModelType, KiroModelId } from '@remote-swe-agents/agent-core/schema';
+import { MessageItem, ModelType } from '@remote-swe-agents/agent-core/schema';
 import { searchSessionContent } from '@remote-swe-agents/agent-core/lib';
 
 export const sendMessageToAgent = authActionClient
@@ -58,7 +58,6 @@ export const sendMessageToAgent = authActionClient
       imageKeys = [],
       fileKeys = [],
       modelOverride,
-      kiroModelOverride,
       clientId,
     } = parsedInput;
     const session = await getSession(workerId);
@@ -68,12 +67,8 @@ export const sendMessageToAgent = authActionClient
 
     // Sync session-level model from the form's selector value on every send.
     // This closes flush-race windows and migrates legacy sessions in one pass.
-    const isKiroSession = session.inferenceMode === 'kiro-cli';
-    if (!isKiroSession && modelOverride && session.bedrockDefaultModel !== modelOverride) {
+    if (modelOverride && session.bedrockDefaultModel !== modelOverride) {
       await updateSession(workerId, { bedrockDefaultModel: modelOverride });
-    }
-    if (isKiroSession && kiroModelOverride && session.kiroDefaultModel !== kiroModelOverride) {
-      await updateSession(workerId, { kiroDefaultModel: kiroModelOverride as KiroModelId });
     }
 
     const content = [];
@@ -113,7 +108,7 @@ export const sendMessageToAgent = authActionClient
       tokenCount: 0,
       messageType: 'userMessage',
       // Per-message model overrides are deprecated — model selection is now
-      // session-level only (bedrockDefaultModel / kiroDefaultModel).
+      // session-level only (bedrockDefaultModel).
       // Legacy read-side fallbacks remain for pre-migration sessions.
       senderUserId: ctx.userId,
       ...(ctx.displayName ? { senderDisplayName: ctx.displayName } : {}),
@@ -394,10 +389,7 @@ export const handoverSession = authActionClient
       senderUserId: ctx.userId,
       senderType: 'webapp',
       ...(ctx.displayName ? { senderDisplayName: ctx.displayName } : {}),
-      inferenceMode: session.inferenceMode,
-      kiroModel: session.kiroDefaultModel ?? session.kiroModel,
       bedrockDefaultModel: session.bedrockDefaultModel,
-      kiroDefaultModel: session.kiroDefaultModel,
       deferWorkerStart: true,
       handoverSourceSessionId: workerId,
     });
@@ -494,14 +486,13 @@ export const searchSessionContentAction = authActionClient
 export const updateSessionModel = authActionClient
   .inputSchema(updateSessionModelSchema)
   .action(async ({ parsedInput }) => {
-    const { workerId, bedrockDefaultModel, kiroDefaultModel } = parsedInput;
+    const { workerId, bedrockDefaultModel } = parsedInput;
     const session = await getSession(workerId);
     if (!session) {
       throw new MyCustomError('Session not found');
     }
-    const updates: { bedrockDefaultModel?: ModelType; kiroDefaultModel?: KiroModelId } = {};
+    const updates: { bedrockDefaultModel?: ModelType } = {};
     if (bedrockDefaultModel) updates.bedrockDefaultModel = bedrockDefaultModel;
-    if (kiroDefaultModel) updates.kiroDefaultModel = kiroDefaultModel;
     if (Object.keys(updates).length === 0) return { success: true };
     await updateSession(workerId, updates);
     return { success: true };
