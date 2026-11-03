@@ -40,7 +40,7 @@ interface NewSessionFormProps {
 }
 
 // Map internal inference mode identifiers to i18n translation keys.
-const inferenceModeI18nKey: Record<InferenceMode, string> = {
+const inferenceModeI18nKey: Partial<Record<InferenceMode, string>> = {
   bedrock: 'bedrock',
 };
 
