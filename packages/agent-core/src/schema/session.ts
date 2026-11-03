@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { agentStatusSchema, runtimeTypeSchema } from './agent.js';
-import { inferenceModeSchema, kiroModelSchema, modelTypeSchema } from './model.js';
+import { inferenceModeSchema, modelTypeSchema } from './model.js';
 
 export const instanceStatusSchema = z.union([
   z.literal('starting'),
@@ -40,10 +40,7 @@ export const sessionItemSchema = z.object({
   handedOverTo: z.string().optional(),
   agentName: z.string().optional(),
   inferenceMode: inferenceModeSchema.optional(),
-  kiroModel: z.string().optional(),
   bedrockDefaultModel: modelTypeSchema.optional(),
-  kiroDefaultModel: kiroModelSchema.optional(),
-  kiroSessionId: z.string().optional(),
   // Most recent normalised context-window utilisation (%) measured at the end
   // of a turn. Persisted so the NEXT turn can show the model its own context
   // usage via a dynamic environment block so the agent can decide, on its own,

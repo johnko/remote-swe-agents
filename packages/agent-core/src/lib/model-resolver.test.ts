@@ -3,49 +3,14 @@ import { resolveModelConfig } from './model-resolver.js';
 
 describe('resolveModelConfig', () => {
   describe('inferenceMode resolution', () => {
-    test('defaults to bedrock when nothing is set', () => {
+    test('always returns bedrock since kiro-cli has been removed', () => {
       expect(resolveModelConfig({}).inferenceMode).toBe('bedrock');
-    });
-
-    test('session setting takes highest priority', () => {
-      expect(
-        resolveModelConfig({
-          session: { inferenceMode: 'kiro-cli' },
-          customAgent: { inferenceMode: 'bedrock' },
-          env: { inferenceMode: 'bedrock' },
-        }).inferenceMode
-      ).toBe('kiro-cli');
-    });
-
-    test('customAgent overrides env', () => {
-      expect(
-        resolveModelConfig({
-          customAgent: { inferenceMode: 'kiro-cli' },
-          env: { inferenceMode: 'bedrock' },
-        }).inferenceMode
-      ).toBe('kiro-cli');
-    });
-
-    test('env kiro-cli is honoured when no session/agent setting', () => {
-      expect(
-        resolveModelConfig({
-          env: { inferenceMode: 'kiro-cli' },
-        }).inferenceMode
-      ).toBe('kiro-cli');
-    });
-
-    test('non-kiro-cli env values fall through to bedrock default', () => {
-      expect(
-        resolveModelConfig({
-          env: { inferenceMode: 'something-else' },
-        }).inferenceMode
-      ).toBe('bedrock');
     });
   });
 
   describe('bedrockModel resolution', () => {
     test('defaults to defaultAgentConfig.defaultModel when nothing is set', () => {
-      expect(resolveModelConfig({}).bedrockModel).toBe('sonnet4.6');
+      expect(resolveModelConfig({}).bedrockModel).toBe('kimi-k2.5');
     });
 
     test('new field bedrockDefaultModel takes priority over legacy defaultModel within same source', () => {
@@ -98,125 +63,15 @@ describe('resolveModelConfig', () => {
     });
   });
 
-  describe('kiroModel resolution', () => {
-    test('defaults to auto when nothing is set', () => {
-      expect(resolveModelConfig({}).kiroModel).toBe('auto');
-    });
-
-    test('new field kiroDefaultModel takes priority over legacy kiroModel within same source', () => {
-      expect(
-        resolveModelConfig({
-          customAgent: {
-            kiroDefaultModel: 'claude-opus-4.8',
-            kiroModel: 'claude-haiku-4.5',
-          },
-        }).kiroModel
-      ).toBe('claude-opus-4.8');
-    });
-
-    test('legacy kiroModel is used when kiroDefaultModel is absent (backward compat)', () => {
-      expect(
-        resolveModelConfig({
-          customAgent: {
-            kiroModel: 'claude-haiku-4.5',
-          },
-        }).kiroModel
-      ).toBe('claude-haiku-4.5');
-    });
-
-    test('session setting takes priority over customAgent', () => {
-      expect(
-        resolveModelConfig({
-          session: { kiroDefaultModel: 'deepseek-3.2' },
-          customAgent: { kiroDefaultModel: 'claude-opus-4.8' },
-        }).kiroModel
-      ).toBe('deepseek-3.2');
-    });
-
-    test('override takes highest priority', () => {
-      expect(
-        resolveModelConfig({
-          overrides: { kiroModelOverride: 'glm-5' },
-          session: { kiroDefaultModel: 'claude-opus-4.8' },
-          customAgent: { kiroDefaultModel: 'deepseek-3.2' },
-        }).kiroModel
-      ).toBe('glm-5');
-    });
-
-    test('userPreferences is consulted when session and agent have nothing', () => {
-      expect(
-        resolveModelConfig({
-          userPreferences: { kiroDefaultModel: 'minimax-m2.5' },
-        }).kiroModel
-      ).toBe('minimax-m2.5');
-    });
-  });
-
-  describe('bedrock↔kiro switching preserves both selections', () => {
-    test('both models are always resolved regardless of active provider', () => {
-      const result = resolveModelConfig({
-        session: {
-          inferenceMode: 'bedrock',
-          bedrockDefaultModel: 'sonnet4.6',
-          kiroDefaultModel: 'claude-opus-4.8',
-        },
-      });
-      expect(result.inferenceMode).toBe('bedrock');
-      expect(result.bedrockModel).toBe('sonnet4.6');
-      expect(result.kiroModel).toBe('claude-opus-4.8');
-    });
-
-    test('switching to kiro-cli does not lose bedrock model', () => {
-      const result = resolveModelConfig({
-        session: {
-          inferenceMode: 'kiro-cli',
-          bedrockDefaultModel: 'sonnet4.6',
-          kiroDefaultModel: 'claude-opus-4.8',
-        },
-      });
-      expect(result.inferenceMode).toBe('kiro-cli');
-      expect(result.bedrockModel).toBe('sonnet4.6');
-      expect(result.kiroModel).toBe('claude-opus-4.8');
-    });
-  });
-
-  describe('legacy format fallback (no new fields)', () => {
-    test('agent with only legacy fields resolves correctly', () => {
-      const result = resolveModelConfig({
-        session: {
-          inferenceMode: 'kiro-cli',
-        },
-        customAgent: {
-          defaultModel: 'sonnet3.7',
-          kiroModel: 'claude-haiku-4.5',
-        },
-      });
-      expect(result.inferenceMode).toBe('kiro-cli');
-      expect(result.bedrockModel).toBe('sonnet3.7');
-      expect(result.kiroModel).toBe('claude-haiku-4.5');
-    });
-
-    test('mixed new and legacy fields across sources', () => {
-      const result = resolveModelConfig({
-        session: { kiroDefaultModel: 'deepseek-3.2' },
-        customAgent: { defaultModel: 'sonnet3.7' },
-      });
-      expect(result.bedrockModel).toBe('sonnet3.7');
-      expect(result.kiroModel).toBe('deepseek-3.2');
-    });
-  });
-
   describe('partial update safety', () => {
     test('undefined fields do not shadow lower-priority sources', () => {
       const result = resolveModelConfig({
-        session: { bedrockDefaultModel: undefined, kiroDefaultModel: undefined },
+        session: { bedrockDefaultModel: undefined },
         customAgent: {
           bedrockDefaultModel: 'sonnet4.6',
-          kiroDefaultModel: 'claude-opus-4.8',
         },
       });
       expect(result.bedrockModel).toBe('sonnet4.6');
-      expect(result.kiroModel).toBe('claude-opus-4.8');
     });
 
     test('empty session does not override agent settings', () => {
@@ -224,13 +79,9 @@ describe('resolveModelConfig', () => {
         session: {},
         customAgent: {
           bedrockDefaultModel: 'haiku4.5',
-          kiroDefaultModel: 'glm-5',
-          inferenceMode: 'kiro-cli',
         },
       });
-      expect(result.inferenceMode).toBe('kiro-cli');
       expect(result.bedrockModel).toBe('haiku4.5');
-      expect(result.kiroModel).toBe('glm-5');
     });
   });
 
@@ -238,7 +89,7 @@ describe('resolveModelConfig', () => {
     test('session bedrockDefaultModel overrides customAgent when both are present', () => {
       const result = resolveModelConfig({
         session: { bedrockDefaultModel: 'haiku4.5' },
-        customAgent: { bedrockDefaultModel: 'opus4.8', defaultModel: 'sonnet3.7' },
+        customAgent: { bedrockDefaultModel: 'opus4.8', defaultModel: 'kimi-k2.5' },
       });
       expect(result.bedrockModel).toBe('haiku4.5');
     });
@@ -275,24 +126,6 @@ describe('resolveModelConfig', () => {
         },
       });
       expect(result.bedrockModel).toBe('opus4.8');
-    });
-  });
-
-  describe('S-2: invalid kiroModelOverride is ignored', () => {
-    test('invalid kiroModelOverride falls through to source chain', () => {
-      const result = resolveModelConfig({
-        overrides: { kiroModelOverride: 'nonexistent-kiro-model' },
-        customAgent: { kiroDefaultModel: 'claude-opus-4.8' },
-      });
-      expect(result.kiroModel).toBe('claude-opus-4.8');
-    });
-
-    test('valid kiroModelOverride is respected', () => {
-      const result = resolveModelConfig({
-        overrides: { kiroModelOverride: 'deepseek-3.2' },
-        customAgent: { kiroDefaultModel: 'claude-opus-4.8' },
-      });
-      expect(result.kiroModel).toBe('deepseek-3.2');
     });
   });
 });

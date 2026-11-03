@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { inferenceModeSchema, kiroModelSchema, ModelType, modelTypeSchema } from './model.js';
+import { inferenceModeSchema, ModelType, modelTypeSchema } from './model.js';
 
 export const agentStatusSchema = z.union([z.literal('working'), z.literal('pending'), z.literal('completed')]);
 export const runtimeTypeSchema = z.union([z.literal('ec2'), z.literal('agent-core')]);
@@ -34,9 +34,7 @@ export const customAgentSchema = z.object({
   iconKey: z.string().optional(),
   includeDefaultKnowledge: z.boolean().optional(),
   inferenceMode: inferenceModeSchema.optional(),
-  kiroModel: z.string().optional(),
   bedrockDefaultModel: modelTypeSchema.optional(),
-  kiroDefaultModel: kiroModelSchema.optional(),
   parentAgentId: z.string().optional(),
   createdAt: z.number(),
   updatedAt: z.number(),

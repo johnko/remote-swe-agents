@@ -377,37 +377,20 @@ export default async function SessionPage({ params }: { params: Promise<{ worker
     agentIconUrl = `/api/agent-icon?key=${encodeURIComponent(iconKey)}`;
   }
 
-  // Resolve the *effective* inference mode for this session using the same
-  // priority chain the worker uses: session > customAgent > env > default.
-  // We do this server-side so the initial render already reflects the
-  // correct UI (Bedrock selector vs. Kiro model selector) — avoiding a
-  // client-side flicker and potential hydration mismatch.
-  //
-  // User preferences are DELIBERATELY not consulted here. They are only
-  // the default used at session creation time; flipping them must not
-  // retroactively reinterpret existing / legacy sessions. Sessions created
-  // before `inferenceMode` was persisted therefore fall through to
-  // Bedrock, matching the single-backend world they originally ran in.
+  // Resolve the effective bedrock model for this session using the priority chain
+  // (session > customAgent > default). User preferences are deliberately excluded
+  // from the runtime chain for existing sessions.
   const resolvedModel = resolveModelConfig({
     session: {
-      inferenceMode: session.inferenceMode,
       bedrockDefaultModel: session.bedrockDefaultModel,
-      kiroDefaultModel: session.kiroDefaultModel,
-      kiroModel: session.kiroModel,
     },
     customAgent: customAgent
       ? {
-          inferenceMode: customAgent.inferenceMode,
           bedrockDefaultModel: customAgent.bedrockDefaultModel,
           defaultModel: customAgent.defaultModel,
-          kiroDefaultModel: customAgent.kiroDefaultModel,
-          kiroModel: customAgent.kiroModel,
         }
       : undefined,
-    env: { inferenceMode: process.env.INFERENCE_MODE },
   });
-  const effectiveInferenceMode = resolvedModel.inferenceMode;
-  const effectiveKiroModel = effectiveInferenceMode === 'kiro-cli' ? resolvedModel.kiroModel : undefined;
   const effectiveBedrockModel = resolvedModel.bedrockModel;
 
   // Load persisted port mappings (hostname + opened ports) so message
@@ -459,8 +442,6 @@ export default async function SessionPage({ params }: { params: Promise<{ worker
         unreadMap={unreadMap}
         lastReadAt={lastReadAt}
         parentSessionId={session.parentSessionId}
-        inferenceMode={effectiveInferenceMode}
-        kiroModel={effectiveKiroModel}
         bedrockModel={effectiveBedrockModel}
         sessionBedrockDefaultModel={session.bedrockDefaultModel}
         initialPortMapping={initialPortMapping}

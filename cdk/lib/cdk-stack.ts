@@ -19,7 +19,6 @@ import { IRepository } from 'aws-cdk-lib/aws-ecr';
 import { VapidKeys } from './constructs/vapid-keys';
 import { Preview } from './constructs/preview';
 import { PolicyStatement } from 'aws-cdk-lib/aws-iam';
-import { UserParamsCleaner } from './constructs/user-params-cleaner';
 
 export interface MainStackProps extends cdk.StackProps {
   readonly signPayloadHandler: EdgeFunction;
@@ -65,13 +64,6 @@ export interface MainStackProps extends cdk.StackProps {
   /**
    * SSM parameter name for Kiro CLI API key. When set, enables Kiro CLI mode support.
    */
-  readonly kiroApiKeyParameterName?: string;
-
-  /**
-   * Inference mode for the worker. 'bedrock' (default) or 'kiro-cli'.
-   * @default 'bedrock'
-   */
-  readonly inferenceMode?: string;
 }
 
 export class MainStack extends cdk.Stack {
@@ -152,17 +144,6 @@ export class MainStack extends cdk.Stack {
         })
       : undefined;
     // Sweep runtime-created per-user SSM parameters (e.g. Kiro API keys) on
-    // stack deletion. They are created by the webapp via `ssm:PutParameter`,
-    // outside of CloudFormation's lifecycle, so they would otherwise leak
-    // after `cdk destroy`.
-    new UserParamsCleaner(this, 'UserParamsCleaner');
-
-    const kiroApiKeyParameter = props.kiroApiKeyParameterName
-      ? StringParameter.fromStringParameterAttributes(this, 'KiroApiKey', {
-          parameterName: props.kiroApiKeyParameterName,
-          forceDynamicReference: true,
-        })
-      : undefined;
 
     const worker = new Worker(this, 'Worker', {
       vpc,

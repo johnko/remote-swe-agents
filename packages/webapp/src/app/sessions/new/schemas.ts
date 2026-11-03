@@ -1,4 +1,4 @@
-import { inferenceModeSchema, kiroModelSchema, modelTypeSchema } from '@remote-swe-agents/agent-core/schema';
+import { inferenceModeSchema, modelTypeSchema } from '@remote-swe-agents/agent-core/schema';
 import { z } from 'zod';
 
 // Treat empty strings as "not set" for optional enum fields. Form state can
@@ -23,9 +23,7 @@ export const createNewWorkerSchema = z.object({
   modelOverride: optionalEnum(modelTypeSchema),
   customAgentId: z.string().optional(),
   inferenceMode: optionalEnum(inferenceModeSchema),
-  kiroModel: z.string().optional(),
   bedrockDefaultModel: optionalEnum(modelTypeSchema),
-  kiroDefaultModel: optionalEnum(kiroModelSchema),
 });
 
 export const promptTemplateSchema = z.object({

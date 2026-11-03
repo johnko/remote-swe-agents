@@ -3,7 +3,6 @@ import { PutCommand } from '@aws-sdk/lib-dynamodb';
 import { ddb, TableName } from './aws/index.js';
 import {
   InferenceMode,
-  KiroModelId,
   MessageItem,
   ModelType,
   RuntimeType,
@@ -76,17 +75,11 @@ export interface CreateSessionParams {
    */
   inferenceMode?: InferenceMode;
   /**
-   * Model selection for kiro-cli mode. Only used when inferenceMode === 'kiro-cli'.
    */
-  kiroModel?: string;
   /**
    * New symmetric Bedrock model field. Takes priority over legacy `defaultModel`.
    */
   bedrockDefaultModel?: ModelType;
-  /**
-   * New symmetric Kiro model field. Takes priority over legacy `kiroModel`.
-   */
-  kiroDefaultModel?: KiroModelId;
   /**
    * When true, the session row and seed message are persisted but the worker
    * is NOT started (no `getOrCreateWorkerInstance` / `onMessageReceived`).
@@ -127,9 +120,9 @@ export const createSession = async (params: CreateSessionParams): Promise<string
     senderType,
     senderDisplayName,
     inferenceMode,
-    kiroModel,
+
     bedrockDefaultModel,
-    kiroDefaultModel,
+
     deferWorkerStart,
     handoverSourceSessionId,
   } = params;
@@ -264,9 +257,7 @@ export const createSession = async (params: CreateSessionParams): Promise<string
               ...(slackChannelId ? { slackChannelId } : {}),
               ...(slackThreadTs ? { slackThreadTs } : {}),
               ...(inferenceMode ? { inferenceMode } : {}),
-              ...(inferenceMode === 'kiro-cli' && kiroModel ? { kiroModel } : {}),
               ...(bedrockDefaultModel ? { bedrockDefaultModel } : {}),
-              ...(kiroDefaultModel ? { kiroDefaultModel } : {}),
               ...(handoverSourceSessionId ? { handoverSourceSessionId } : {}),
             } satisfies SessionItem,
           },

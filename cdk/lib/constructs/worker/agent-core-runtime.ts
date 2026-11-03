@@ -50,17 +50,6 @@ export interface AgentCoreRuntimeProps {
   vapidKeys: VapidKeys;
   eventTrigger: EventTrigger;
   previewMicrovmImageArn?: string;
-  /**
-   * SSM parameter holding the stack-wide Kiro CLI API key. When set, the
-   * runtime can resolve it via `KIRO_API_KEY_SSM_PARAM` to run sessions in
-   * kiro-cli inference mode. Omit to run Bedrock-only (no Kiro wiring at all).
-   */
-  kiroApiKeyParameter?: IStringParameter;
-  /**
-   * Default inference mode for the worker ('bedrock' or 'kiro-cli').
-   * @default 'bedrock'
-   */
-  inferenceMode?: string;
 }
 
 export class AgentCoreRuntime extends Construct implements IGrantable {
@@ -162,28 +151,6 @@ export class AgentCoreRuntime extends Construct implements IGrantable {
     props.vapidKeys.grantRead(role);
     props.bus.api.grantPublishAndSubscribe(role);
     props.bus.api.grantConnect(role);
-    props.kiroApiKeyParameter?.grantRead(role);
-    // Grant SSM read access for per-user Kiro API keys. These parameters are
-    // created at runtime by the webapp (via `ssm:PutParameter`), outside of
-    // CloudFormation, so the grant is expressed as a wildcard on the per-user
-    // prefix. Users can enable Kiro CLI mode per session from the webapp
-    // regardless of the stack-level opt-in props, so this grant is always on.
-    role.addToPrincipalPolicy(
-      new PolicyStatement({
-        actions: ['ssm:GetParameter'],
-        resources: [
-          Arn.format(
-            {
-              service: 'ssm',
-              resource: 'parameter',
-              resourceName: `${Stack.of(this).stackName}/users/*/kiro-api-key`,
-              arnFormat: ArnFormat.SLASH_RESOURCE_NAME,
-            },
-            Stack.of(this)
-          ),
-        ],
-      })
-    );
 
     // Lambda MicroVMs permissions for preview functionality
     role.addToPrincipalPolicy(
@@ -266,12 +233,8 @@ export class AgentCoreRuntime extends Construct implements IGrantable {
         EVENT_TRIGGER_TTL_SFN_ROLE_ARN: props.eventTrigger.schedulerRole.roleArn,
         EVENT_TRIGGER_RESOURCE_PREFIX: props.eventTrigger.resourcePrefix,
         ...(props.previewMicrovmImageArn ? { PREVIEW_MICROVM_IMAGE_ARN: props.previewMicrovmImageArn } : {}),
-        // STACK_NAME is what the worker uses to resolve per-user Kiro API key
-        // parameter paths (`/${STACK_NAME}/users/<id>/kiro-api-key`).
         STACK_NAME: Stack.of(this).stackName,
         ...workerLaunchEnv,
-        ...(props.kiroApiKeyParameter ? { KIRO_API_KEY_SSM_PARAM: props.kiroApiKeyParameter.parameterName } : {}),
-        ...(props.inferenceMode ? { INFERENCE_MODE: props.inferenceMode } : {}),
       },
     });
     runtime.node.addDependency(role);

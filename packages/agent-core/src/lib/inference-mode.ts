@@ -36,10 +36,7 @@ export interface InferenceModeContext {
  * This function is retained for backward compatibility and delegates to the
  * unified resolver internally.
  */
-export const resolveInferenceMode = (ctx: InferenceModeContext): InferenceMode => {
-  return resolveModelConfig({
-    session: ctx.sessionInferenceMode ? { inferenceMode: ctx.sessionInferenceMode } : undefined,
-    customAgent: ctx.customAgentInferenceMode ? { inferenceMode: ctx.customAgentInferenceMode } : undefined,
-    env: ctx.envInferenceMode ? { inferenceMode: ctx.envInferenceMode } : undefined,
-  }).inferenceMode;
+export const resolveInferenceMode = (_ctx: InferenceModeContext): InferenceMode => {
+  // After kiro-cli removal, inference mode is always 'bedrock'
+  return 'bedrock';
 };

@@ -1,6 +1,5 @@
 import {
   agentStatusSchema,
-  kiroModelSchema,
   modelTypeSchema,
   runtimeTypeSchema,
 } from '@remote-swe-agents/agent-core/schema';
@@ -12,22 +11,6 @@ export const sendMessageToAgentSchema = z.object({
   imageKeys: z.array(z.string()).optional(),
   fileKeys: z.array(z.string()).optional(),
   modelOverride: modelTypeSchema.optional(),
-  /**
-   * Per-message Kiro model override. Only honoured on Kiro sessions.
-   * Ignored on Bedrock sessions.
-   *
-   * The string is interpolated into a `/model <id>` slash command prompt
-   * that kiro-cli parses as a command. Restricting it to model-id-safe
-   * characters is a defence-in-depth guard against a malicious or
-   * DevTools-tampered request injecting additional slash commands via
-   * newline / whitespace / control characters. Authorised catalog model
-   * ids match [a-zA-Z0-9._-]+ (see kiroModelConfigs).
-   */
-  kiroModelOverride: z
-    .string()
-    .regex(/^[a-zA-Z0-9._-]+$/, 'invalid kiro model id')
-    .max(64)
-    .optional(),
   /**
    * Client-side submission UUID (`crypto.randomUUID()` in `MessageForm`).
    * Forwarded verbatim onto the realtime rebroadcast event so the originating
@@ -91,5 +74,4 @@ export const searchSessionContentSchema = z.object({
 export const updateSessionModelSchema = z.object({
   workerId: z.string(),
   bedrockDefaultModel: modelTypeSchema.optional(),
-  kiroDefaultModel: kiroModelSchema.optional(),
 });

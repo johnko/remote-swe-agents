@@ -180,41 +180,12 @@ describe('updateAgentTool (partial update handler)', () => {
     expect(mockUpdateCustomAgent).not.toHaveBeenCalled();
   });
 
-  test('forwards inferenceMode when provided', async () => {
-    await updateAgentTool.handler({ agentId: 'agent-1', inferenceMode: 'kiro-cli' } as any, context);
-
-    const [, data] = mockUpdateCustomAgent.mock.calls[0];
-    expect(data).toEqual({ inferenceMode: 'kiro-cli' });
-  });
-
-  test('forwards kiroModel when provided (with reverse sync to kiroDefaultModel)', async () => {
-    await updateAgentTool.handler({ agentId: 'agent-1', kiroModel: 'claude-opus-4.8' } as any, context);
-
-    const [, data] = mockUpdateCustomAgent.mock.calls[0];
-    expect(data).toEqual({ kiroModel: 'claude-opus-4.8', kiroDefaultModel: 'claude-opus-4.8' });
-  });
-
-  test('does not include kiroModel when not provided (partial update)', async () => {
-    await updateAgentTool.handler({ agentId: 'agent-1', name: 'Renamed' } as any, context);
-
-    const [, data] = mockUpdateCustomAgent.mock.calls[0];
-    expect(data).not.toHaveProperty('kiroModel');
-  });
-
   test('B-2: legacy defaultModel update triggers reverse sync to bedrockDefaultModel', async () => {
     await updateAgentTool.handler({ agentId: 'agent-1', defaultModel: 'sonnet4.6' } as any, context);
 
     const [, data] = mockUpdateCustomAgent.mock.calls[0];
     expect(data.defaultModel).toBe('sonnet4.6');
     expect(data.bedrockDefaultModel).toBe('sonnet4.6');
-  });
-
-  test('B-2: legacy kiroModel update triggers reverse sync to kiroDefaultModel', async () => {
-    await updateAgentTool.handler({ agentId: 'agent-1', kiroModel: 'claude-opus-4.8' } as any, context);
-
-    const [, data] = mockUpdateCustomAgent.mock.calls[0];
-    expect(data.kiroModel).toBe('claude-opus-4.8');
-    expect(data.kiroDefaultModel).toBe('claude-opus-4.8');
   });
 
   test('B-2: reverse sync does NOT fire when new field is explicitly provided', async () => {
@@ -336,45 +307,6 @@ describe('createAgentTool (parentAgentId validation)', () => {
     expect(mockDeleteCustomAgent).toHaveBeenCalledWith('collision-sk');
   });
 
-  test('passes inferenceMode to createCustomAgent when provided (with parentAgentId)', async () => {
-    mockGetCustomAgent.mockResolvedValue({ ...existingAgent, SK: 'parent-sk', name: 'Parent' });
-    mockCreateCustomAgent.mockResolvedValue({
-      ...existingAgent,
-      SK: 'new-sk',
-      name: 'New Agent',
-      inferenceMode: 'kiro-cli',
-      parentAgentId: 'parent-sk',
-    });
-
-    await createAgentTool.handler(
-      { ...baseInput, inferenceMode: 'kiro-cli', parentAgentId: 'parent-sk' } as any,
-      context
-    );
-
-    expect(mockCreateCustomAgent).toHaveBeenCalledTimes(1);
-    const [payload] = mockCreateCustomAgent.mock.calls[0];
-    expect(payload.inferenceMode).toBe('kiro-cli');
-  });
-
-  test('passes kiroModel to createCustomAgent when provided (with parentAgentId)', async () => {
-    mockGetCustomAgent.mockResolvedValue({ ...existingAgent, SK: 'parent-sk', name: 'Parent' });
-    mockCreateCustomAgent.mockResolvedValue({
-      ...existingAgent,
-      SK: 'new-sk',
-      name: 'New Agent',
-      kiroModel: 'deepseek-3.2',
-      parentAgentId: 'parent-sk',
-    });
-
-    await createAgentTool.handler(
-      { ...baseInput, kiroModel: 'deepseek-3.2', parentAgentId: 'parent-sk' } as any,
-      context
-    );
-
-    expect(mockCreateCustomAgent).toHaveBeenCalledTimes(1);
-    const [payload] = mockCreateCustomAgent.mock.calls[0];
-    expect(payload.kiroModel).toBe('deepseek-3.2');
-  });
 });
 
 
@@ -461,7 +393,6 @@ describe('listAgentsTool - Integration with getAllCustomAgents', () => {
       description: 'Custom description',
       defaultModel: 'sonnet4.6',
       bedrockDefaultModel: 'sonnet4.6',
-      kiroDefaultModel: 'auto',
       runtimeType: 'agent-core',
       iconKey: 'custom-icon',
       tools: ['tool1'],
@@ -483,7 +414,6 @@ describe('listAgentsTool - Integration with getAllCustomAgents', () => {
       description: 'Custom description',
       defaultModel: 'sonnet4.6',
       bedrockDefaultModel: 'sonnet4.6',
-      kiroDefaultModel: 'auto',
       runtimeType: 'agent-core',
       iconKey: 'custom-icon',
       tools: ['tool1'],

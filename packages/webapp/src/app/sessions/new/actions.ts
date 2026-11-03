@@ -14,10 +14,7 @@ export const createNewWorker = authActionClient
       fileKeys = [],
       modelOverride,
       customAgentId = '',
-      inferenceMode,
-      kiroModel,
       bedrockDefaultModel,
-      kiroDefaultModel,
     } = parsedInput;
     const { userId, displayName } = ctx;
 
@@ -31,10 +28,7 @@ export const createNewWorker = authActionClient
       senderUserId: userId,
       senderType: 'webapp',
       ...(displayName ? { senderDisplayName: displayName } : {}),
-      inferenceMode,
-      kiroModel: kiroDefaultModel ?? kiroModel,
       bedrockDefaultModel: effectiveBedrockDefault,
-      kiroDefaultModel,
     });
 
     redirect(`/sessions/${workerId}`);

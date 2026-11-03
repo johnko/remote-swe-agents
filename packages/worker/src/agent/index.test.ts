@@ -45,94 +45,22 @@ describe('toolNamesThatResetReportTimer', () => {
 });
 
 describe('resolveInferenceMode', () => {
-  test('returns custom agent setting when present', () => {
-    expect(
-      resolveInferenceMode({
-        customAgentInferenceMode: 'kiro-cli',
-        envInferenceMode: 'bedrock',
-      })
-    ).toBe('kiro-cli');
-  });
-
-  test('falls back to env var when no session or custom agent setting', () => {
-    expect(
-      resolveInferenceMode({
-        customAgentInferenceMode: undefined,
-        envInferenceMode: 'kiro-cli',
-      })
-    ).toBe('kiro-cli');
-  });
-
-  test('defaults to bedrock when nothing is set (legacy session)', () => {
+  test('always returns bedrock (kiro-cli removed)', () => {
+    // After kiro-cli removal, inference mode always resolves to 'bedrock'
     expect(resolveInferenceMode({})).toBe('bedrock');
-  });
-
-  test('custom agent overrides env', () => {
     expect(
       resolveInferenceMode({
-        customAgentInferenceMode: 'bedrock',
-        envInferenceMode: 'kiro-cli',
-      })
-    ).toBe('bedrock');
-  });
-
-  test('ignores non-kiro-cli env values', () => {
-    expect(
-      resolveInferenceMode({
-        envInferenceMode: 'something-else',
-      })
-    ).toBe('bedrock');
-  });
-
-  test('session setting takes top priority over all others', () => {
-    expect(
-      resolveInferenceMode({
-        sessionInferenceMode: 'kiro-cli',
         customAgentInferenceMode: 'bedrock',
         envInferenceMode: 'bedrock',
       })
-    ).toBe('kiro-cli');
-  });
-
-  test('session setting wins even when all other sources say kiro-cli and session says bedrock', () => {
+    ).toBe('bedrock');
     expect(
       resolveInferenceMode({
         sessionInferenceMode: 'bedrock',
-        customAgentInferenceMode: 'kiro-cli',
-        envInferenceMode: 'kiro-cli',
+        customAgentInferenceMode: 'bedrock',
+        envInferenceMode: 'bedrock',
       })
     ).toBe('bedrock');
-  });
-
-  test('session undefined falls through to custom agent', () => {
-    expect(
-      resolveInferenceMode({
-        sessionInferenceMode: undefined,
-        customAgentInferenceMode: 'kiro-cli',
-      })
-    ).toBe('kiro-cli');
-  });
-
-  test('legacy session (no inferenceMode, no customAgent override) stays on bedrock regardless of future preference changes', () => {
-    // This is the regression test for the fix: a pre-Kiro session must NOT
-    // flip to Kiro just because the user later set their preference to Kiro.
-    // Preferences are not part of the resolution context at all.
-    expect(
-      resolveInferenceMode({
-        sessionInferenceMode: undefined,
-        customAgentInferenceMode: undefined,
-      })
-    ).toBe('bedrock');
-  });
-
-  test('session setting wins even when custom agent is undefined', () => {
-    expect(
-      resolveInferenceMode({
-        sessionInferenceMode: 'kiro-cli',
-        customAgentInferenceMode: undefined,
-        envInferenceMode: undefined,
-      })
-    ).toBe('kiro-cli');
   });
 });
 

@@ -8,8 +8,7 @@ import { toast } from 'sonner';
 import { PencilIcon, TrashIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { CustomAgent } from '@remote-swe-agents/agent-core/schema';
-import { modelConfigs, kiroModelConfigs } from '@remote-swe-agents/agent-core/schema';
-import type { KiroModelId } from '@remote-swe-agents/agent-core/schema';
+import { modelConfigs } from '@remote-swe-agents/agent-core/schema';
 import CustomAgentForm from '../../components/CustomAgentForm';
 import DuplicateAgentButton from '../../components/DuplicateAgentButton';
 import { deleteCustomAgentAction } from '../../actions';
@@ -63,8 +62,6 @@ export default function AgentDetailCard({ agent, childAgents, availableTools }: 
 
   const activeMark = <span className="text-xs text-blue-600 dark:text-blue-400 ml-1">{t('detail.activeModel')}</span>;
   const bedrockModelId = agent.bedrockDefaultModel ?? agent.defaultModel;
-  const kiroModelId = (agent.kiroDefaultModel ??
-    (agent.kiroModel && agent.kiroModel in kiroModelConfigs ? agent.kiroModel : 'auto')) as KiroModelId;
   const mcpCount = mcpServersCount(agent);
 
   return (
@@ -102,20 +99,9 @@ export default function AgentDetailCard({ agent, childAgents, availableTools }: 
 
       <div className="p-6">
         <dl className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <DetailRow label={t('form.inferenceMode.label')}>
-            {agent.inferenceMode === 'bedrock'
-              ? t('form.inferenceMode.bedrock')
-              : agent.inferenceMode === 'kiro-cli'
-                ? t('form.inferenceMode.kiro')
-                : t('form.inferenceMode.inherit')}
-          </DetailRow>
           <DetailRow label={t('form.bedrockModel.label')}>
             {modelConfigs[bedrockModelId]?.name ?? bedrockModelId}
-            {agent.inferenceMode === 'bedrock' && activeMark}
-          </DetailRow>
-          <DetailRow label={t('form.kiroModel.label')}>
-            {kiroModelConfigs[kiroModelId]?.name ?? kiroModelId}
-            {agent.inferenceMode === 'kiro-cli' && activeMark}
+            {activeMark}
           </DetailRow>
           <DetailRow label={t('form.runtimeType.label')}>
             {agent.runtimeType === 'agent-core' ? 'AgentCore Runtime' : 'EC2'}

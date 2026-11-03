@@ -1,6 +1,5 @@
 import type { InferenceBackend } from '@remote-swe-agents/agent-core/lib';
 import { bedrockBackend } from './bedrock-backend';
-import { kiroBackend } from './kiro-backend';
 
 /**
  * Registry of every backend class the worker knows about. Consumers that need
@@ -8,9 +7,9 @@ import { kiroBackend } from './kiro-backend';
  * down each backend's long-lived resources on shutdown) should use this list
  * so that adding a new backend only requires registering it here.
  */
-export const allBackends: InferenceBackend[] = [bedrockBackend, kiroBackend];
+export const allBackends: InferenceBackend[] = [bedrockBackend];
 
-export { bedrockBackend, kiroBackend };
+export { bedrockBackend };
 
 /**
  * Dispose of every backend's long-lived resources. Invoked from the worker

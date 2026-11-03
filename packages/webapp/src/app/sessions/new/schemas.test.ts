@@ -30,12 +30,11 @@ describe('createNewWorkerSchema optionalEnum behaviour', () => {
     expect(r.success).toBe(false);
   });
 
-  test('empty string inferenceMode / kiroDefaultModel also normalise to undefined', () => {
-    const r = createNewWorkerSchema.safeParse({ message: 'hi', inferenceMode: '', kiroDefaultModel: '' });
+  test('empty string inferenceMode also normalises to undefined', () => {
+    const r = createNewWorkerSchema.safeParse({ message: 'hi', inferenceMode: '' });
     expect(r.success).toBe(true);
     if (r.success) {
       expect(r.data.inferenceMode).toBeUndefined();
-      expect(r.data.kiroDefaultModel).toBeUndefined();
     }
   });
 });

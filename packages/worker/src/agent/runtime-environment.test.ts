@@ -97,9 +97,9 @@ describe('buildRuntimeEnvironmentBlock', () => {
       _resetProcessRuntimeTypeForTesting();
       const block = buildRuntimeEnvironmentBlock({
         session: undefined,
-        customAgent: { ...baseCustomAgent, inferenceMode: 'kiro-cli', kiroDefaultModel: 'claude-sonnet-5' },
+        customAgent: { ...baseCustomAgent, bedrockDefaultModel: 'sonnet4' },
       });
-      expect(block).toBe('## Runtime Environment\n- Inference provider: kiro-cli\n- Model: claude-sonnet-5');
+      expect(block).toBe('## Runtime Environment\n- Inference provider: bedrock\n- Model: sonnet4');
     });
   });
 
@@ -114,35 +114,25 @@ describe('buildRuntimeEnvironmentBlock', () => {
       expect(block).toContain('- Model: opus5');
     });
 
-    test('kiro modelOverride takes priority', () => {
-      setProcessRuntimeType('agent-core');
-      const block = buildRuntimeEnvironmentBlock({
-        session: undefined,
-        customAgent: { ...baseCustomAgent, inferenceMode: 'kiro-cli', kiroDefaultModel: 'claude-sonnet-5' },
-        overrides: { kiroModelOverride: 'claude-opus-5' },
-      });
-      expect(block).toContain('- Model: claude-opus-5');
-    });
-
     test('userPreferences are applied when no override', () => {
       setProcessRuntimeType('ec2');
       const block = buildRuntimeEnvironmentBlock({
         session: undefined,
-        customAgent: { ...baseCustomAgent, inferenceMode: 'kiro-cli' },
-        userPreferences: { kiroDefaultModel: 'claude-opus-4.8' },
+        customAgent: { ...baseCustomAgent, bedrockDefaultModel: 'sonnet4' },
+        userPreferences: { bedrockDefaultModel: 'opus4.8' },
       });
-      expect(block).toContain('- Model: claude-opus-4.8');
+      expect(block).toContain('- Model: opus4.8');
     });
 
     test('override beats userPreferences', () => {
       setProcessRuntimeType('ec2');
       const block = buildRuntimeEnvironmentBlock({
         session: undefined,
-        customAgent: { ...baseCustomAgent, inferenceMode: 'kiro-cli' },
-        overrides: { kiroModelOverride: 'claude-sonnet-5' },
-        userPreferences: { kiroDefaultModel: 'claude-opus-4.8' },
+        customAgent: { ...baseCustomAgent, bedrockDefaultModel: 'sonnet4' },
+        overrides: { modelOverride: 'opus5' },
+        userPreferences: { bedrockDefaultModel: 'opus4.8' },
       });
-      expect(block).toContain('- Model: claude-sonnet-5');
+      expect(block).toContain('- Model: opus5');
     });
   });
 
@@ -169,48 +159,9 @@ describe('buildRuntimeEnvironmentBlock', () => {
       expect(block).toContain('- Inference provider: bedrock');
       expect(block).toContain('- Model: opus5');
     });
-
-    test('ec2 + kiro-cli with auto model', () => {
-      setProcessRuntimeType('ec2');
-      const block = buildRuntimeEnvironmentBlock({
-        session: undefined,
-        customAgent: { ...baseCustomAgent, inferenceMode: 'kiro-cli' },
-      });
-      expect(block).toContain('- Runtime type: ec2');
-      expect(block).toContain('- Inference provider: kiro-cli');
-      expect(block).toContain('- Model: auto (dynamically selected)');
-    });
-
-    test('agent-core + kiro-cli with specific model', () => {
-      setProcessRuntimeType('agent-core');
-      const block = buildRuntimeEnvironmentBlock({
-        session: undefined,
-        customAgent: {
-          ...baseCustomAgent,
-          inferenceMode: 'kiro-cli',
-          kiroDefaultModel: 'claude-sonnet-5',
-        },
-      });
-      expect(block).toContain('- Runtime type: agent-core');
-      expect(block).toContain('- Inference provider: kiro-cli');
-      expect(block).toContain('- Model: claude-sonnet-5');
-    });
   });
 
   describe('session-level settings', () => {
-    test('session inferenceMode overrides agent', () => {
-      setProcessRuntimeType('ec2');
-      const block = buildRuntimeEnvironmentBlock({
-        session: {
-          inferenceMode: 'kiro-cli',
-          kiroDefaultModel: 'claude-opus-5',
-        } as unknown as SessionItem,
-        customAgent: { ...baseCustomAgent, inferenceMode: 'bedrock' },
-      });
-      expect(block).toContain('- Inference provider: kiro-cli');
-      expect(block).toContain('- Model: claude-opus-5');
-    });
-
     test('session bedrockDefaultModel overrides agent model', () => {
       setProcessRuntimeType('ec2');
       const block = buildRuntimeEnvironmentBlock({
@@ -226,12 +177,12 @@ describe('buildRuntimeEnvironmentBlock', () => {
   describe('env fallback', () => {
     test('INFERENCE_MODE env var fallback when neither session nor agent sets it', () => {
       setProcessRuntimeType('ec2');
-      process.env.INFERENCE_MODE = 'kiro-cli';
+      process.env.INFERENCE_MODE = 'bedrock';
       const block = buildRuntimeEnvironmentBlock({
         session: undefined,
         customAgent: { ...baseCustomAgent },
       });
-      expect(block).toContain('- Inference provider: kiro-cli');
+      expect(block).toContain('- Inference provider: bedrock');
     });
 
     test('WORKER_RUNTIME env var is used as fallback when setProcessRuntimeType not called', () => {

@@ -7,7 +7,7 @@ import {
   updateCustomAgent,
   deleteCustomAgent,
 } from '../../lib/custom-agent.js';
-import { modelTypeSchema, runtimeTypeSchema, inferenceModeSchema, kiroModelSchema } from '../../schema/index.js';
+import { modelTypeSchema, runtimeTypeSchema, inferenceModeSchema } from '../../schema/index.js';
 import { savePendingCreateAgent } from '../confirm-create-agent/index.js';
 
 const agentFieldsSchema = z.object({
@@ -17,9 +17,6 @@ const agentFieldsSchema = z.object({
   bedrockDefaultModel: modelTypeSchema
     .optional()
     .describe('The Bedrock model for this agent. Takes priority over defaultModel (legacy).'),
-  kiroDefaultModel: kiroModelSchema
-    .optional()
-    .describe("The Kiro model for this agent. Takes priority over kiroModel (legacy). Omit to use 'auto'."),
   systemPrompt: z.string().describe('The system prompt that defines the agent behavior.'),
   tools: z
     .array(z.string())
@@ -50,11 +47,8 @@ const agentFieldsSchema = z.object({
   inferenceMode: inferenceModeSchema
     .optional()
     .describe(
-      "Inference mode for sessions using this agent. 'kiro-cli': use Kiro CLI inference (no Bedrock cost). 'bedrock': use Bedrock direct inference. Omit to fall through to env / default."
+      "Inference mode for sessions using this agent. 'bedrock': use Bedrock direct inference. Omit to fall through to env / default."
     ),
-  kiroModel: kiroModelSchema
-    .optional()
-    .describe("Model to use when inferenceMode is 'kiro-cli'. Omit to use the default (auto)."),
   iconKey: z
     .string()
     .optional()
@@ -74,9 +68,6 @@ const updateAgentSchema = z.object({
   bedrockDefaultModel: modelTypeSchema
     .optional()
     .describe('The Bedrock model for this agent. Takes priority over defaultModel (legacy).'),
-  kiroDefaultModel: kiroModelSchema
-    .optional()
-    .describe("The Kiro model for this agent. Takes priority over kiroModel (legacy). Omit to use 'auto'."),
   systemPrompt: z.string().optional().describe('The system prompt that defines the agent behavior.'),
   tools: z
     .array(z.string())
@@ -106,11 +97,8 @@ const updateAgentSchema = z.object({
   inferenceMode: inferenceModeSchema
     .optional()
     .describe(
-      "Inference mode for sessions using this agent. 'kiro-cli': use Kiro CLI inference (no Bedrock cost). 'bedrock': use Bedrock direct inference. Omit to fall through to env / default."
+      "Inference mode for sessions using this agent. 'bedrock': use Bedrock direct inference. Omit to fall through to env / default."
     ),
-  kiroModel: kiroModelSchema
-    .optional()
-    .describe("Model to use when inferenceMode is 'kiro-cli'. Omit to use the default (auto)."),
 });
 const deleteAgentSchema = z.object({
   agentId: z.string().describe('The ID (SK) of the agent to delete.'),
@@ -143,7 +131,6 @@ export const listAgentsTool: ToolDefinition<z.infer<typeof listAgentsSchema>> = 
       description: a.description,
       defaultModel: a.defaultModel,
       bedrockDefaultModel: a.bedrockDefaultModel,
-      kiroDefaultModel: a.kiroDefaultModel,
       runtimeType: a.runtimeType,
       iconKey: a.iconKey,
       tools: a.tools,
@@ -177,7 +164,6 @@ export const getAgentTool: ToolDefinition<z.infer<typeof getAgentSchema>> = {
         description: agent.description,
         defaultModel: agent.defaultModel,
         bedrockDefaultModel: agent.bedrockDefaultModel,
-        kiroDefaultModel: agent.kiroDefaultModel,
         systemPrompt: agent.systemPrompt,
         tools: agent.tools,
         mcpConfig: agent.mcpConfig,
@@ -185,7 +171,6 @@ export const getAgentTool: ToolDefinition<z.infer<typeof getAgentSchema>> = {
         iconKey: agent.iconKey,
         includeDefaultKnowledge: agent.includeDefaultKnowledge !== false,
         inferenceMode: agent.inferenceMode,
-        kiroModel: agent.kiroModel,
         parentAgentId: agent.parentAgentId,
         createdAt: new Date(agent.createdAt).toISOString(),
         updatedAt: new Date(agent.updatedAt).toISOString(),
@@ -216,7 +201,6 @@ export const createAgentTool: ToolDefinition<z.infer<typeof createAgentSchema>> 
       description: input.description ?? '',
       defaultModel: input.bedrockDefaultModel ?? input.defaultModel,
       bedrockDefaultModel: input.bedrockDefaultModel ?? input.defaultModel,
-      kiroDefaultModel: input.kiroDefaultModel ?? input.kiroModel,
       systemPrompt: input.systemPrompt,
       tools: input.tools,
       useAllTools: input.useAllTools ?? false,
@@ -225,7 +209,6 @@ export const createAgentTool: ToolDefinition<z.infer<typeof createAgentSchema>> 
       includeDefaultKnowledge: input.includeDefaultKnowledge ?? true,
       parentAgentId: input.parentAgentId,
       inferenceMode: input.inferenceMode,
-      kiroModel: input.kiroDefaultModel ?? input.kiroModel,
       iconKey: input.iconKey,
     };
 
@@ -280,17 +263,10 @@ export const updateAgentTool: ToolDefinition<z.infer<typeof updateAgentSchema>> 
     if (input.bedrockDefaultModel !== undefined) {
       updates.defaultModel = input.bedrockDefaultModel;
     }
-    // Keep legacy `kiroModel` in sync when `kiroDefaultModel` is updated
-    if (input.kiroDefaultModel !== undefined) {
-      updates.kiroModel = input.kiroDefaultModel;
-    }
     // Reverse sync: when legacy fields are updated without new fields, propagate
     // to new fields so the resolver (which prefers new fields) picks up the change.
     if (input.defaultModel !== undefined && input.bedrockDefaultModel === undefined) {
       updates.bedrockDefaultModel = input.defaultModel;
-    }
-    if (input.kiroModel !== undefined && input.kiroDefaultModel === undefined) {
-      updates.kiroDefaultModel = input.kiroModel;
     }
     const agent = await updateCustomAgent(agentId, updates);
     return `Agent updated successfully.\n- ID: ${agent.SK}\n- Name: ${agent.name}`;

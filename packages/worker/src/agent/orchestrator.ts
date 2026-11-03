@@ -123,16 +123,12 @@ export const buildRuntimeEnvironmentBlock = (opts: {
       ? {
           inferenceMode: session.inferenceMode,
           bedrockDefaultModel: session.bedrockDefaultModel,
-          kiroDefaultModel: session.kiroDefaultModel,
-          kiroModel: session.kiroModel,
         }
       : undefined,
     customAgent: {
       inferenceMode: customAgent.inferenceMode,
       bedrockDefaultModel: customAgent.bedrockDefaultModel,
       defaultModel: customAgent.defaultModel,
-      kiroDefaultModel: customAgent.kiroDefaultModel,
-      kiroModel: customAgent.kiroModel,
     },
     userPreferences,
     env: { inferenceMode: process.env.INFERENCE_MODE },
@@ -143,12 +139,7 @@ export const buildRuntimeEnvironmentBlock = (opts: {
     lines.push(`- Runtime type: ${runtimeType}`);
   }
   lines.push(`- Inference provider: ${resolved.inferenceMode}`);
-  if (resolved.inferenceMode === 'kiro-cli') {
-    const modelDisplay = resolved.kiroModel === 'auto' ? 'auto (dynamically selected)' : resolved.kiroModel;
-    lines.push(`- Model: ${modelDisplay}`);
-  } else {
-    lines.push(`- Model: ${resolved.bedrockModel}`);
-  }
+  lines.push(`- Model: ${resolved.bedrockModel}`);
 
   return lines.join('\n');
 };
@@ -195,7 +186,6 @@ const buildSystemPrompt = async (opts: {
   systemPrompt: string;
   cwd: string;
   userSkills: import('@remote-swe-agents/agent-core/schema').Skill[];
-  kiroAgentName?: string;
 }> => {
   const { workerId, customAgent, session, history, senderUserId } = opts;
   const runtimeType = getProcessRuntimeType();
@@ -280,54 +270,26 @@ const buildSystemPrompt = async (opts: {
     env: { inferenceMode: process.env.INFERENCE_MODE },
   }).inferenceMode;
 
-  // Deploy kiro-native workspace files (hooks, agents, tools) from skills to a
-  // directory OUTSIDE the repo so kiro-cli can discover them via symlink. Only
-  // deploy when the session runs in kiro-cli inference mode — the hooks
-  // mechanism is a kiro-cli-native feature with no effect on Bedrock sessions.
-  let kiroAgentName: string | undefined;
-  if (userSkills.length > 0 && inferenceMode === 'kiro-cli') {
-    try {
-      kiroAgentName = deployKiroWorkspaceFiles(userSkills, cwd, workerId);
-    } catch (error) {
-      // Deploy failed — kiroAgentName stays undefined so the kiro agent loop
-      // will NOT pass --agent, preventing a launch against a missing agent JSON.
-      console.error('[orchestrator] kiro workspace deployment failed:', error);
-    }
-  }
-
   const runtimeEnvBlock = await (async () => {
     const lastUserMsg = history.filter((i) => i.role === 'user').at(-1);
 
     let overrides: ModelOverrides | undefined;
     let userPrefs: ModelFields | undefined;
 
-    if (inferenceMode === 'kiro-cli') {
-      const perMessageModel = lastUserMsg?.kiroModelOverride;
-      if (perMessageModel) overrides = { kiroModelOverride: perMessageModel };
-      if (senderUserId) {
-        try {
-          const prefs = await getUserPreferences(senderUserId);
-          userPrefs = { kiroDefaultModel: prefs.kiroDefaultModel, kiroModel: prefs.kiroModel };
-        } catch {
-          /* best-effort */
-        }
+    // Only the triggering (last user) message's per-message override takes
+    // highest priority. User preferences go through the proper userPreferences
+    // channel so they never shadow session.bedrockDefaultModel.
+    const perMessageModel = lastUserMsg?.modelOverride;
+    if (perMessageModel) overrides = { modelOverride: perMessageModel };
+    try {
+      const globalPrefs = await getPreferences();
+      if (globalPrefs.modelOverride) {
+        userPrefs = {
+          bedrockDefaultModel: globalPrefs.modelOverride as import('@remote-swe-agents/agent-core/schema').ModelType,
+        };
       }
-    } else {
-      // Only the triggering (last user) message's per-message override takes
-      // highest priority. User preferences go through the proper userPreferences
-      // channel so they never shadow session.bedrockDefaultModel.
-      const perMessageModel = lastUserMsg?.modelOverride;
-      if (perMessageModel) overrides = { modelOverride: perMessageModel };
-      try {
-        const globalPrefs = await getPreferences();
-        if (globalPrefs.modelOverride) {
-          userPrefs = {
-            bedrockDefaultModel: globalPrefs.modelOverride as import('@remote-swe-agents/agent-core/schema').ModelType,
-          };
-        }
-      } catch {
-        /* best-effort */
-      }
+    } catch {
+      /* best-effort */
     }
 
     return buildRuntimeEnvironmentBlock({ session, customAgent, overrides, userPreferences: userPrefs });
@@ -361,7 +323,7 @@ const buildSystemPrompt = async (opts: {
     }
   }
 
-  return { systemPrompt, cwd, userSkills, kiroAgentName };
+  return { systemPrompt, cwd, userSkills };
 };
 
 /**
@@ -474,7 +436,7 @@ export const buildTurnContext = async (
   if (!lastItem) return undefined;
 
   const userMessage = extractUserMessage(lastItem);
-  const { systemPrompt, cwd, userSkills, kiroAgentName } = await buildSystemPrompt({
+  const { systemPrompt, cwd, userSkills } = await buildSystemPrompt({
     workerId,
     customAgent,
     session,
@@ -504,7 +466,6 @@ export const buildTurnContext = async (
     cancellationToken,
     userSkills,
     environmentBlock,
-    kiroAgentName,
   };
 };
 

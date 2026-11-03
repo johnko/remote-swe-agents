@@ -117,21 +117,6 @@ export class Webapp extends Construct {
       handler.addEnvironment(key, value);
     }
 
-    // Grant SSM access for per-user Kiro API keys
-    handler.addToRolePolicy(
-      new PolicyStatement({
-        actions: ['ssm:GetParameter', 'ssm:PutParameter', 'ssm:DeleteParameter'],
-        resources: [
-          Arn.format(
-            {
-              service: 'ssm',
-              resource: 'parameter',
-              resourceName: `${Stack.of(this).stackName}/users/*/kiro-api-key`,
-              arnFormat: ArnFormat.SLASH_RESOURCE_NAME,
-            },
-            Stack.of(this)
-          ),
-        ],
       })
     );
     asyncJob.handler.grantInvoke(handler);

@@ -6,9 +6,6 @@ import { useAction } from 'next-safe-action/hooks';
 import { useTranslations } from 'next-intl';
 import {
   updateGlobalPreferences,
-  saveKiroApiKeyAction,
-  deleteKiroApiKeyAction,
-  checkKiroApiKeyAction,
   updateUserPreferencesAction,
   getUserPreferencesAction,
 } from '../actions';
@@ -16,17 +13,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { TrashIcon, KeyIcon, CheckIcon } from 'lucide-react';
+import { TrashIcon } from 'lucide-react';
 import AgentIconUploader from '@/components/AgentIconUploader';
 import {
   GlobalPreferences,
   InferenceMode,
   ModelType,
-  KiroModelId,
   getAvailableModelTypes,
-  getKiroModelIds,
   modelConfigs,
-  kiroModelConfigs,
 } from '@remote-swe-agents/agent-core/schema';
 import { useState, useEffect } from 'react';
 
@@ -35,11 +29,8 @@ interface GlobalPreferencesFormProps {
 }
 
 // Map internal inference mode identifiers to i18n translation keys.
-// The mode value `'kiro-cli'` is an implementation detail; the user-facing
-// translation key is `'kiro'`.
-const inferenceModeI18nKey: Record<InferenceMode, string> = {
+const inferenceModeI18nKey: Partial<Record<InferenceMode, string>> = {
   bedrock: 'bedrock',
-  'kiro-cli': 'kiro',
 };
 
 export default function GlobalPreferencesForm({ preference }: GlobalPreferencesFormProps) {
@@ -47,13 +38,9 @@ export default function GlobalPreferencesForm({ preference }: GlobalPreferencesF
   const [currentPreference, setCurrentPreference] = useState<GlobalPreferences>(preference);
   const [agentName, setAgentName] = useState(preference.defaultAgentName || '');
 
-  // Per-user Kiro settings. `savedMode` is the server-authoritative default
-  // inference mode for new sessions. `hasApiKey` reflects whether a Kiro API
-  // key is stored; it is independent from the mode selection.
+  // Per-user settings. `savedMode` is the server-authoritative default
+  // inference mode for new sessions.
   const [savedMode, setSavedMode] = useState<InferenceMode>('bedrock');
-  const [kiroModel, setKiroModel] = useState<KiroModelId>('auto');
-  const [apiKeyInput, setApiKeyInput] = useState('');
-  const [hasApiKey, setHasApiKey] = useState(false);
 
   // Global preferences optimistic action
   const { execute, optimisticState, isPending } = useOptimisticAction(updateGlobalPreferences, {
@@ -81,8 +68,6 @@ export default function GlobalPreferencesForm({ preference }: GlobalPreferencesF
     onSuccess: ({ data }) => {
       if (data) {
         if (data.inferenceMode) setSavedMode(data.inferenceMode);
-        if (data.kiroDefaultModel) setKiroModel(data.kiroDefaultModel as KiroModelId);
-        else if (data.kiroModel) setKiroModel(data.kiroModel as KiroModelId);
       }
     },
   });
@@ -106,46 +91,10 @@ export default function GlobalPreferencesForm({ preference }: GlobalPreferencesF
     },
   });
 
-  // Non-mode user-pref updates (e.g. kiroModel).
-  const { execute: execUpdateUserPrefs, isPending: isUpdatingUserPrefs } = useAction(updateUserPreferencesAction, {
-    onSuccess: () => toast.success(t('updateSuccess')),
-    onError: () => toast.error(t('updateError')),
-  });
-
-  // API key save — pure save, no mode mutation. Refetch to resync authoritative state.
-  const { execute: execSaveKey, isPending: isSavingKey } = useAction(saveKiroApiKeyAction, {
-    onSuccess: () => {
-      toast.success(t('kiroApiKeySaveSuccess'));
-      setApiKeyInput('');
-      setHasApiKey(true);
-      execCheckKey({});
-    },
-    onError: () => toast.error(t('kiroApiKeySaveError')),
-  });
-
-  // API key delete — pure delete, no mode mutation. Refetch to resync.
-  const { execute: execDeleteKey, isPending: isDeletingKey } = useAction(deleteKiroApiKeyAction, {
-    onSuccess: () => {
-      toast.success(t('kiroApiKeyDeleteSuccess'));
-      setHasApiKey(false);
-      execCheckKey({});
-    },
-    onError: () => toast.error(t('kiroApiKeyDeleteError')),
-  });
-
-  const { execute: execCheckKey } = useAction(checkKiroApiKeyAction, {
-    onSuccess: ({ data }) => {
-      if (data) setHasApiKey(data.hasKey);
-    },
-  });
-
   useEffect(() => {
-    execCheckKey({});
     execGetUserPrefs({});
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  const kiroModelIds = getKiroModelIds();
   const selectedMode = optimisticMode.mode;
 
   // Mode switching and API key save/delete are independent actions by design.
@@ -156,6 +105,9 @@ export default function GlobalPreferencesForm({ preference }: GlobalPreferencesF
     if (mode === selectedMode) return;
     execUpdateMode({ inferenceMode: mode });
   };
+
+  // Note: Only 'bedrock' mode is supported
+  const availableModes: InferenceMode[] = ['bedrock'];
 
   return (
     <div className="space-y-6">
@@ -199,13 +151,11 @@ export default function GlobalPreferencesForm({ preference }: GlobalPreferencesF
 
       {/* Default Inference Mode — Segment Control.
           This is the user-level default used as the initial value when
-          creating new sessions. It is not coupled to API key save/delete.
-          Switching to Kiro is allowed before an API key is configured so the
-          user can follow the natural flow (pick Kiro → enter key → save). */}
+          creating new sessions. */}
       <div>
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('inferenceMode')}</label>
         <div className="inline-flex rounded-lg border border-gray-200 dark:border-gray-700 p-1 bg-gray-100 dark:bg-gray-800">
-          {(['bedrock', 'kiro-cli'] as const).map((mode) => {
+          {availableModes.map((mode) => {
             const isActive = selectedMode === mode;
             const isDisabled = isUpdatingMode;
             return (
@@ -226,65 +176,9 @@ export default function GlobalPreferencesForm({ preference }: GlobalPreferencesF
           })}
         </div>
         <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{t('inferenceModeDescription')}</p>
-        {selectedMode === 'kiro-cli' && !hasApiKey && (
-          <p className="text-sm text-amber-600 dark:text-amber-400 mt-1">{t('kiroApiKeyRequired')}</p>
-        )}
       </div>
 
-      {/* Kiro API Key — only visible when the default inference mode is Kiro.
-          Saving and deleting the API key remain independent from mode
-          switching, so this conditional render does not re-introduce a race
-          between "key is saved" and "mode is switched". */}
-      {selectedMode === 'kiro-cli' && (
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            <KeyIcon className="inline h-4 w-4 mr-1" />
-            {t('kiroApiKey')}
-          </label>
-          {hasApiKey ? (
-            <div className="flex items-center gap-3">
-              <div className="flex-1 flex items-center gap-2 px-3 py-2 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-md">
-                <CheckIcon className="h-4 w-4 text-green-600 dark:text-green-400" />
-                <span className="text-sm text-green-700 dark:text-green-300">
-                  {t('kiroApiKeyConfigured')} (••••••••)
-                </span>
-              </div>
-              <Button
-                type="button"
-                variant="destructive"
-                size="sm"
-                onClick={() => {
-                  if (window.confirm(t('kiroApiKeyDeleteConfirm'))) execDeleteKey({});
-                }}
-                disabled={isDeletingKey}
-              >
-                <TrashIcon className="h-4 w-4" />
-              </Button>
-            </div>
-          ) : (
-            <div className="flex gap-2">
-              <Input
-                type="password"
-                value={apiKeyInput}
-                onChange={(e) => setApiKeyInput(e.target.value)}
-                placeholder={t('kiroApiKeyPlaceholder')}
-                disabled={isSavingKey}
-                className="flex-1"
-              />
-              <Button
-                type="button"
-                onClick={() => execSaveKey({ apiKey: apiKeyInput })}
-                disabled={isSavingKey || !apiKeyInput}
-              >
-                {isSavingKey ? '...' : t('save')}
-              </Button>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Bedrock Model — shown when the selected default mode is Bedrock. */}
-      {selectedMode === 'bedrock' && (
+      {/* Bedrock Model */}
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('defaultModel')}</label>
           <Select
@@ -305,35 +199,6 @@ export default function GlobalPreferencesForm({ preference }: GlobalPreferencesF
           </Select>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{t('defaultModelDescription')}</p>
         </div>
-      )}
-
-      {/* Kiro Model — shown when the selected default mode is Kiro and a key is set. */}
-      {selectedMode === 'kiro-cli' && hasApiKey && (
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('kiroModel')}</label>
-          <Select
-            value={kiroModel}
-            onValueChange={(value) => {
-              const modelId = value as KiroModelId;
-              setKiroModel(modelId);
-              execUpdateUserPrefs({ kiroModel: modelId, kiroDefaultModel: modelId });
-            }}
-            disabled={isUpdatingUserPrefs}
-          >
-            <SelectTrigger className="w-full">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {kiroModelIds.map((model) => (
-                <SelectItem key={model} value={model}>
-                  {kiroModelConfigs[model]?.name ?? model}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{t('kiroModelDescription')}</p>
-        </div>
-      )}
 
       <div>
         <div className="flex items-center space-x-3">
