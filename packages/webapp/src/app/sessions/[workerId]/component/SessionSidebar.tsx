@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useState, useRef } from 'react';
-import { MessageSquare, Plus, X, List, CheckCheck, EyeOff as EyeOffIcon } from 'lucide-react';
+import { Plus, X, List, CheckCheck, EyeOff as EyeOffIcon } from 'lucide-react';
 import { webappEventSchema } from '@remote-swe-agents/agent-core/schema';
 import type { SessionListItem } from '@/lib/session-list';
 import { getUnifiedStatus } from '@/utils/session-status';
@@ -59,6 +59,59 @@ export default function SessionSidebar({
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
   const [hideCompleted, setHideCompleted] = useState(false);
   const [sleepingChildren, setSleepingChildren] = useState<Record<string, { hasPendingTriggers: boolean }>>({});
+
+  // Resizable sidebar width (min: 200px, max: 500px)
+  const MIN_SIDEBAR_WIDTH = 200;
+  const MAX_SIDEBAR_WIDTH = 500;
+  const DEFAULT_SIDEBAR_WIDTH = 288; // w-72 = 18rem = 288px
+  const [sidebarWidth, setSidebarWidth] = useState(DEFAULT_SIDEBAR_WIDTH);
+  const [isResizing, setIsResizing] = useState(false);
+  const sidebarRef = useRef<HTMLElement>(null);
+
+  // Load saved width from localStorage on mount
+  useEffect(() => {
+    const savedWidth = localStorage.getItem('session-sidebar-width');
+    if (savedWidth) {
+      const width = parseInt(savedWidth, 10);
+      if (!isNaN(width) && width >= MIN_SIDEBAR_WIDTH && width <= MAX_SIDEBAR_WIDTH) {
+        setSidebarWidth(width);
+      }
+    }
+  }, []);
+
+  // Handle resize drag
+  const handleResizeStart = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsResizing(true);
+    document.body.style.cursor = 'ew-resize';
+    document.body.style.userSelect = 'none';
+  }, []);
+
+  useEffect(() => {
+    if (!isResizing) return;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!sidebarRef.current) return;
+      const newWidth = e.clientX;
+      const clampedWidth = Math.max(MIN_SIDEBAR_WIDTH, Math.min(MAX_SIDEBAR_WIDTH, newWidth));
+      setSidebarWidth(clampedWidth);
+    };
+
+    const handleMouseUp = () => {
+      setIsResizing(false);
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+      localStorage.setItem('session-sidebar-width', sidebarWidth.toString());
+    };
+
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isResizing, sidebarWidth]);
 
   // Sync sort settings from localStorage (shared with session list page)
   useEffect(() => {
@@ -328,11 +381,22 @@ export default function SessionSidebar({
 
       {/* Sidebar */}
       <aside
-        className={`fixed top-0 left-0 h-full z-50 w-72 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col transition-transform duration-300 ease-in-out
-          lg:sticky lg:top-0 lg:h-screen lg:z-auto lg:translate-x-0
+        ref={sidebarRef}
+        style={{ width: sidebarWidth }}
+        className={`fixed top-0 left-0 h-full z-50 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col transition-transform duration-300 ease-in-out
+          lg:sticky lg:top-0 lg:h-screen lg:translate-x-0
           ${isOpen ? 'translate-x-0' : '-translate-x-full'}
         `}
       >
+        {/* Resize handle */}
+        <div
+          onMouseDown={handleResizeStart}
+          className={`absolute top-0 right-0 w-1 h-full cursor-ew-resize hover:bg-blue-500/50 dark:hover:bg-blue-400/50 transition-colors ${
+            isResizing ? 'bg-blue-500/50 dark:bg-blue-400/50' : ''
+          }`}
+          style={{ transform: 'translateX(50%)' }}
+        />
+
         {/* Sidebar header */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700">
           <h2 className="text-sm font-semibold text-gray-900 dark:text-white truncate">{t('title')}</h2>
