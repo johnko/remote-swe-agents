@@ -12,6 +12,7 @@ import {
   noOpFiltering,
   parseAttachmentSentinel,
   readMetadata,
+  resolveModelConfig,
   isEndOfTurnPlaceholder,
   isScaffoldingArtifact,
   applyRewindFilter,
@@ -376,6 +377,22 @@ export default async function SessionPage({ params }: { params: Promise<{ worker
     agentIconUrl = `/api/agent-icon?key=${encodeURIComponent(iconKey)}`;
   }
 
+  // Resolve the effective bedrock model for this session using the priority chain
+  // (session > customAgent > default). User preferences are deliberately excluded
+  // from the runtime chain for existing sessions.
+  const resolvedModel = resolveModelConfig({
+    session: {
+      bedrockDefaultModel: session.bedrockDefaultModel,
+    },
+    customAgent: customAgent
+      ? {
+          bedrockDefaultModel: customAgent.bedrockDefaultModel,
+          defaultModel: customAgent.defaultModel,
+        }
+      : undefined,
+  });
+  const effectiveBedrockModel = resolvedModel.bedrockModel;
+
   // Load persisted port mappings (hostname + opened ports) so message
   // rendering can rewrite localhost:PORT links to the public EC2 URL. Only
   // present for EC2-runtime sessions where `openPort` has been invoked.
@@ -425,6 +442,7 @@ export default async function SessionPage({ params }: { params: Promise<{ worker
         unreadMap={unreadMap}
         lastReadAt={lastReadAt}
         parentSessionId={session.parentSessionId}
+        bedrockModel={effectiveBedrockModel}
         sessionBedrockDefaultModel={session.bedrockDefaultModel}
         initialPortMapping={initialPortMapping}
         initialRewindHiddenCount={rewindedCount}
