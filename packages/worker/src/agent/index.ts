@@ -6,8 +6,7 @@ import { reportProgressTool, sendToAgentTool, acknowledgeAgentTool } from '@remo
 import { CancellationToken } from '../common/cancellation-token';
 import { updateAgentStatusWithEvent } from '../common/status';
 import { InferenceMode } from '@remote-swe-agents/agent-core/schema';
-import { isKiroCliMode } from './kiro-loop-helpers';
-import { bedrockBackend, kiroBackend } from './backends';
+import { bedrockBackend } from './backends';
 import { runTurnWithBackend } from './orchestrator';
 
 const sanitizeToolName = (name: string): string => name.replace(/[^a-zA-Z0-9_-]/g, '_');
@@ -131,10 +130,7 @@ export const onMessageReceived = async (workerId: string, cancellationToken: Can
 
     // Resolve inferenceMode and dispatch to the matching backend.
     const { mode: inferenceMode, senderUserId } = await detectInferenceMode(workerId);
-    const backend = isKiroCliMode(inferenceMode) ? kiroBackend : bedrockBackend;
-    if (backend.kind === 'kiro-cli') {
-      console.log(`[agent] Using Kiro CLI mode for worker ${workerId}`);
-    }
+    const backend = bedrockBackend;
     await runTurnWithBackend(workerId, cancellationToken, backend, senderUserId);
   } finally {
     if (cancellationToken.isCancelled) {

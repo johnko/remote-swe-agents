@@ -34,7 +34,6 @@ export const customAgentSchema = z.object({
   iconKey: z.string().optional(),
   includeDefaultKnowledge: z.boolean().optional(),
   inferenceMode: inferenceModeSchema.optional(),
-  kiroModel: z.string().optional(),
   bedrockDefaultModel: modelTypeSchema.optional(),
   parentAgentId: z.string().optional(),
   createdAt: z.number(),
