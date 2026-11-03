@@ -151,10 +151,6 @@ type MessageFormProps = {
    * — important for `MessageList` grouping (see `getMessageSenderKey`).
    */
   currentUserId?: string;
-  /**
-   * Effective inference mode for this session. Only 'bedrock' is supported.
-   */
-  inferenceMode?: InferenceMode;
   agentStatus?: AgentStatus;
   onInterrupt?: () => void;
 };
@@ -167,8 +163,6 @@ export default function MessageForm({
   defaultModelOverride,
   currentUserDisplayName,
   currentUserId,
-  inferenceMode,
-  kiroModel,
   agentStatus,
   onInterrupt,
 }: MessageFormProps) {
@@ -206,17 +200,15 @@ export default function MessageForm({
   }, [flushModelChange]);
 
   const handleModelChange = useCallback(
-    (field: 'bedrock' | 'kiro', value: string) => {
-      pendingModelChangeRef.current = { field, value };
+    (value: string) => {
+      pendingModelChangeRef.current = { field: 'bedrock', value };
       if (modelUpdateTimeoutRef.current) {
         clearTimeout(modelUpdateTimeoutRef.current);
       }
       modelUpdateTimeoutRef.current = setTimeout(() => {
         modelUpdateTimeoutRef.current = null;
         pendingModelChangeRef.current = null;
-        if (field === 'bedrock') {
-          executeUpdateModel({ workerId, bedrockDefaultModel: value as ModelType });
-        }
+        executeUpdateModel({ workerId, bedrockDefaultModel: value as ModelType });
       }, 300);
     },
     [workerId, executeUpdateModel]
