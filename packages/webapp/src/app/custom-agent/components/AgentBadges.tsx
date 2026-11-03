@@ -11,25 +11,13 @@ export function mcpServersCount(agent: CustomAgent): number {
 }
 
 export function effectiveModel(agent: CustomAgent): string {
-  if (agent.inferenceMode === 'kiro-cli') return agent.kiroDefaultModel ?? agent.kiroModel ?? 'auto';
   return agent.bedrockDefaultModel ?? agent.defaultModel;
-}
-
-export function inferenceModeLabel(mode: CustomAgent['inferenceMode']): string {
-  if (mode === 'bedrock') return 'Bedrock';
-  if (mode === 'kiro-cli') return 'Kiro';
-  return 'Default';
 }
 
 export default function AgentBadges({ agent, subAgentsCount }: { agent: CustomAgent; subAgentsCount?: number }) {
   const mcpCount = mcpServersCount(agent);
   return (
     <div className="flex gap-2 flex-wrap">
-      {agent.inferenceMode && (
-        <span className="px-2 py-1 text-xs bg-indigo-100 dark:bg-indigo-900 text-indigo-800 dark:text-indigo-200 rounded">
-          {inferenceModeLabel(agent.inferenceMode)}
-        </span>
-      )}
       <span className="px-2 py-1 text-xs bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded">
         {effectiveModel(agent)}
       </span>
