@@ -4,8 +4,6 @@ import { z } from 'zod';
 export const inferenceModeSchema = z.enum(['bedrock']);
 export type InferenceMode = 'bedrock';
 
-// KiroModelId, kiroModelConfigs, and kiroModelSchema removed - kiro-cli support has been discontinued
-// Type kept as alias for backward compatibility in existing code
 
 export const modelTypeList = [
   'opus5',
