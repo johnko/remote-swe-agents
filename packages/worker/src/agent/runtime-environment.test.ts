@@ -114,11 +114,11 @@ describe('buildRuntimeEnvironmentBlock', () => {
       expect(block).toContain('- Model: opus5');
     });
 
-    test('userPreferences are applied when no override', () => {
+    test('userPreferences are applied when no customAgent or session setting', () => {
       setProcessRuntimeType('ec2');
       const block = buildRuntimeEnvironmentBlock({
         session: undefined,
-        customAgent: { ...baseCustomAgent, bedrockDefaultModel: 'sonnet4' },
+        customAgent: { ...baseCustomAgent, defaultModel: undefined, bedrockDefaultModel: undefined },
         userPreferences: { bedrockDefaultModel: 'opus4.8' },
       });
       expect(block).toContain('- Model: opus4.8');
