@@ -1,7 +1,9 @@
 import { describe, expect, test, vi, afterEach } from 'vitest';
 import {
+  REPORT_TIMER_RESET_TOOLS,
   shouldResetReportTimer,
-  toolNamesThatResetReportTimer,
+} from './strands/to-strands-tool';
+import {
   resolveInferenceMode,
   normalizeMcpImageFormat,
   emptyFinalMessageNotification,
@@ -35,12 +37,12 @@ describe('shouldResetReportTimer', () => {
   });
 });
 
-describe('toolNamesThatResetReportTimer', () => {
+describe('REPORT_TIMER_RESET_TOOLS', () => {
   test('contains exactly the three expected tool names', () => {
-    expect(toolNamesThatResetReportTimer.size).toBe(3);
-    expect(toolNamesThatResetReportTimer.has('send_message_to_user')).toBe(true);
-    expect(toolNamesThatResetReportTimer.has('send_message_to_agent')).toBe(true);
-    expect(toolNamesThatResetReportTimer.has('acknowledge_agent')).toBe(true);
+    expect(REPORT_TIMER_RESET_TOOLS.size).toBe(3);
+    expect(REPORT_TIMER_RESET_TOOLS.has('send_message_to_user')).toBe(true);
+    expect(REPORT_TIMER_RESET_TOOLS.has('send_message_to_agent')).toBe(true);
+    expect(REPORT_TIMER_RESET_TOOLS.has('acknowledge_agent')).toBe(true);
   });
 });
 
