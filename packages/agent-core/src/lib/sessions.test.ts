@@ -11,7 +11,7 @@ vi.mock('./aws', () => ({
 vi.mock('./event-triggers', () => ({ deleteAllEventTriggers: vi.fn() }));
 vi.mock('./unread', () => ({ deleteUnreadByWorkerId: vi.fn() }));
 
-import { reparentSessions, clearSessionKiroSessionId } from './sessions.js';
+import { reparentSessions } from './sessions.js';
 
 function getTransactItems(call: any) {
   return call[0]?.input?.TransactItems;
@@ -88,31 +88,5 @@ describe('reparentSessions', () => {
     const ids = Array.from({ length: 101 }, (_, i) => `c${i}`);
     await expect(reparentSessions('P2', ids)).rejects.toThrow(/more than 100/);
     expect(mockSend.mock.calls.some((c) => getTransactItems(c))).toBe(false);
-  });
-});
-
-describe('clearSessionKiroSessionId', () => {
-  beforeEach(() => {
-    mockSend.mockReset();
-  });
-
-  test('issues REMOVE kiroSessionId + SET updatedAt', async () => {
-    mockSend.mockResolvedValueOnce({});
-    await clearSessionKiroSessionId('worker-abc');
-
-    expect(mockSend).toHaveBeenCalledTimes(1);
-    const input = mockSend.mock.calls[0][0]?.input;
-    expect(input.TableName).toBe('TestTable');
-    expect(input.Key).toEqual({ PK: 'sessions', SK: 'worker-abc' });
-    expect(input.UpdateExpression).toContain('REMOVE #kiroSessionId');
-    expect(input.UpdateExpression).toContain('SET #updatedAt');
-    expect(input.ExpressionAttributeNames['#kiroSessionId']).toBe('kiroSessionId');
-    expect(input.ExpressionAttributeNames['#updatedAt']).toBe('updatedAt');
-    expect(typeof input.ExpressionAttributeValues[':updatedAt']).toBe('number');
-  });
-
-  test('propagates DDB errors', async () => {
-    mockSend.mockRejectedValueOnce(new Error('DDB unavailable'));
-    await expect(clearSessionKiroSessionId('worker-x')).rejects.toThrow('DDB unavailable');
   });
 });

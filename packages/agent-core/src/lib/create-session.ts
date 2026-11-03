@@ -80,6 +80,7 @@ export interface CreateSessionParams {
    * New symmetric Bedrock model field. Takes priority over legacy `defaultModel`.
    */
   bedrockDefaultModel?: ModelType;
+  /**
    * When true, the session row and seed message are persisted but the worker
    * is NOT started (no `getOrCreateWorkerInstance` / `onMessageReceived`).
    * The caller is responsible for booting the worker later. Used by the
