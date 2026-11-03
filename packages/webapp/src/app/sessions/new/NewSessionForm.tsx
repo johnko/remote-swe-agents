@@ -5,7 +5,7 @@ import { useHookFormAction } from '@next-safe-action/adapter-react-hook-form/hoo
 import { useAction } from 'next-safe-action/hooks';
 import { Button } from '@/components/ui/button';
 import { Paperclip, FileText } from 'lucide-react';
-import Link from 'next/link';
+
 import { createNewWorker } from './actions';
 import { createNewWorkerSchema, PromptTemplate } from './schemas';
 import { toast } from 'sonner';
@@ -22,17 +22,14 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Form, FormControl, FormField } from '@/components/ui/form';
 import { useState, useEffect, useMemo, useRef } from 'react';
-import { getUserPreferencesAction, checkKiroApiKeyAction } from '../../preferences/actions';
+import { getUserPreferencesAction } from '../../preferences/actions';
 import TemplateModal from './TemplateModal';
 import {
   CustomAgent,
   InferenceMode,
-  KiroModelId,
   getAvailableModelTypes,
   GlobalPreferences,
   modelConfigs,
-  kiroModelConfigs,
-  getKiroModelIds,
 } from '@remote-swe-agents/agent-core/schema';
 
 interface NewSessionFormProps {
@@ -40,13 +37,11 @@ interface NewSessionFormProps {
   customAgents: CustomAgent[];
   preferences: GlobalPreferences;
   agentIconUrls?: Record<string, string>;
-  kiroModel: string;
 }
 
 // Map internal inference mode identifiers to i18n translation keys.
 const inferenceModeI18nKey: Record<InferenceMode, string> = {
   bedrock: 'bedrock',
-  'kiro-cli': 'kiro',
 };
 
 export default function NewSessionForm({
@@ -54,12 +49,10 @@ export default function NewSessionForm({
   customAgents,
   preferences,
   agentIconUrls = {},
-  kiroModel: ssrKiroModel,
 }: NewSessionFormProps) {
   const t = useTranslations('new_session');
   const sessionsT = useTranslations('sessions');
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
-  const [hasApiKey, setHasApiKey] = useState(false);
   const [userDefaultMode, setUserDefaultMode] = useState<InferenceMode>('bedrock');
 
   const { execute: execGetUserPrefs } = useAction(getUserPreferencesAction, {
@@ -68,15 +61,9 @@ export default function NewSessionForm({
       if (data.inferenceMode) setUserDefaultMode(data.inferenceMode);
     },
   });
-  const { execute: execCheckKey } = useAction(checkKiroApiKeyAction, {
-    onSuccess: ({ data }) => {
-      if (data) setHasApiKey(data.hasKey);
-    },
-  });
 
   useEffect(() => {
     execGetUserPrefs({});
-    execCheckKey({});
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -129,7 +116,6 @@ export default function NewSessionForm({
         modelOverride: preferences.modelOverride,
         customAgentId: 'DEFAULT',
         inferenceMode: 'bedrock',
-        kiroModel: ssrKiroModel as KiroModelId,
       },
     },
   });
@@ -162,9 +148,7 @@ export default function NewSessionForm({
       'modelOverride',
       'customAgentId',
       'inferenceMode',
-      'kiroModel',
       'bedrockDefaultModel',
-      'kiroDefaultModel',
     ]);
     const parsed = createNewWorkerSchema.safeParse({ message, imageKeys, fileKeys, ...optionals });
     const canResend = pending.mode === 'resend' && parsed.success;
@@ -192,7 +176,6 @@ export default function NewSessionForm({
 
   const selectedCustomAgentId = watch('customAgentId');
   const inferenceMode = watch('inferenceMode') ?? 'bedrock';
-  const kiroModel = watch('kiroModel') ?? 'auto';
 
   // Resolve the custom agent currently selected, if any.
   const selectedCustomAgent = useMemo(
@@ -207,28 +190,15 @@ export default function NewSessionForm({
 
   // Keep the form's inferenceMode aligned with the effective mode:
   //   1. If a custom agent forces a mode, adopt it.
-  //   2. Otherwise, once user preferences load, adopt the user's default
-  //      (guarded by API key availability for Kiro).
+  //   2. Otherwise, once user preferences load, adopt the user's default.
   useEffect(() => {
     if (customAgentForcedMode) {
       setValue('inferenceMode', customAgentForcedMode);
       return;
     }
-    if (userDefaultMode === 'kiro-cli' && !hasApiKey) {
-      setValue('inferenceMode', 'bedrock');
-      return;
-    }
     setValue('inferenceMode', userDefaultMode);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [customAgentForcedMode, userDefaultMode, hasApiKey]);
-
-  // Keep Kiro model in sync when entering Kiro mode.
-  useEffect(() => {
-    if (inferenceMode === 'kiro-cli') {
-      setValue('kiroModel', (ssrKiroModel as KiroModelId) || 'auto');
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [inferenceMode]);
+  }, [customAgentForcedMode, userDefaultMode]);
 
   const {
     uploadingImages,
@@ -269,11 +239,7 @@ export default function NewSessionForm({
 
   const handleSelectMode = (mode: InferenceMode) => {
     if (isModeLocked) return;
-    if (mode === 'kiro-cli' && !hasApiKey) return;
     setValue('inferenceMode', mode);
-    if (mode === 'kiro-cli') {
-      setValue('kiroModel', form.getValues('kiroModel') || 'auto');
-    }
   };
 
   return (
@@ -340,104 +306,32 @@ export default function NewSessionForm({
             />
           </div>
 
-          {/* Inference Mode toggle */}
+          {/* Model selector */}
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              {t('inferenceMode')}
+              {t('modelOverride')}
             </label>
-            <div className="inline-flex rounded-lg border border-gray-200 dark:border-gray-700 p-1 bg-gray-100 dark:bg-gray-800 mb-2">
-              {(['bedrock', 'kiro-cli'] as const).map((mode) => {
-                const isActive = inferenceMode === mode;
-                const isDisabled = isPending || isModeLocked || (mode === 'kiro-cli' && !hasApiKey);
-                return (
-                  <button
-                    key={mode}
-                    type="button"
-                    disabled={isDisabled}
-                    onClick={() => handleSelectMode(mode)}
-                    className={`px-4 py-1.5 text-sm font-medium rounded-md transition-colors ${
-                      isActive
-                        ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
-                        : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
-                    } ${isDisabled && !isActive ? 'opacity-50 cursor-not-allowed' : ''}`}
-                  >
-                    {t(`inferenceModes.${inferenceModeI18nKey[mode]}`)}
-                  </button>
-                );
-              })}
-            </div>
-            {isModeLocked && customAgentForcedMode && (
-              <p className="text-sm text-gray-500 dark:text-gray-400">
-                {t('customAgentForcesMode', {
-                  mode: t(`inferenceModes.${inferenceModeI18nKey[customAgentForcedMode]}`),
-                })}
-              </p>
-            )}
-            {inferenceMode === 'kiro-cli' && !hasApiKey && (
-              <p className="text-sm text-amber-600 dark:text-amber-400">
-                {t('kiroApiKeyRequired')}{' '}
-                <Link href="/preferences" className="underline hover:no-underline">
-                  {t('goToPreferences')}
-                </Link>
-              </p>
-            )}
+            <FormField
+              name="modelOverride"
+              control={control}
+              render={({ field }) => (
+                <Select value={field.value as string | undefined} onValueChange={field.onChange} disabled={isPending}>
+                  <FormControl>
+                    <SelectTrigger className="w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {getAvailableModelTypes().map((type) => (
+                      <SelectItem key={type} value={type}>
+                        {modelConfigs[type].name} (${modelConfigs[type].pricing.input}/1M)
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            />
           </div>
-
-          {/* Model selector — separate blocks per mode to avoid React reconciliation issues */}
-          {inferenceMode === 'bedrock' && (
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                {t('modelOverride')}
-              </label>
-              <FormField
-                name="modelOverride"
-                control={control}
-                render={({ field }) => (
-                  <Select value={field.value as string | undefined} onValueChange={field.onChange} disabled={isPending}>
-                    <FormControl>
-                      <SelectTrigger className="w-full">
-                        <SelectValue />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {getAvailableModelTypes().map((type) => (
-                        <SelectItem key={type} value={type}>
-                          {modelConfigs[type].name} (${modelConfigs[type].pricing.input}/1M)
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
-              />
-            </div>
-          )}
-          {inferenceMode === 'kiro-cli' && (
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                {t('modelOverride')}
-              </label>
-              <FormField
-                name="kiroModel"
-                control={control}
-                render={({ field }) => (
-                  <Select value={field.value || 'auto'} onValueChange={field.onChange} disabled={isPending}>
-                    <FormControl>
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Auto (recommended)" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {[].map((model) => (
-                        <SelectItem key={model} value={model}>
-                          {kiroModelConfigs[model]?.name ?? model}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
-              />
-            </div>
-          )}
 
           <div className="flex items-center justify-end mb-2">
             <label
