@@ -2,45 +2,28 @@
 
 import { toast } from 'sonner';
 import { useOptimisticAction } from 'next-safe-action/hooks';
-import { useAction } from 'next-safe-action/hooks';
 import { useTranslations } from 'next-intl';
-import {
-  updateGlobalPreferences,
-  updateUserPreferencesAction,
-  getUserPreferencesAction,
-} from '../actions';
+import { updateGlobalPreferences } from '../actions';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { TrashIcon } from 'lucide-react';
 import AgentIconUploader from '@/components/AgentIconUploader';
 import {
   GlobalPreferences,
-  InferenceMode,
   ModelType,
   getAvailableModelTypes,
   modelConfigs,
 } from '@remote-swe-agents/agent-core/schema';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 interface GlobalPreferencesFormProps {
   preference: GlobalPreferences;
 }
 
-// Map internal inference mode identifiers to i18n translation keys.
-const inferenceModeI18nKey: Partial<Record<InferenceMode, string>> = {
-  bedrock: 'bedrock',
-};
-
 export default function GlobalPreferencesForm({ preference }: GlobalPreferencesFormProps) {
   const t = useTranslations('preferences');
   const [currentPreference, setCurrentPreference] = useState<GlobalPreferences>(preference);
   const [agentName, setAgentName] = useState(preference.defaultAgentName || '');
-
-  // Per-user settings. `savedMode` is the server-authoritative default
-  // inference mode for new sessions.
-  const [savedMode, setSavedMode] = useState<InferenceMode>('bedrock');
 
   // Global preferences optimistic action
   const { execute, optimisticState, isPending } = useOptimisticAction(updateGlobalPreferences, {
@@ -62,52 +45,6 @@ export default function GlobalPreferencesForm({ preference }: GlobalPreferencesF
     },
     onError: () => toast.error(t('updateError')),
   });
-
-  // Per-user preferences fetcher — used as the source of truth after mutations.
-  const { execute: execGetUserPrefs } = useAction(getUserPreferencesAction, {
-    onSuccess: ({ data }) => {
-      if (data) {
-        if (data.inferenceMode) setSavedMode(data.inferenceMode);
-      }
-    },
-  });
-
-  // Optimistic mode switch with rollback via refetch on error.
-  const {
-    execute: execUpdateMode,
-    optimisticState: optimisticMode,
-    isPending: isUpdatingMode,
-  } = useOptimisticAction(updateUserPreferencesAction, {
-    currentState: { mode: savedMode },
-    updateFn: (_state, input) => ({ mode: (input.inferenceMode ?? _state.mode) as InferenceMode }),
-    onSuccess: ({ input }) => {
-      if (input.inferenceMode) setSavedMode(input.inferenceMode);
-      toast.success(t('inferenceModeUpdateSuccess'));
-    },
-    onError: () => {
-      toast.error(t('inferenceModeUpdateError'));
-      // Rollback local state from server.
-      execGetUserPrefs({});
-    },
-  });
-
-  useEffect(() => {
-    execGetUserPrefs({});
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-  const selectedMode = optimisticMode.mode;
-
-  // Mode switching and API key save/delete are independent actions by design.
-  // We intentionally allow switching to Kiro before an API key is
-  // configured so the user can pick the mode first and then enter the key in
-  // the section that appears below.
-  const handleSelectMode = (mode: InferenceMode) => {
-    if (mode === selectedMode) return;
-    execUpdateMode({ inferenceMode: mode });
-  };
-
-  // Note: Only 'bedrock' mode is supported
-  const availableModes: InferenceMode[] = ['bedrock'];
 
   return (
     <div className="space-y-6">
@@ -149,36 +86,7 @@ export default function GlobalPreferencesForm({ preference }: GlobalPreferencesF
         <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{t('defaultAgentIconDescription')}</p>
       </div>
 
-      {/* Default Inference Mode — Segment Control.
-          This is the user-level default used as the initial value when
-          creating new sessions. */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('inferenceMode')}</label>
-        <div className="inline-flex rounded-lg border border-gray-200 dark:border-gray-700 p-1 bg-gray-100 dark:bg-gray-800">
-          {availableModes.map((mode) => {
-            const isActive = selectedMode === mode;
-            const isDisabled = isUpdatingMode;
-            return (
-              <button
-                key={mode}
-                type="button"
-                disabled={isDisabled}
-                onClick={() => handleSelectMode(mode)}
-                className={`px-4 py-1.5 text-sm font-medium rounded-md transition-colors ${
-                  isActive
-                    ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
-                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
-                } ${isDisabled && !isActive ? 'opacity-50 cursor-not-allowed' : ''}`}
-              >
-                {t(`inferenceModes.${inferenceModeI18nKey[mode]}`)}
-              </button>
-            );
-          })}
-        </div>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{t('inferenceModeDescription')}</p>
-      </div>
-
-      {/* Bedrock Model */}
+      {/* Default Model */}
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('defaultModel')}</label>
           <Select
