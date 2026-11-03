@@ -486,10 +486,7 @@ export default function MessageForm({
     if (!message.trim()) return;
     const imageKeys = extractStringArray(raw.imageKeys);
     const fileKeys = extractStringArray(raw.fileKeys);
-    const { values: optionals, dropped } = salvageOptionalFields(sendMessageToAgentSchema.shape, raw, [
-      'modelOverride',
-      'kiroModelOverride',
-    ]);
+    const { values: optionals, dropped } = salvageOptionalFields(sendMessageToAgentSchema.shape, raw, ['modelOverride']);
     const parsed = sendMessageToAgentSchema.safeParse({ workerId, message, imageKeys, fileKeys, ...optionals });
     const canResend = pending.mode === 'resend' && parsed.success;
     const values = parsed.success ? parsed.data : { workerId, message, imageKeys, fileKeys };

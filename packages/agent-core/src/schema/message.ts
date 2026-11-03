@@ -23,13 +23,6 @@ export type MessageItem = {
   thinkingBudget?: number;
   modelOverride?: ModelType;
   /**
-   * Per-message override of the Kiro CLI model. Mirrors `modelOverride` for
-   * Bedrock sessions. When set, the Kiro backend issues a `/model <id>`
-   * slash-command prompt before the user message so subsequent turns run on
-   * the chosen model.
-   */
-  kiroModelOverride?: string;
-  /**
    * Cognito user ID of the message sender (for per-user inference mode / API key lookup)
    */
   senderUserId?: string;
