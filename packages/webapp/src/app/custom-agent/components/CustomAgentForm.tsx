@@ -5,7 +5,7 @@ import { useHookFormAction } from '@next-safe-action/adapter-react-hook-form/hoo
 import { useAction } from 'next-safe-action/hooks';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
-import { useState, useEffect, ReactNode } from 'react';
+import { useState, ReactNode } from 'react';
 import { CheckIcon, ChevronDownIcon, PlusIcon, WandIcon, TrashIcon, XIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -24,13 +24,11 @@ import {
   EmptyMcpConfig,
   getAvailableModelTypes,
   modelConfigs,
-  kiroModelConfigs,
-  getKiroModelIds,
   mcpConfigSchema,
 } from '@remote-swe-agents/agent-core/schema';
 import { upsertCustomAgentAction, deleteCustomAgentAction } from '../actions';
 import { upsertCustomAgentSchema } from '../schemas';
-import type { CustomAgent, InferenceMode, ModelType, KiroModelId } from '@remote-swe-agents/agent-core/schema';
+import type { CustomAgent, InferenceMode, ModelType } from '@remote-swe-agents/agent-core/schema';
 import { Form, FormControl, FormField } from '@/components/ui/form';
 import { useRouter } from 'next/navigation';
 import AgentIconPicker from './AgentIconPicker';
@@ -175,11 +173,6 @@ export default function CustomAgentForm({
         description: editingAgent?.description ?? '',
         defaultModel: editingAgent?.bedrockDefaultModel ?? editingAgent?.defaultModel ?? 'sonnet3.7',
         bedrockDefaultModel: editingAgent?.bedrockDefaultModel ?? editingAgent?.defaultModel ?? 'sonnet3.7',
-        kiroDefaultModel:
-          editingAgent?.kiroDefaultModel ??
-          (editingAgent?.kiroModel && editingAgent.kiroModel in kiroModelConfigs
-            ? (editingAgent.kiroModel as KiroModelId)
-            : 'auto'),
         systemPrompt: editingAgent?.systemPrompt ?? '',
         tools: editingAgent?.tools ?? [],
         useAllTools: editingAgent?.useAllTools ?? false,
@@ -188,7 +181,6 @@ export default function CustomAgentForm({
         iconKey: editingAgent?.iconKey ?? '',
         includeDefaultKnowledge: editingAgent?.includeDefaultKnowledge !== false,
         inferenceMode: editingAgent?.inferenceMode ?? null,
-        kiroModel: editingAgent?.kiroDefaultModel ?? editingAgent?.kiroModel ?? 'auto',
         parentAgentId: editingAgent?.parentAgentId,
       },
     },
@@ -197,16 +189,7 @@ export default function CustomAgentForm({
   const selectedInferenceMode = watch('inferenceMode');
   const currentIconKey = watch('iconKey');
 
-  useEffect(() => {
-    if (selectedInferenceMode === 'kiro-cli') {
-      const currentKiroModel = form.getValues('kiroModel');
-      if (!currentKiroModel) {
-        setValue('kiroModel', 'auto');
-        setValue('kiroDefaultModel', 'auto' as KiroModelId);
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedInferenceMode]);
+
 
   const { executeAsync: deleteAgent, isPending: isDeleting } = useAction(deleteCustomAgentAction);
 
@@ -311,7 +294,6 @@ export default function CustomAgentForm({
   const inferenceTabs: { mode: InferenceMode | null; label: string }[] = [
     { mode: null, label: t('form.inferenceMode.inherit') },
     { mode: 'bedrock', label: t('form.inferenceMode.bedrock') },
-    { mode: 'kiro-cli', label: t('form.inferenceMode.kiro') },
   ];
 
   const duplicateMcpNames = Object.entries(
@@ -464,41 +446,6 @@ export default function CustomAgentForm({
                     </p>
                   )}
                   <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{t('form.bedrockModel.description')}</p>
-                </div>
-              )}
-              {selectedInferenceMode === 'kiro-cli' && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    {t('form.kiroModel.label')}
-                  </label>
-                  <FormField
-                    name="kiroModel"
-                    control={control}
-                    render={({ field }) => (
-                      <Select
-                        value={field.value ?? 'auto'}
-                        onValueChange={(val) => {
-                          field.onChange(val);
-                          setValue('kiroDefaultModel', val as KiroModelId);
-                        }}
-                        disabled={isPending}
-                      >
-                        <FormControl>
-                          <SelectTrigger className="w-full">
-                            <SelectValue placeholder={t('form.kiroModel.placeholder')} />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {[].map((model) => (
-                            <SelectItem key={model} value={model}>
-                              {kiroModelConfigs[model].name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    )}
-                  />
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{t('form.kiroModel.description')}</p>
                 </div>
               )}
             </div>
