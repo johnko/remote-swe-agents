@@ -15,7 +15,7 @@ import { deleteUserHook, updateUserHook, type ClientHook } from '@/actions/hook/
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import LocalDateTime from '@/components/LocalDateTime';
-import { getHookRuntimesDisplay, getHookRuntimes, getRuntimeBadgeColor } from '@/lib/hook-runtime-map';
+import { getHookRuntimes, getRuntimeBadgeColor } from '@/lib/hook-runtime-map';
 
 type HookListProps = {
   initialHooks: ClientHook[];

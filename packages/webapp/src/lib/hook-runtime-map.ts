@@ -33,19 +33,8 @@ export const hookRuntimeMap: Record<HookEventType, RuntimeType[]> = {
   stop: ['agentcore'],
 };
 
-export const getRuntimeLabel = (runtime: RuntimeType): string => {
-  const labels: Record<RuntimeType, string> = {
-    agentcore: 'Agent Core',
-  };
-  return labels[runtime];
-};
-
 export const getHookRuntimes = (eventType: HookEventType): RuntimeType[] => {
   return hookRuntimeMap[eventType] || [];
-};
-
-export const getHookRuntimesDisplay = (eventType: HookEventType): string => {
-  return getRuntimeLabel('agentcore');
 };
 
 /**
