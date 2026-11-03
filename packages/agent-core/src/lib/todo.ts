@@ -133,10 +133,6 @@ export function formatTodoList(todoList: TodoList | null): string {
 class TodoListValidationError extends Error {}
 
 async function validateTodoList(todoList: TodoList): Promise<true> {
-  // Rule1. Only have ONE task in_progress at any time
-  if (todoList.items.filter((item) => item.status === 'in_progress').length > 1) {
-    throw new TodoListValidationError('Only one task can be in progress at a time.');
-  }
-
+  // No validation constraints - allow any combination of task statuses
   return true;
 }
