@@ -2,26 +2,11 @@ import { getConversationHistory, getSession, getCustomAgent, executeHooksForEven
 import { resolveInferenceMode } from '@remote-swe-agents/agent-core/lib';
 import { resolveModelConfig } from '@remote-swe-agents/agent-core/lib';
 export { resolveInferenceMode };
-import { reportProgressTool, sendToAgentTool, acknowledgeAgentTool } from '@remote-swe-agents/agent-core/tools';
 import { CancellationToken } from '../common/cancellation-token';
 import { updateAgentStatusWithEvent } from '../common/status';
 import { InferenceMode } from '@remote-swe-agents/agent-core/schema';
 import { bedrockBackend } from './backends';
 import { runTurnWithBackend } from './orchestrator';
-
-const sanitizeToolName = (name: string): string => name.replace(/[^a-zA-Z0-9_-]/g, '_');
-
-/**
- * Tool names that should reset the lastReportedTime timer.
- * This includes tools that communicate with users OR other agents,
- * preventing the forceReport mechanism from firing unnecessarily
- * (especially in child sessions that primarily use agent-to-agent communication).
- */
-export const toolNamesThatResetReportTimer = new Set([
-  sanitizeToolName(reportProgressTool.name),
-  sanitizeToolName(sendToAgentTool.name),
-  sanitizeToolName(acknowledgeAgentTool.name),
-]);
 
 /**
  * Bedrock Converse's `image.format` field is a closed union
@@ -54,13 +39,6 @@ export const normalizeMcpImageFormat = (mimeType: string | undefined): 'png' | '
       console.warn(`[agent] MCP tool returned unsupported image mimeType="${mimeType}"; falling back to "jpeg"`);
       return 'jpeg';
   }
-};
-
-/**
- * Check whether the given tool name should reset the lastReportedTime.
- */
-export const shouldResetReportTimer = (toolName: string | undefined): boolean => {
-  return toolName != null && toolNamesThatResetReportTimer.has(sanitizeToolName(toolName));
 };
 
 export interface InferenceModeContext {

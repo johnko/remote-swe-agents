@@ -36,8 +36,12 @@ export const REPORT_TIMER_RESET_TOOLS = new Set(
   [reportProgressTool, sendToAgentTool, acknowledgeAgentTool].map((t) => sanitizeToolName(t.name))
 );
 
-/** Check if a tool execution should reset the forceReport timer. */
-export const shouldResetReportTimer = (sanitizedName: string): boolean => REPORT_TIMER_RESET_TOOLS.has(sanitizedName);
+/** Check if a tool execution should reset the forceReport timer.
+ * Handles sanitization internally and returns false for null/undefined input.
+ */
+export const shouldResetReportTimer = (toolName: string | undefined): boolean => {
+  return toolName != null && REPORT_TIMER_RESET_TOOLS.has(sanitizeToolName(toolName));
+};
 
 /** Per-turn dependencies the remote-swe handler needs, injected by closure. */
 export interface ToolAdapterDeps {
@@ -215,7 +219,7 @@ export async function toStrandsTool<Input>(def: RemoteSweToolLike<Input>, deps: 
   const sanitizedName = sanitizeToolName(def.name);
   return tool({
     name: sanitizedName,
-    description: spec.description ?? def.name,
+    description: spec.description ?? sanitizedName,
     inputSchema: def.schema as unknown as z.ZodType,
     callback: async (input: unknown, ctx?: ToolContext) => {
       const toolUseId = ctx?.toolUse?.toolUseId ?? '';
@@ -232,10 +236,10 @@ export async function toStrandsTool<Input>(def: RemoteSweToolLike<Input>, deps: 
       // Execute preToolUse hook
       if (session) {
         try {
-          const contextData: HookContextData = { toolName: def.name };
+          const contextData: HookContextData = { toolName: sanitizedName };
           await executeHooksForEventWithSession(session, 'preToolUse', process.cwd(), contextData);
         } catch (e) {
-          console.error(`[toStrandsTool] preToolUse hook failed for tool "${def.name}":`, e);
+          console.error(`[toStrandsTool] preToolUse hook failed for tool "${sanitizedName}":`, e);
           // Don't throw - continue with tool execution even if hook fails
         }
       }
@@ -253,10 +257,10 @@ export async function toStrandsTool<Input>(def: RemoteSweToolLike<Input>, deps: 
         // Execute postToolUse hook on success
         if (session) {
           try {
-            const contextData: HookContextData = { toolName: def.name };
+            const contextData: HookContextData = { toolName: sanitizedName };
             await executeHooksForEventWithSession(session, 'postToolUse', process.cwd(), contextData);
           } catch (e) {
-            console.error(`[toStrandsTool] postToolUse hook failed for tool "${def.name}":`, e);
+            console.error(`[toStrandsTool] postToolUse hook failed for tool "${sanitizedName}":`, e);
             // Don't throw - hook errors don't affect tool result
           }
         }
@@ -264,16 +268,16 @@ export async function toStrandsTool<Input>(def: RemoteSweToolLike<Input>, deps: 
         // Execute postToolUseFailure hook on error
         if (session) {
           try {
-            const contextData: HookContextData = { toolName: def.name };
+            const contextData: HookContextData = { toolName: sanitizedName };
             await executeHooksForEventWithSession(session, 'postToolUseFailure', process.cwd(), contextData);
           } catch (e) {
-            console.error(`[toStrandsTool] postToolUseFailure hook failed for tool "${def.name}":`, e);
+            console.error(`[toStrandsTool] postToolUseFailure hook failed for tool "${sanitizedName}":`, e);
             // Don't throw - hook errors don't affect error handling
           }
         }
         // Return error as string result instead of throwing
         const errorMsg = toolError instanceof Error ? toolError.message : String(toolError);
-        result = `[Tool Error] ${def.name} failed: ${errorMsg}`;
+        result = `[Tool Error] ${sanitizedName} failed: ${errorMsg}`;
       }
 
       // forceReport timer — reset on communication tools
