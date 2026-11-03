@@ -8,7 +8,6 @@ export type InferenceMode = 'bedrock';
 // Type kept as alias for backward compatibility in existing code
 export type KiroModelId = never;
 export const kiroModelConfigs = {} as const;
-export const getKiroModelIds = (): KiroModelId[] => [];
 export const kiroModelSchema = z.never();
 
 export const modelTypeList = [

@@ -427,7 +427,7 @@ export default function NewSessionForm({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {getKiroModelIds().map((model) => (
+                      {[].map((model) => (
                         <SelectItem key={model} value={model}>
                           {kiroModelConfigs[model]?.name ?? model}
                         </SelectItem>

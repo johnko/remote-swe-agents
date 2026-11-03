@@ -489,7 +489,7 @@ export default function CustomAgentForm({
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {getKiroModelIds().map((model) => (
+                          {[].map((model) => (
                             <SelectItem key={model} value={model}>
                               {kiroModelConfigs[model].name}
                             </SelectItem>

@@ -188,7 +188,7 @@ export default function MessageForm({
   const draftStorageKey = `draft-message-${workerId}`;
 
   const isKiroSession = inferenceMode === 'kiro-cli';
-  const kiroModelIds = getKiroModelIds();
+  const kiroModelIds: string[] = [];
   const defaultKiroModel = kiroModel && kiroModel in kiroModelConfigs ? kiroModel : 'auto';
 
   const isAgentWorking = agentStatus === 'working';

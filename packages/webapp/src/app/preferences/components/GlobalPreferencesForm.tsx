@@ -145,7 +145,7 @@ export default function GlobalPreferencesForm({ preference }: GlobalPreferencesF
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const kiroModelIds = getKiroModelIds();
+  const kiroModelIds: string[] = [];
   const selectedMode = optimisticMode.mode;
 
   // Mode switching and API key save/delete are independent actions by design.
