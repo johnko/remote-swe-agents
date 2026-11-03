@@ -123,6 +123,9 @@ export class AgentCoreRuntime extends Construct implements IGrantable {
       new PolicyStatement({
         actions: [
           'bedrock:ListFoundationModels',
+          'ce:GetCostAndUsage',
+          'ce:GetCostForecast',
+          'ce:GetUsageForecast',
           'cloudformation:DescribeStackEvents',
           'cloudformation:DescribeStackResource',
           'ecr:DescribeImages',

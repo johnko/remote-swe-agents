@@ -587,6 +587,9 @@ systemctl start myapp
       new iam.PolicyStatement({
         actions: [
           'bedrock:ListFoundationModels',
+          'ce:GetCostAndUsage',
+          'ce:GetCostForecast',
+          'ce:GetUsageForecast',
           'cloudformation:DescribeStackEvents',
           'cloudformation:DescribeStackResource',
           'ecr:DescribeImages',
