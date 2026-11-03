@@ -7,7 +7,7 @@ import {
   updateCustomAgent,
   deleteCustomAgent,
 } from '../../lib/custom-agent.js';
-import { modelTypeSchema, runtimeTypeSchema, inferenceModeSchema, kiroModelSchema } from '../../schema/index.js';
+import { modelTypeSchema, runtimeTypeSchema, inferenceModeSchema } from '../../schema/index.js';
 import { savePendingCreateAgent } from '../confirm-create-agent/index.js';
 
 const agentFieldsSchema = z.object({
@@ -17,9 +17,6 @@ const agentFieldsSchema = z.object({
   bedrockDefaultModel: modelTypeSchema
     .optional()
     .describe('The Bedrock model for this agent. Takes priority over defaultModel (legacy).'),
-  kiroDefaultModel: kiroModelSchema
-    .optional()
-    .describe("The Kiro model for this agent. Takes priority over kiroModel (legacy). Omit to use 'auto'."),
   systemPrompt: z.string().describe('The system prompt that defines the agent behavior.'),
   tools: z
     .array(z.string())
@@ -74,9 +71,6 @@ const updateAgentSchema = z.object({
   bedrockDefaultModel: modelTypeSchema
     .optional()
     .describe('The Bedrock model for this agent. Takes priority over defaultModel (legacy).'),
-  kiroDefaultModel: kiroModelSchema
-    .optional()
-    .describe("The Kiro model for this agent. Takes priority over kiroModel (legacy). Omit to use 'auto'."),
   systemPrompt: z.string().optional().describe('The system prompt that defines the agent behavior.'),
   tools: z
     .array(z.string())
