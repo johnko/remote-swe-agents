@@ -195,8 +195,6 @@ export default function MessageForm({
       pendingModelChangeRef.current = null;
       if (pending.field === 'bedrock') {
         executeUpdateModel({ workerId, bedrockDefaultModel: pending.value as ModelType });
-      } else {
-        executeUpdateModel({ workerId, kiroDefaultModel: pending.value as KiroModelId });
       }
     }
   }, [workerId, executeUpdateModel]);
@@ -218,8 +216,6 @@ export default function MessageForm({
         pendingModelChangeRef.current = null;
         if (field === 'bedrock') {
           executeUpdateModel({ workerId, bedrockDefaultModel: value as ModelType });
-        } else {
-          executeUpdateModel({ workerId, kiroDefaultModel: value as KiroModelId });
         }
       }, 300);
     },

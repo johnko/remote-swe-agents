@@ -6,9 +6,6 @@ export type InferenceMode = 'bedrock';
 
 // KiroModelId, kiroModelConfigs, and kiroModelSchema removed - kiro-cli support has been discontinued
 // Type kept as alias for backward compatibility in existing code
-export type KiroModelId = never;
-export const kiroModelConfigs = {} as const;
-export const kiroModelSchema = z.never();
 
 export const modelTypeList = [
   'opus5',
