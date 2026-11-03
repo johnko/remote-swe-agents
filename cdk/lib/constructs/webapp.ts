@@ -117,8 +117,6 @@ export class Webapp extends Construct {
       handler.addEnvironment(key, value);
     }
 
-      })
-    );
     asyncJob.handler.grantInvoke(handler);
     storage.table.grantReadWriteData(handler);
     storage.bucket.grantReadWrite(handler);

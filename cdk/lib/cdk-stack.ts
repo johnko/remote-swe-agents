@@ -143,8 +143,6 @@ export class MainStack extends cdk.Stack {
           proxyCodeDirectory: join(__dirname, '../../packages/microvm-preview-proxy'),
         })
       : undefined;
-    // Sweep runtime-created per-user SSM parameters (e.g. Kiro API keys) on
-
     const worker = new Worker(this, 'Worker', {
       vpc,
       storageTable: storage.table,
@@ -182,8 +180,6 @@ export class MainStack extends cdk.Stack {
       userPool: auth.userPool,
       cognitoDomainName: auth.domainName,
       vapidKeys,
-      kiroApiKeyParameter,
-      inferenceMode: props.inferenceMode,
     });
 
     worker.bus.addUserPoolProvider(auth.userPool);
