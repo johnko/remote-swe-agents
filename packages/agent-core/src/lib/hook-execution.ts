@@ -51,6 +51,34 @@ export interface HookExecutionResult {
 }
 
 /**
+ * Permission hook result - allows hooks to block, ask, or modify actions.
+ * Hooks for permission events (beforeShellExecution, preToolUse, etc.) can
+ * return JSON output structured as PermissionHookResult.
+ */
+export interface PermissionHookResult {
+  /** Whether execution should proceed */
+  continue: boolean;
+  /** Permission decision */
+  permission: 'allow' | 'deny' | 'ask';
+  /** Message shown to user when blocked or asking */
+  userMessage?: string;
+  /** Message shown to agent when blocked or asking */
+  agentMessage?: string;
+  /** Modified command for beforeShellExecution hooks */
+  updatedCommand?: string;
+  /** Modified tool input for preToolUse hooks */
+  updatedToolInput?: object;
+}
+
+/**
+ * Default allow result - returned when no permission hooks deny
+ */
+export const defaultAllowResult: PermissionHookResult = {
+  continue: true,
+  permission: 'allow',
+};
+
+/**
  * Execute all active hooks for a given event and user.
  * Hooks are executed sequentially, and errors in one hook do not prevent others from running.
  * 
@@ -198,6 +226,155 @@ export const executeHooksForEvent = async (context: HookExecutionContext): Promi
   }
 
   return result;
+};
+
+/**
+ * Build hook input JSON for permission hooks.
+ * This provides hooks with structured context data.
+ */
+export const buildHookInput = (context: HookExecutionContext): object => {
+  return {
+    event: context.event,
+    sessionId: context.sessionId,
+    userId: context.userId,
+    workingDirectory: context.workingDirectory,
+    context: context.contextData,
+  };
+};
+
+/**
+ * Parse hook output as PermissionHookResult.
+ * Falls back to 'allow' if JSON parsing fails (backward compatibility).
+ */
+export const parsePermissionResult = (output: string): PermissionHookResult => {
+  try {
+    const parsed = JSON.parse(output);
+    // Validate required fields
+    if (typeof parsed.permission === 'string' && ['allow', 'deny', 'ask'].includes(parsed.permission)) {
+      return {
+        continue: parsed.continue ?? true,
+        permission: parsed.permission as 'allow' | 'deny' | 'ask',
+        userMessage: parsed.user_message || parsed.userMessage,
+        agentMessage: parsed.agent_message || parsed.agentMessage,
+        updatedCommand: parsed.updated_command || parsed.updatedCommand,
+        updatedToolInput: parsed.updated_tool_input || parsed.updatedToolInput,
+      };
+    }
+  } catch {
+    // Legacy hooks return exit code 0 = allow
+    console.log('[hook-execution] Hook returned non-JSON output, treating as allow');
+  }
+  return defaultAllowResult;
+};
+
+/**
+ * Execute permission hooks for blocking/modifying actions.
+ * Hooks are expected to return JSON output with a PermissionHookResult structure.
+ *
+ * @param context Hook execution context
+ * @returns PermissionHookResult with decision and optional modifications
+ */
+export const executePermissionHooks = async (
+  context: HookExecutionContext
+): Promise<PermissionHookResult> => {
+  try {
+    // Get all active hooks for this event and user
+    const hooks = await listHooksByEvent(context.userId, context.event);
+
+    if (hooks.length === 0) {
+      return defaultAllowResult;
+    }
+
+    console.log(`[hook-execution] Found ${hooks.length} permission hook(s) for event: ${context.event}`);
+
+    // Build environment with hook context data
+    const hookEnv = buildHookEnv(context.contextData);
+    const hookInput = buildHookInput(context);
+
+    // Execute each hook sequentially
+    for (const hook of hooks) {
+      try {
+        const isScript = !!hook.script;
+        const content = isScript ? hook.script : hook.command;
+
+        if (!content) {
+          console.warn(`[hook-execution] Permission hook "${hook.name}" has no command or script`);
+          continue;
+        }
+
+        console.log(
+          `[hook-execution] Executing permission hook "${hook.name}" for event: ${context.event}`
+        );
+
+        let output = '';
+
+        if (isScript) {
+          // Execute inline script via node -e with JSON input
+          try {
+            output = execSync(`node -e ${JSON.stringify(content)}`, {
+              cwd: context.workingDirectory || process.cwd(),
+              encoding: 'utf-8',
+              stdio: ['pipe', 'pipe', 'pipe'],
+              timeout: 30000,
+              env: hookEnv,
+              input: JSON.stringify(hookInput),
+            });
+          } catch (e: any) {
+            // Permission hooks that error are treated as allowing (fail-open)
+            console.error(`[hook-execution] Permission hook "${hook.name}" failed:`, e);
+            continue;
+          }
+        } else {
+          // Execute shell command with JSON input
+          try {
+            output = execSync(content, {
+              cwd: context.workingDirectory || process.cwd(),
+              encoding: 'utf-8',
+              stdio: ['pipe', 'pipe', 'pipe'],
+              timeout: 30000,
+              env: hookEnv,
+              input: JSON.stringify(hookInput),
+            });
+          } catch (e: any) {
+            // Permission hooks that error are treated as allowing (fail-open)
+            console.error(`[hook-execution] Permission hook "${hook.name}" failed:`, e);
+            continue;
+          }
+        }
+
+        const permissionResult = parsePermissionResult(output);
+        console.log(
+          `[hook-execution] Permission hook "${hook.name}" returned: ${permissionResult.permission}`
+        );
+
+        // If any hook denies, return immediately
+        if (permissionResult.permission === 'deny') {
+          return permissionResult;
+        }
+
+        // If any hook asks for confirmation, return
+        if (permissionResult.permission === 'ask') {
+          return permissionResult;
+        }
+
+        // Apply modifications to context
+        if (permissionResult.updatedCommand && context.contextData) {
+          context.contextData.command = permissionResult.updatedCommand;
+        }
+        if (permissionResult.updatedToolInput && context.contextData) {
+          // Tool input modification handled by caller
+        }
+      } catch (error: any) {
+        console.error(`[hook-execution] Permission hook "${hook.name}" failed:`, error);
+        // Fail-open: continue execution even if a hook errors
+      }
+    }
+  } catch (error: any) {
+    console.error('[hook-execution] Unexpected error during permission hook execution:', error);
+  }
+
+  // Default: allow
+  return defaultAllowResult;
 };
 
 /**
