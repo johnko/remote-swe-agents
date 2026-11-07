@@ -1,7 +1,212 @@
-# Hook Execution System Implementation Roadmap
+# Hook Implementation Roadmap
 
 ## Overview
+
 This document tracks the implementation of hook execution across all lifecycle events defined in `packages/agent-core/src/schema/hook.ts`.
+
+**Last Updated:** November 7, 2026  
+**Comparison Document:** See [Cursor Hooks Comparison](#cursor-hooks-comparison) below for detailed comparison with [Cursor hooks specification](https://cursor.com/docs/hooks).
+
+---
+
+## Critical Issue: Hook Output Not Fed to Agent ⚠️
+
+**DISCOVERED 2026-11-07:** Hook output is captured but **NOT injected into the agent's conversation**.
+
+### The Problem
+
+Currently, `executeHooksForEventWithSession()` returns `HookExecutionResult` with captured output, but:
+1. The result is **discarded** at call sites (see `worker/src/agent/index.ts` line 106)
+2. Hook output only goes to `console.log` for observability
+3. **The agent never sees the hook output**
+
+### Example: Title Reminder Hook
+
+```typescript
+// This hook CANNOT remind the agent:
+const hookResult = await executeHooksForEventWithSession(session, 'sessionStart', process.cwd());
+// hookResult contains the reminder, but it's thrown away!
+
+// The "REMINDER: Call update_session_title" message is 
+// only in console logs, never reaches the LLM.
+```
+
+### Required Fix
+
+Hook output should be injected into the agent's context **before** its first turn:
+
+```typescript
+// In worker/src/agent/index.ts
+if (isFirstTurn) {
+  const hookResult = await executeHooksForEventWithSession(session, 'sessionStart', ...);
+  
+  // NEW: Inject hook output as system message
+  if (hookResult.logs.length > 0) {
+    const hookContext = hookResult.logs.map(l => l.output).join('\n');
+    conversation.unshift({
+      role: 'system',
+      content: `[Hook Reminders]\n${hookContext}`
+    });
+  }
+}
+```
+
+### Affected Events
+
+| Event | Current | Needed |
+|-------|---------|--------|
+| `sessionStart` | Output discarded | Output → system message |
+| `subagentStart` | Output discarded | Output → parent agent |
+| Permission hooks | No blocking | Can block/modify action |
+
+### Tracking
+
+- [ ] PR created for hook output injection
+- [ ] sessionStart hooks feed context to agent
+- [ ] subagentStart hooks feed context to parent
+- [ ] Permission hooks can block actions
+
+---
+
+## Cursor Hooks Comparison
+
+> This section compares rswea implementation with [Cursor hooks specification](https://cursor.com/docs/hooks).
+
+### Event Coverage
+
+| Hook Event | Cursor | rswea | Notes |
+|------------|--------|-------|-------|
+| `sessionStart` | ✅ | ✅ | rswea: output not fed to agent |
+| `sessionEnd` | ✅ | ✅ | Both implemented |
+| `subagentStart` | ✅ | ✅ | rswea: output not fed to agent |
+| `subagentStop` | ✅ | ✅ | Both implemented |
+| `preToolUse` | ✅ | ✅ | rswea: no input/output JSON |
+| `postToolUse` | ✅ | ✅ | rswea: output read-only |
+| `postToolUseFailure` | ✅ | ✅ | Both implemented |
+| `beforeShellExecution` | ✅ | ✅ | Cursor: can block; rswea: no blocking |
+| `afterShellExecution` | ✅ | ✅ | rswea: read-only |
+| `beforeReadFile` | ✅ | ✅ | Cursor: can gate; rswea: no blocking |
+| `afterFileEdit` | ✅ | ✅ | rswea: read-only |
+| `beforeMCPExecution` | ✅ | ❌ | **NOT IMPLEMENTED** |
+| `afterMCPExecution` | ✅ | ❌ | **NOT IMPLEMENTED** |
+| `beforeSubmitPrompt` | ✅ | ✅ | Both implemented |
+| `preCompact` | ✅ | ✅ | Both implemented |
+| `afterAgentResponse` | ✅ | ✅ | Both implemented |
+| `afterAgentThought` | ✅ | ✅ | Both implemented |
+| `stop` | ✅ | ✅ | Both implemented |
+| `beforeTabFileRead` | ✅ | N/A | IDE feature |
+| `afterTabFileEdit` | ✅ | N/A | IDE feature |
+| `workspaceOpen` | ✅ | N/A | IDE feature |
+
+### Key Differences
+
+#### 1. Input/Output Protocol
+
+**Cursor:**
+- JSON input via stdin (structured context)
+- JSON output via stdout (can return data/block/modify)
+- Rich context: command, args, conversation_id, etc.
+
+**rswea:**
+- Environment variables only (`HOOK_*`)
+- Stdout captured but discarded
+- Limited context
+
+**Gap:** rswea needs JSON stdin/out like Cursor
+
+#### 2. Blocking/Control Capability
+
+**Cursor:**
+- Return `{ "permission": "deny" }` to block
+- Return `{ "permission": "ask" }` for user confirmation
+- Can modify action via `{ "updated_command": "..." }`
+
+**rswea:**
+- Hooks execute but action proceeds
+- No mechanism to block
+- No way to modify inputs
+
+**Gap:** rswea cannot gate or modify actions
+
+#### 3. Hook Output Visibility
+
+**Cursor:**
+- Hook output can be returned to agent
+- `sessionStart` hooks can inject context into conversation
+
+**rswea:**
+- Hook output only in logs
+- Agent never sees reminder/info hooks
+
+**Gap:** CRITICAL - hooks like title reminder are non-functional
+
+#### 4. Configuration System
+
+**Cursor:**
+- `hooks.json` file-based
+- Project-level: `.cursor/hooks.json`
+- User-level: `~/.cursor/hooks.json`
+- Hot-reloaded
+
+**rswea:**
+- DynamoDB per-user storage
+- Managed via tools (`create_hook`, `delete_hook`)
+- No file-based config
+
+**Trade-off:** rswea better for cloud; Cursor better for local dev
+
+#### 5. Prompt-Type Hooks
+
+**Cursor:**
+```json
+{
+  "type": "prompt",
+  "prompt": "Does this command look safe?"
+}
+```
+- LLM-evaluated
+- Returns `{ ok: boolean, reason: string }`
+
+**rswea:**
+- Only command/script hooks
+- No LLM evaluation
+
+**Gap:** rswea missing prompt-based hooks
+
+#### 6. Matchers/Filtering
+
+**Cursor:**
+```json
+{
+  "command": "./audit.sh",
+  "matcher": "curl|wget|nc"
+}
+```
+
+**rswea:**
+- No filtering; all hooks for event fire
+
+**Gap:** Cannot target specific tools/commands
+
+### Migration Path to Cursor Compatibility
+
+#### Phase 1: Blocking + Output (URGENT)
+1. Feed hook output to agent
+2. Implement permission blocking
+3. Support JSON output format
+
+#### Phase 2: Rich Context
+4. Pass JSON input via stdin
+5. Add matchers/filters
+6. Per-hook timeout config
+
+#### Phase 3: Feature Parity
+7. Prompt-type hooks
+8. File-based hooks.json (optional)
+9. MCP hooks
+10. Result modification
+
+---
 
 ## Status Summary
 
