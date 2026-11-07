@@ -46,6 +46,8 @@ export interface HookExecutionResult {
   hooksSkipped: number;
   errors: Array<{ hookName: string; error: string }>;
   logs: Array<{ hookName: string; output: string }>;
+  /** Combined output from all hooks for display to agent */
+  combinedOutput?: string;
 }
 
 /**
@@ -185,6 +187,14 @@ export const executeHooksForEvent = async (context: HookExecutionContext): Promi
       hookName: 'unknown',
       error: error instanceof Error ? error.message : String(error),
     });
+  }
+
+  // Build combined output from all hook logs
+  if (result.logs.length > 0) {
+    result.combinedOutput = result.logs
+      .filter((l) => l.output.trim())
+      .map((l) => `[Hook: ${l.hookName}]\n${l.output}`)
+      .join('\n\n');
   }
 
   return result;

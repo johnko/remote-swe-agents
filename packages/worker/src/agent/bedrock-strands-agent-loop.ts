@@ -179,8 +179,13 @@ export async function resolveModelTypes(ctx: TurnContext): Promise<ModelType[]> 
 }
 
 export const bedrockStrandsAgentLoop = async (ctx: TurnContext, sink: ToolEventSink): Promise<TurnResult> => {
-  const { workerId, systemPrompt, customAgent } = ctx;
+  const { workerId, systemPrompt: baseSystemPrompt, customAgent } = ctx;
   const s3: ConverterS3Context = { bucket: process.env.BUCKET_NAME };
+
+  // Combine hook context with base system prompt if present (append to end)
+  const systemPrompt = ctx.hookContext
+    ? `${baseSystemPrompt}\n\n${ctx.hookContext}`
+    : baseSystemPrompt;
 
   const resolvedTypes = await resolveModelTypes(ctx);
   const model = new RemoteSweBedrockModel({

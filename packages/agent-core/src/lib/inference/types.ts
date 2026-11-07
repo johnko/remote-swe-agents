@@ -55,6 +55,12 @@ export interface TurnContext {
    * failed, was skipped, or no skill declares a kiro-agent).
    */
   kiroAgentName?: string;
+  /**
+   * Hook context output for first-turn sessions. When present, the backend
+   * should inject this as a system message so the agent can see hook output.
+   * Only populated when sessionStart hooks run on the first turn.
+   */
+  hookContext?: string;
 }
 
 /** Payload for one tool_use emission (one per tool). */

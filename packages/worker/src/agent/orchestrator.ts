@@ -327,6 +327,15 @@ const buildSystemPrompt = async (opts: {
 };
 
 /**
+ * Build hook context block to inject as a system message.
+ * Returns undefined if no hook context is provided.
+ */
+const buildHookContextBlock = (hookContext?: string): string | undefined => {
+  if (!hookContext?.trim()) return undefined;
+  return `## Hook Execution Output\n${hookContext}`;
+};
+
+/**
  * Trim-and-classify helper for the placeholder detector. Narrow on purpose:
  * real short replies like "ok" / "done" / "4" must still reach the user
  * because the new Kiro prompt invites the model to write a concise
@@ -396,7 +405,8 @@ const extractUserMessage = (lastItem: import('@remote-swe-agents/agent-core/sche
 export const buildTurnContext = async (
   workerId: string,
   cancellationToken: CancellationToken,
-  senderUserId: string | undefined
+  senderUserId: string | undefined,
+  hookContext?: string
 ): Promise<TurnContext | undefined> => {
   const session = await getSession(workerId);
   const customAgent = (await getCustomAgent(session?.customAgentId)) ?? DefaultAgent;
@@ -466,6 +476,7 @@ export const buildTurnContext = async (
     cancellationToken,
     userSkills,
     environmentBlock,
+    hookContext,
   };
 };
 
@@ -743,11 +754,12 @@ export const runTurnWithBackend = async (
   cancellationToken: CancellationToken,
   backend: InferenceBackend,
   senderUserId?: string,
-  sink: ToolEventSink = resolveToolEventSink()
+  sink: ToolEventSink = resolveToolEventSink(),
+  hookContext?: string
 ): Promise<void> => {
   let ctx: TurnContext | undefined;
   try {
-    ctx = await buildTurnContext(workerId, cancellationToken, senderUserId);
+    ctx = await buildTurnContext(workerId, cancellationToken, senderUserId, hookContext);
     if (!ctx) return;
     let result = await backend.runTurn(ctx, sink);
     if (cancellationToken.isCancelled) return;
@@ -859,7 +871,7 @@ This is an automatic retry after a temporary internal failure. Your previous att
         ],
       };
       await saveConversationHistory(workerId, retriggerMessage, 0, 'systemRetrigger');
-      await runTurnWithBackend(workerId, cancellationToken, backend, senderUserId, sink);
+      await runTurnWithBackend(workerId, cancellationToken, backend, senderUserId, sink, hookContext);
     }
   } catch (error) {
     // Best-effort: use ctx.slackUserId if we already built the context.

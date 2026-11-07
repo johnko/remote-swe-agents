@@ -100,16 +100,24 @@ export const onMessageReceived = async (workerId: string, cancellationToken: Can
     // Check if this is the first turn and fire sessionStart hooks if so
     const { items } = await getConversationHistory(workerId);
     const isFirstTurn = items.length <= 1; // Only seed message or empty
-    
+
+    // Collect hook output to inject into conversation context
+    let hookContext: string | undefined;
+
     if (isFirstTurn) {
       const session = await getSession(workerId);
-      await executeHooksForEventWithSession(session, 'sessionStart', process.cwd());
+      const hookResult = await executeHooksForEventWithSession(session, 'sessionStart', process.cwd());
+
+      // Capture hook output for injection into agent context
+      if (hookResult.combinedOutput) {
+        hookContext = hookResult.combinedOutput;
+      }
     }
 
     // Resolve inferenceMode and dispatch to the matching backend.
     const { mode: inferenceMode, senderUserId } = await detectInferenceMode(workerId);
     const backend = bedrockBackend;
-    await runTurnWithBackend(workerId, cancellationToken, backend, senderUserId);
+    await runTurnWithBackend(workerId, cancellationToken, backend, senderUserId, undefined, hookContext);
   } finally {
     if (cancellationToken.isCancelled) {
       // execute any callback when set in the cancellation token.
