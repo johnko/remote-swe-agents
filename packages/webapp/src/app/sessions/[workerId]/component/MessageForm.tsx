@@ -757,9 +757,8 @@ export default function MessageForm({
                         type="button"
                         onClick={handleFileSelect}
                         disabled={isExecuting}
-                        size="sm"
                         variant="ghost"
-                        className="h-8 w-8 p-0 hover:bg-gray-100 dark:hover:bg-gray-600"
+                        className="h-10 w-10 p-0 hover:bg-gray-100 dark:hover:bg-gray-600"
                       >
                         <Paperclip className="w-4 h-4" />
                       </Button>
@@ -777,7 +776,7 @@ export default function MessageForm({
                   onChange: (e) => handleModelChange('bedrock', e.target.value),
                 })}
                 disabled={isExecuting}
-                className="text-xs px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 dark:text-white focus:outline-none"
+                className="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 dark:text-white focus:outline-none"
               >
                 {getAvailableModelTypes().map((type) => (
                   <option key={type} value={type}>
@@ -792,9 +791,8 @@ export default function MessageForm({
                         <Button
                           type="button"
                           onClick={onInterrupt}
-                          size="sm"
                           variant="ghost"
-                          className="h-8 w-8 p-0 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
+                          className="h-10 w-10 p-0 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
                         >
                           <Square className="w-5 h-5 fill-current" strokeWidth={2.5} />
                         </Button>
@@ -811,9 +809,8 @@ export default function MessageForm({
                         <Button
                           type="submit"
                           disabled={!formState.isValid || isExecuting || isUploading}
-                          size="sm"
                           variant="ghost"
-                          className="h-8 w-8 p-0 text-blue-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                          className="h-10 w-10 p-0 text-blue-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20"
                         >
                           {isExecuting ? (
                             <Loader2 className="w-6 h-6 animate-spin" strokeWidth={2.5} />
