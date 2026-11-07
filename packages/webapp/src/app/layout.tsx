@@ -36,7 +36,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
         <NextIntlClientProvider locale={locale} messages={messages}>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
             {children}
-            <Toaster position="top-right" closeButton={true} />
+            <Toaster position="top-center" closeButton={true} />
             <BadgeSyncer />
             <PushNotificationBanner />
             <DeploymentRecoveryListener />

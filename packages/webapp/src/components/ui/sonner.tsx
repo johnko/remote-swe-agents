@@ -22,7 +22,6 @@ const Toaster = ({ ...props }: ToasterProps) => {
           '--normal-border': 'var(--border)',
         } as React.CSSProperties
       }
-      offset={{ right: 200 }}
       {...props}
     />
   );
