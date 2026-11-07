@@ -257,12 +257,6 @@ export async function toStrandsTool<Input>(def: RemoteSweToolLike<Input>, deps: 
             const errorMsg = permissionResult.userMessage || `Tool "${sanitizedName}" blocked by hook`;
             return flattenToolResult(`[Tool Blocked] ${errorMsg}`);
           }
-
-          // Handle ask permission - for now treat as allow (confirmation flow TODO)
-          if (permissionResult.permission === 'ask') {
-            console.log(`[toStrandsTool] Permission hook asked for confirmation for tool "${sanitizedName}"`);
-            // TODO: Add confirmation flow in future iteration
-          }
         } catch (e) {
           console.error(`[toStrandsTool] preToolUse permission hook failed for tool "${sanitizedName}":`, e);
           // Don't throw - fail-open and continue with tool execution

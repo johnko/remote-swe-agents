@@ -317,12 +317,6 @@ const handler = async (
         );
       }
 
-      // Handle ask permission - for now treat as allow (confirmation flow TODO)
-      if (permissionResult.permission === 'ask') {
-        console.log('[command-execution] Permission hook asked for confirmation, proceeding');
-        // TODO: Add confirmation flow in future iteration
-      }
-
       // Use modified command if provided
       if (permissionResult.updatedCommand) {
         console.log('[command-execution] Command modified by permission hook');
