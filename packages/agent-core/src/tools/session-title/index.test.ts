@@ -1,12 +1,19 @@
 import { describe, expect, test, vi, beforeEach } from 'vitest';
 
 const mockGetSession = vi.fn();
+const mockUpdateSessionTitle = vi.fn();
+const mockSendWebappEvent = vi.fn();
 
 vi.mock('../../lib/sessions', () => ({
   getSession: (...args: any[]) => mockGetSession(...args),
+  updateSessionTitle: (...args: any[]) => mockUpdateSessionTitle(...args),
 }));
 
-import { getSessionTitleTool } from './index';
+vi.mock('../../lib/events', () => ({
+  sendWebappEvent: (...args: any[]) => mockSendWebappEvent(...args),
+}));
+
+import { getSessionTitleTool, updateSessionTitleTool } from './index';
 
 const mockContext = {
   workerId: 'test-worker-123',
@@ -62,5 +69,28 @@ describe('getSessionTitle', () => {
     );
 
     expect(mockGetSession).toHaveBeenCalledWith('test-worker-123');
+  });
+});
+
+describe('updateSessionTitle', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  test('updates session title successfully', async () => {
+    const newTitle = 'New Session Title';
+    mockUpdateSessionTitle.mockResolvedValue(undefined);
+    mockSendWebappEvent.mockResolvedValue(undefined);
+
+    const result = await updateSessionTitleTool.handler({
+      title: newTitle,
+    }, mockContext as any);
+
+    expect(mockUpdateSessionTitle).toHaveBeenCalledWith('test-worker-123', newTitle);
+    expect(mockSendWebappEvent).toHaveBeenCalledWith('test-worker-123', {
+      type: 'sessionTitleUpdate',
+      newTitle: newTitle,
+    });
+    expect(result).toBe(`Session title updated to: ${newTitle}`);
   });
 });
