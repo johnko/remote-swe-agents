@@ -7,7 +7,7 @@ import { mkdirSync, writeFileSync, unlinkSync } from 'fs';
 import { z } from 'zod';
 import { CancellationToken, ToolDefinition, truncate, zodToJsonSchemaBody } from '../../private/common/lib.js';
 import { generateSuggestion } from './suggestion.js';
-import { getSession, executeHooksForEventWithSession } from '../../lib/index.js';
+import { getSession, executeHooksForEventWithSession, executePermissionHooks } from '../../lib/index.js';
 
 const inputSchema = z.object({
   command: z.string().describe('The command to execute.'),
@@ -284,15 +284,47 @@ const handler = async (
     }
   }
 
-  // Execute beforeShellExecution hook
+  // Execute permission hooks for beforeShellExecution
   if (session) {
     try {
-      await executeHooksForEventWithSession(session, 'beforeShellExecution', input.cwd || process.cwd(), {
-        command: input.command,
+      const userId = session.initiator?.includes('#')
+        ? session.initiator.split('#').pop()!
+        : session.initiator || '';
+
+      const permissionResult = await executePermissionHooks({
+        sessionId: context.workerId || 'unknown',
+        event: 'beforeShellExecution',
+        userId,
+        workingDirectory: input.cwd || process.cwd(),
+        contextData: {
+          command: input.command,
+          sessionId: context.workerId,
+        },
       });
+
+      // Handle hook blocking
+      if (permissionResult.permission === 'deny') {
+        console.log('[command-execution] Command blocked by permission hook');
+        return JSON.stringify(
+          {
+            stdout: '',
+            stderr: '',
+            error: permissionResult.userMessage || 'Command blocked by hook',
+            exitCode: 1,
+          },
+          undefined,
+          1
+        );
+      }
+
+      // Use modified command if provided
+      if (permissionResult.updatedCommand) {
+        console.log('[command-execution] Command modified by permission hook');
+        input.command = permissionResult.updatedCommand;
+      }
     } catch (e) {
-      console.error('[command-execution] beforeShellExecution hook failed:', e);
-      // Don't throw - continue with command execution even if hook fails
+      console.error('[command-execution] beforeShellExecution permission hook failed:', e);
+      // Don't throw - fail-open and continue with command execution
     }
   }
 

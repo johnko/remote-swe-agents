@@ -25,7 +25,7 @@
 import type { ToolResultContentBlock } from '@aws-sdk/client-bedrock-runtime';
 import { tool, type ToolContext } from '@strands-agents/sdk';
 import type { z, ZodType } from 'zod';
-import { renderToolResult, getSession, executeHooksForEventWithSession, HookContextData } from '@remote-swe-agents/agent-core/lib';
+import { renderToolResult, getSession, executeHooksForEventWithSession, executePermissionHooks, HookContextData } from '@remote-swe-agents/agent-core/lib';
 import { reportProgressTool, sendToAgentTool, acknowledgeAgentTool } from '@remote-swe-agents/agent-core/tools';
 
 /** Sanitize tool names: Strands ToolRegistry requires ^[a-zA-Z0-9_-]+$ */
@@ -233,14 +233,33 @@ export async function toStrandsTool<Input>(def: RemoteSweToolLike<Input>, deps: 
         console.error('[toStrandsTool] Failed to get session for hooks:', e);
       }
 
-      // Execute preToolUse hook
+      // Execute permission hooks for preToolUse
       if (session) {
         try {
-          const contextData: HookContextData = { toolName: sanitizedName };
-          await executeHooksForEventWithSession(session, 'preToolUse', process.cwd(), contextData);
+          const userId = session.initiator?.includes('#')
+            ? session.initiator.split('#').pop()!
+            : session.initiator || '';
+
+          const permissionResult = await executePermissionHooks({
+            sessionId: workerId,
+            event: 'preToolUse',
+            userId,
+            workingDirectory: process.cwd(),
+            contextData: {
+              toolName: sanitizedName,
+              sessionId: workerId,
+            },
+          });
+
+          // Handle hook blocking
+          if (permissionResult.permission === 'deny') {
+            console.log(`[toStrandsTool] Tool "${sanitizedName}" blocked by permission hook`);
+            const errorMsg = permissionResult.userMessage || `Tool "${sanitizedName}" blocked by hook`;
+            return flattenToolResult(`[Tool Blocked] ${errorMsg}`);
+          }
         } catch (e) {
-          console.error(`[toStrandsTool] preToolUse hook failed for tool "${sanitizedName}":`, e);
-          // Don't throw - continue with tool execution even if hook fails
+          console.error(`[toStrandsTool] preToolUse permission hook failed for tool "${sanitizedName}":`, e);
+          // Don't throw - fail-open and continue with tool execution
         }
       }
 
