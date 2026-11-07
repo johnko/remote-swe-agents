@@ -51,7 +51,7 @@ export interface HookExecutionResult {
 }
 
 /**
- * Permission hook result - allows hooks to block, ask, or modify actions.
+ * Permission hook result - allows hooks to block or modify actions.
  * Hooks for permission events (beforeShellExecution, preToolUse, etc.) can
  * return JSON output structured as PermissionHookResult.
  */
@@ -59,10 +59,10 @@ export interface PermissionHookResult {
   /** Whether execution should proceed */
   continue: boolean;
   /** Permission decision */
-  permission: 'allow' | 'deny' | 'ask';
-  /** Message shown to user when blocked or asking */
+  permission: 'allow' | 'deny';
+  /** Message shown to user when blocked */
   userMessage?: string;
-  /** Message shown to agent when blocked or asking */
+  /** Message shown to agent when blocked */
   agentMessage?: string;
   /** Modified command for beforeShellExecution hooks */
   updatedCommand?: string;
@@ -250,10 +250,10 @@ export const parsePermissionResult = (output: string): PermissionHookResult => {
   try {
     const parsed = JSON.parse(output);
     // Validate required fields
-    if (typeof parsed.permission === 'string' && ['allow', 'deny', 'ask'].includes(parsed.permission)) {
+    if (typeof parsed.permission === 'string' && ['allow', 'deny'].includes(parsed.permission)) {
       return {
         continue: parsed.continue ?? true,
-        permission: parsed.permission as 'allow' | 'deny' | 'ask',
+        permission: parsed.permission as 'allow' | 'deny',
         userMessage: parsed.user_message || parsed.userMessage,
         agentMessage: parsed.agent_message || parsed.agentMessage,
         updatedCommand: parsed.updated_command || parsed.updatedCommand,
@@ -349,11 +349,6 @@ export const executePermissionHooks = async (
 
         // If any hook denies, return immediately
         if (permissionResult.permission === 'deny') {
-          return permissionResult;
-        }
-
-        // If any hook asks for confirmation, return
-        if (permissionResult.permission === 'ask') {
           return permissionResult;
         }
 

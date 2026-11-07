@@ -16,7 +16,7 @@ describe('PermissionHookResult types', () => {
     });
   });
 
-  test('PermissionHookResult interface allows all permission values', () => {
+  test('PermissionHookResult interface allows permission values', () => {
     const allowResult: PermissionHookResult = {
       continue: true,
       permission: 'allow',
@@ -29,13 +29,6 @@ describe('PermissionHookResult types', () => {
       userMessage: 'Blocked for safety',
     };
     expect(denyResult.permission).toBe('deny');
-
-    const askResult: PermissionHookResult = {
-      continue: true,
-      permission: 'ask',
-      userMessage: 'Needs approval',
-    };
-    expect(askResult.permission).toBe('ask');
   });
 });
 
@@ -109,20 +102,6 @@ describe('parsePermissionResult', () => {
       permission: 'deny',
       userMessage: 'Command blocked',
       agentMessage: 'Agent sees this',
-    });
-  });
-
-  test('parses ask JSON response', () => {
-    const json = JSON.stringify({
-      continue: true,
-      permission: 'ask',
-      user_message: 'Needs confirmation',
-    });
-    const result = parsePermissionResult(json);
-    expect(result).toEqual({
-      continue: true,
-      permission: 'ask',
-      userMessage: 'Needs confirmation',
     });
   });
 
