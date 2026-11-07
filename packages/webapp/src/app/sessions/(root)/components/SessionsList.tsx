@@ -420,7 +420,7 @@ export default function SessionsList({ initialSessions, currentUserId, unreadMap
         <div className="flex items-center gap-2">
           <ArrowUpDown className="w-4 h-4 text-gray-500 dark:text-gray-400" />
           <select
-            className="text-sm border border-gray-300 dark:border-gray-600 rounded-md px-2 py-1.5 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="text-sm border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 h-10 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
             value={sortKey}
             onChange={(e) => handleSortKeyChange(e.target.value as SortKey)}
           >
@@ -432,7 +432,7 @@ export default function SessionsList({ initialSessions, currentUserId, unreadMap
           <Button
             variant="outline"
             size="sm"
-            className="h-8 px-2"
+            className="h-10 px-2"
             onClick={handleSortOrderToggle}
             title={sortOrder === 'desc' ? t('sortDesc') : t('sortAsc')}
           >
@@ -442,47 +442,44 @@ export default function SessionsList({ initialSessions, currentUserId, unreadMap
 
         <Button
           variant={hideCompleted ? 'secondary' : 'outline'}
-          size="sm"
-          className="h-8 flex items-center gap-1.5"
+          className="h-10 flex items-center gap-1.5"
           onClick={handleHideCompletedToggle}
         >
-          <EyeOffIcon className="w-3.5 h-3.5" />
-          <span className="text-xs">{t('hideCompleted')}</span>
+          <EyeOffIcon className="w-4 h-4" />
+          <span>{t('hideCompleted')}</span>
         </Button>
 
         <Button
           variant={selectMode ? 'default' : 'outline'}
-          size="sm"
-          className="h-8 flex items-center gap-1.5"
+          className="h-10 flex items-center gap-1.5"
           onClick={toggleSelectMode}
         >
-          <CheckSquare className="w-3.5 h-3.5" />
-          <span className="text-xs">{t('selectMode')}</span>
+          <CheckSquare className="w-4 h-4" />
+          <span>{t('selectMode')}</span>
         </Button>
       </div>
 
       {selectMode && (
         <div className="flex flex-wrap items-center gap-3 mb-4">
-          <Button variant="outline" size="sm" className="h-8" onClick={selectAll}>
-            <span className="text-xs">{t('selectAll')}</span>
+          <Button variant="outline" className="h-10" onClick={selectAll}>
+            <span>{t('selectAll')}</span>
           </Button>
-          <Button variant="outline" size="sm" className="h-8" onClick={deselectAll}>
-            <span className="text-xs">{t('deselectAll')}</span>
+          <Button variant="outline" className="h-10" onClick={deselectAll}>
+            <span>{t('deselectAll')}</span>
           </Button>
           {selectedIds.size > 0 && (
             <Button
               variant="destructive"
-              size="sm"
-              className="h-8 flex items-center gap-1.5"
+              className="h-10 flex items-center gap-1.5"
               onClick={() => setShowBatchDeleteDialog(true)}
               disabled={isBatchDeleting}
             >
-              <Trash2 className="w-3.5 h-3.5" />
-              <span className="text-xs">{t('deleteSelected', { count: selectedIds.size })}</span>
+              <Trash2 className="w-4 h-4" />
+              <span>{t('deleteSelected', { count: selectedIds.size })}</span>
             </Button>
           )}
-          <Button variant="ghost" size="sm" className="h-8" onClick={toggleSelectMode}>
-            <X className="w-3.5 h-3.5" />
+          <Button variant="ghost" className="h-10" onClick={toggleSelectMode}>
+            <X className="w-4 h-4" />
           </Button>
         </div>
       )}
