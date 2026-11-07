@@ -43,6 +43,7 @@ async function exportSingleSession(session: SessionItem, outputDir: string): Pro
     updatedAt: session.updatedAt,
     agentStatus: session.agentStatus,
     instanceStatus: session.instanceStatus,
+    initiator: session.initiator,
     title: session.title,
     parentSessionId: session.parentSessionId,
     customAgentId: session.customAgentId,
