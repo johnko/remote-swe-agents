@@ -56,7 +56,7 @@ export const hookSchema = z.object({
   /** The event type that triggers this hook */
   event: hookEventTypeSchema,
   /** The command to execute when the hook fires */
-  command: z.string().max(MAX_HOOK_COMMAND_LENGTH),
+  command: z.string().max(MAX_HOOK_COMMAND_LENGTH).optional(),
   /** Optional inline script content (stored as string) */
   script: z.string().max(MAX_HOOK_SCRIPT_LENGTH).optional(),
   /** Whether the hook is currently active/enabled */
