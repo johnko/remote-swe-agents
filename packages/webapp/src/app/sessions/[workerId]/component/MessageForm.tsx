@@ -776,7 +776,7 @@ export default function MessageForm({
                   onChange: (e) => handleModelChange('bedrock', e.target.value),
                 })}
                 disabled={isExecuting}
-                className="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 dark:text-white focus:outline-none"
+                className="max-w-[120px] sm:max-w-[200px] px-2 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 dark:text-white focus:outline-none"
               >
                 {getAvailableModelTypes().map((type) => (
                   <option key={type} value={type}>
