@@ -510,7 +510,7 @@
       "title": "Agent Details",
       "description": "Configuration of this custom agent",
       "edit": "Edit",
-      "activeModel": "Enabled",
+      "activeModel": "Active",
       "allToolsEnabled": "All tools enabled",
       "toolsSelected": "{count} tools selected",
       "mcpConfigured": "{count} configured",
