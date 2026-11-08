@@ -348,7 +348,7 @@ export default function HookList({ initialHooks }: HookListProps) {
                         onClick={() => handleToggleStatus(hook)}
                         disabled={busyId === hook.SK}
                       >
-                        {hook.isEnabled ? t('archive') : t('activate')}
+                        {hook.isEnabled ? t('disable') : t('enable')}
                       </Button>
                     </div>
                   </div>
