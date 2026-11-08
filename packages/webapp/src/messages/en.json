@@ -662,8 +662,8 @@
     "commandHelp": "Command to execute when the hook fires (the script will be passed via stdin)",
     "scriptPlaceholder": "#!/usr/bin/env node\n// Your hook script here\n// Receives event data via stdin as JSON",
     "status": {
-      "active": "Enabled",
-      "inactive": "Disabled"
+      "enabled": "Enabled",
+      "disabled": "Disabled"
     },
     "createdBy": {
       "agent": "Agent",

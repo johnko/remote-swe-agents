@@ -149,11 +149,11 @@ export default function HookList({ initialHooks }: HookListProps) {
                   <div className="flex items-center gap-2 flex-wrap">
                     {isEnabled ? (
                       <span className="px-2 py-0.5 text-xs bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded">
-                        {t('status.active')}
+                        {t('status.enabled')}
                       </span>
                     ) : (
                       <span className="px-2 py-0.5 text-xs bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded">
-                        {t('status.inactive')}
+                        {t('status.disabled')}
                       </span>
                     )}
                     <span className="px-2 py-0.5 text-xs bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200 rounded">
