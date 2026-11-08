@@ -10,7 +10,6 @@ import {
 } from '@remote-swe-agents/agent-core/lib';
 import {
   Hook,
-  hookStatusSchema,
   hookEventTypeSchema,
   MAX_HOOK_NAME_LENGTH,
   MAX_HOOK_DESCRIPTION_LENGTH,
@@ -60,7 +59,6 @@ const updateHookSchema = z.object({
   command: z.string().min(1).max(MAX_HOOK_COMMAND_LENGTH).optional(),
   script: z.string().max(MAX_HOOK_SCRIPT_LENGTH).optional(),
   isActive: z.boolean().optional(),
-  status: hookStatusSchema.optional(),
 });
 
 export const updateUserHook = authActionClient

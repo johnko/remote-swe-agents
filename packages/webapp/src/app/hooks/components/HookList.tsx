@@ -95,10 +95,10 @@ export default function HookList({ initialHooks }: HookListProps) {
   };
 
   const handleToggleStatus = async (hook: ClientHook) => {
-    const nextStatus = (hook.status ?? 'active') === 'active' ? 'archived' : 'active';
+    const nextIsActive = !(hook.isActive ?? true);
     setBusyId(hook.SK);
     try {
-      const result = await updateUserHook({ hookId: hook.SK, status: nextStatus });
+      const result = await updateUserHook({ hookId: hook.SK, isActive: nextIsActive });
       if (result?.serverError) {
         toast.error(result.serverError);
         return;
@@ -133,7 +133,7 @@ export default function HookList({ initialHooks }: HookListProps) {
   return (
     <div className="space-y-3">
       {hooks.map((hook) => {
-        const isActive = (hook.status ?? 'active') === 'active' && (hook.isActive ?? true);
+        const isActive = hook.isActive ?? false;
         const isEditing = editingId === hook.SK;
         return (
           <div
@@ -348,7 +348,7 @@ export default function HookList({ initialHooks }: HookListProps) {
                         onClick={() => handleToggleStatus(hook)}
                         disabled={busyId === hook.SK}
                       >
-                        {(hook.status ?? 'active') === 'active' ? t('archive') : t('activate')}
+                        {hook.isActive ? t('archive') : t('activate')}
                       </Button>
                     </div>
                   </div>
