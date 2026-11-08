@@ -34,7 +34,6 @@ const createHookSchema = z.object({
   event: hookEventTypeSchema.describe('The event type that triggers this hook.'),
   command: z.string().min(1).max(MAX_HOOK_COMMAND_LENGTH).describe('The command to execute when the hook fires.'),
   script: z.string().max(MAX_HOOK_SCRIPT_LENGTH).optional().describe('Optional inline script content.'),
-  isActive: z.boolean().optional().describe('Whether the hook is currently active/enabled.'),
 });
 const updateHookSchema = z.object({
   hookId: z.string().describe('The ID of the hook to update.'),
@@ -43,7 +42,6 @@ const updateHookSchema = z.object({
   event: hookEventTypeSchema.optional().describe('New event type.'),
   command: z.string().min(1).max(MAX_HOOK_COMMAND_LENGTH).optional().describe('New command.'),
   script: z.string().max(MAX_HOOK_SCRIPT_LENGTH).optional().describe('New script content.'),
-  isActive: z.boolean().optional().describe('New active status.'),
   status: hookStatusSchema.optional().describe('Set to "archived" to hide the hook without deleting it, or "active" to re-enable it.'),
 });
 const deleteHookSchema = z.object({
@@ -122,7 +120,7 @@ export const createHookTool: ToolDefinition<z.infer<typeof createHookSchema>> = 
         event: input.event,
         command: input.command,
         script: input.script,
-        isActive: input.isActive,
+        isActive: false, // Intentional: hooks are created inactive; humans must activate them
         createdBy: 'agent',
         sourceSessionId: context.workerId,
       });
@@ -149,7 +147,6 @@ export const updateHookTool: ToolDefinition<z.infer<typeof updateHookSchema>> = 
       input.event === undefined &&
       input.command === undefined &&
       input.script === undefined &&
-      input.isActive === undefined &&
       input.status === undefined
     ) {
       return 'Error: Provide at least one field to update.';
@@ -161,7 +158,6 @@ export const updateHookTool: ToolDefinition<z.infer<typeof updateHookSchema>> = 
         event: input.event,
         command: input.command,
         script: input.script,
-        isActive: input.isActive,
         status: input.status,
       });
       return `Hook updated successfully.\n- ID: ${hook.SK}\n- Name: ${hook.name}\n- Status: ${hook.status}`;
@@ -176,7 +172,7 @@ export const updateHookTool: ToolDefinition<z.infer<typeof updateHookSchema>> = 
   schema: updateHookSchema,
   toolSpec: async () => ({
     name: 'update_hook',
-    description: `Update a hook's fields (name, description, event, command, script, isActive, or status).\n\n${hooksManagementDescription}`,
+    description: `Update a hook's fields (name, description, event, command, script, or status).\n\n${hooksManagementDescription}`,
     inputSchema: { json: zodToJsonSchemaBody(updateHookSchema) },
   }),
 };
@@ -187,6 +183,9 @@ export const deleteHookTool: ToolDefinition<z.infer<typeof deleteHookSchema>> = 
     const userId = await resolveUserId(context.workerId);
     const hook = await getHook(userId, input.hookId);
     if (!hook) return `Hook with ID "${input.hookId}" not found.`;
+    if (hook.isActive === true) {
+      return `Error: Cannot delete an active hook. Set isActive to false before deleting.`;
+    }
     await deleteHook(userId, input.hookId);
     return `Hook (ID: ${input.hookId}) deleted successfully.`;
   },
