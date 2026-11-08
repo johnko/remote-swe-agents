@@ -162,7 +162,7 @@ describe('manage-hooks lifecycle constraints', () => {
       );
 
       expect(mockDeleteHook).not.toHaveBeenCalled();
-      expect(result).toContain('Cannot delete an active hook');
+      expect(result).toContain('Cannot delete an enabled hook');
     });
 
     test('returns error when hook not found', async () => {
