@@ -3,6 +3,7 @@ import { createHookTool, updateHookTool, deleteHookTool } from './index.js';
 import * as hooksModule from '../../lib/hooks.js';
 import * as sessionsModule from '../../lib/sessions.js';
 import { Hook } from '../../schema/hook.js';
+import type { GlobalPreferences } from '../../schema/index.js';
 
 vi.mock('../../lib/hooks.js');
 vi.mock('../../lib/sessions.js');
@@ -15,6 +16,8 @@ describe('manage-hooks lifecycle constraints', () => {
   const mockGetSession = vi.mocked(sessionsModule.getSession);
 
   const mockContext = {
+    toolUseId: 'test-tool-use',
+    globalPreferences: {} as GlobalPreferences,
     workerId: 'test-session-id',
     session: {} as any,
   };
@@ -37,6 +40,7 @@ describe('manage-hooks lifecycle constraints', () => {
         isActive: false,
         createdAt: Date.now(),
         updatedAt: Date.now(),
+        createdBy: 'user',
       };
       mockCreateHook.mockResolvedValue(mockHook);
 
@@ -69,6 +73,7 @@ describe('manage-hooks lifecycle constraints', () => {
         isActive: false,
         createdAt: Date.now(),
         updatedAt: Date.now(),
+        createdBy: 'user',
       };
       mockCreateHook.mockResolvedValue(mockHook);
 
@@ -98,6 +103,7 @@ describe('manage-hooks lifecycle constraints', () => {
         isActive: false,
         createdAt: Date.now(),
         updatedAt: Date.now(),
+        createdBy: 'user',
       };
       mockUpdateHook.mockResolvedValue(mockHook);
 
@@ -125,6 +131,7 @@ describe('manage-hooks lifecycle constraints', () => {
         isActive: false,
         createdAt: Date.now(),
         updatedAt: Date.now(),
+        createdBy: 'user',
       });
 
       const result = await deleteHookTool.handler(
@@ -146,6 +153,7 @@ describe('manage-hooks lifecycle constraints', () => {
         isActive: true,
         createdAt: Date.now(),
         updatedAt: Date.now(),
+        createdBy: 'user',
       });
 
       const result = await deleteHookTool.handler(
