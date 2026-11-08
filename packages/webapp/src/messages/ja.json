@@ -604,7 +604,7 @@
       "event": "イベントタイプ",
       "command": "コマンド",
       "script": "スクリプト",
-      "isActive": "有効",
+      "isEnabled": "有効",
       "sourceSession": "元セッション"
     },
     "namePlaceholder": "フック名を入力（例：'ファイル変更を記録'）",
@@ -613,8 +613,8 @@
     "commandHelp": "フック実行時に実行するコマンド（スクリプトはstdin経由で渡されます）",
     "scriptPlaceholder": "#!/usr/bin/env node\n// フックスクリプトをここに記述\n// イベントデータはJSON形式でstdinから受け取ります",
     "status": {
-      "active": "有効",
-      "inactive": "無効"
+      "enabled": "有効",
+      "disabled": "無効"
     },
     "createdBy": {
       "agent": "エージェント",
@@ -625,8 +625,8 @@
     "delete": "削除",
     "save": "保存",
     "cancel": "キャンセル",
-    "archive": "アーカイブ",
-    "activate": "有効化",
+    "disable": "無効化",
+    "enable": "有効化",
     "noHooks": "フックはまだ登録されていません",
     "confirmDelete": "このフックを削除しますか?",
     "createSuccess": "フックを作成しました",

@@ -59,8 +59,8 @@ export const hookSchema = z.object({
   command: z.string().max(MAX_HOOK_COMMAND_LENGTH).optional(),
   /** Optional inline script content (stored as string) */
   script: z.string().max(MAX_HOOK_SCRIPT_LENGTH).optional(),
-  /** Whether the hook is currently active/enabled */
-  isActive: z.boolean().default(false),
+  /** Whether the hook is currently enabled */
+  isEnabled: z.boolean().default(false),
   /** Where the hook originated. */
   createdBy: hookCreatedBySchema.default('user'),
   /** Session that produced the hook (for traceability). */

@@ -45,7 +45,7 @@ export const listHooks = async (userId: string): Promise<Hook[]> => {
 
 export const listActiveHooks = async (userId: string): Promise<Hook[]> => {
   const all = await listHooks(userId);
-  return all.filter((h) => h.isActive !== false);
+  return all.filter((h) => h.isEnabled !== false);
 };
 
 export const listHooksByEvent = async (userId: string, event: string): Promise<Hook[]> => {
@@ -59,7 +59,7 @@ export interface CreateHookInput {
   event: string;
   command: string;
   script?: string;
-  isActive?: boolean;
+  isEnabled?: boolean;
   createdBy?: HookCreatedBy;
   sourceSessionId?: string;
 }
@@ -81,7 +81,7 @@ export const createHook = async (userId: string, input: CreateHookInput): Promis
     event: input.event as Hook['event'],
     command: input.command,
     script: input.script,
-    isActive: input.isActive ?? false,
+    isEnabled: input.isEnabled ?? false,
     createdBy: input.createdBy ?? 'user',
     sourceSessionId: input.sourceSessionId,
     createdAt: now,
@@ -98,7 +98,7 @@ export interface UpdateHookInput {
   event?: string;
   command?: string;
   script?: string;
-  isActive?: boolean;
+  isEnabled?: boolean;
 }
 
 export const updateHook = async (userId: string, hookId: string, input: UpdateHookInput): Promise<Hook> => {
@@ -143,10 +143,10 @@ export const updateHook = async (userId: string, hookId: string, input: UpdateHo
       values[':script'] = input.script;
     }
   }
-  if (input.isActive !== undefined) {
-    setExpr.push('#isActive = :isActive');
-    names['#isActive'] = 'isActive';
-    values[':isActive'] = input.isActive;
+  if (input.isEnabled !== undefined) {
+    setExpr.push('#isEnabled = :isEnabled');
+    names['#isEnabled'] = 'isEnabled';
+    values[':isEnabled'] = input.isEnabled;
   }
 
   const updateExpression = [`SET ${setExpr.join(', ')}`, removeExpr.length ? `REMOVE ${removeExpr.join(', ')}` : '']

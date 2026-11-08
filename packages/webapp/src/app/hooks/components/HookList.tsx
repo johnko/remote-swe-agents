@@ -33,7 +33,7 @@ export default function HookList({ initialHooks }: HookListProps) {
   const [editEvent, setEditEvent] = useState(eventTypes[0]);
   const [editCommand, setEditCommand] = useState('');
   const [editScript, setEditScript] = useState('');
-  const [editIsActive, setEditIsActive] = useState(true);
+  const [editIsEnabled, setEditIsActive] = useState(true);
   const [busyId, setBusyId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -51,7 +51,7 @@ export default function HookList({ initialHooks }: HookListProps) {
     setEditEvent(hook.event);
     setEditCommand(hook.command);
     setEditScript(hook.script ?? '');
-    setEditIsActive(hook.isActive ?? true);
+    setEditIsEnabled(hook.isEnabled ?? true);
     setExpandedId(hook.SK);
   };
 
@@ -75,7 +75,7 @@ export default function HookList({ initialHooks }: HookListProps) {
         ...(editEvent !== hook.event ? { event: editEvent } : {}),
         ...(editCommand !== hook.command ? { command: editCommand } : {}),
         ...(editScript !== (hook.script ?? '') ? { script: editScript } : {}),
-        ...(editIsActive !== (hook.isActive ?? true) ? { isActive: editIsActive } : {}),
+        ...(editIsEnabled !== (hook.isEnabled ?? true) ? { isEnabled: editIsEnabled } : {}),
       });
       if (result?.serverError) {
         toast.error(result.serverError);
@@ -95,10 +95,10 @@ export default function HookList({ initialHooks }: HookListProps) {
   };
 
   const handleToggleStatus = async (hook: ClientHook) => {
-    const nextIsActive = !(hook.isActive ?? true);
+    const nextIsEnabled = !(hook.isEnabled ?? true);
     setBusyId(hook.SK);
     try {
-      const result = await updateUserHook({ hookId: hook.SK, isActive: nextIsActive });
+      const result = await updateUserHook({ hookId: hook.SK, isEnabled: nextIsEnabled });
       if (result?.serverError) {
         toast.error(result.serverError);
         return;
@@ -133,7 +133,7 @@ export default function HookList({ initialHooks }: HookListProps) {
   return (
     <div className="space-y-3">
       {hooks.map((hook) => {
-        const isActive = hook.isActive ?? false;
+        const isEnabled = hook.isEnabled ?? false;
         const isEditing = editingId === hook.SK;
         return (
           <div
@@ -147,13 +147,13 @@ export default function HookList({ initialHooks }: HookListProps) {
               <div className="flex justify-between items-start">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    {isActive ? (
+                    {isEnabled ? (
                       <span className="px-2 py-0.5 text-xs bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded">
-                        {t('status.active')}
+                        {t('status.enabled')}
                       </span>
                     ) : (
                       <span className="px-2 py-0.5 text-xs bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded">
-                        {t('status.inactive')}
+                        {t('status.disabled')}
                       </span>
                     )}
                     <span className="px-2 py-0.5 text-xs bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200 rounded">
@@ -289,14 +289,14 @@ export default function HookList({ initialHooks }: HookListProps) {
                     <div className="flex items-center gap-2">
                       <input
                         type="checkbox"
-                        id={`isActive-${hook.SK}`}
-                        checked={editIsActive}
+                        id={`isEnabled-${hook.SK}`}
+                        checked={editIsEnabled}
                         onChange={(e) => setEditIsActive(e.target.checked)}
                         disabled={busyId === hook.SK}
                         className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                       />
-                      <label htmlFor={`isActive-${hook.SK}`} className="text-sm text-gray-700 dark:text-gray-300">
-                        {t('fields.isActive')}
+                      <label htmlFor={`isEnabled-${hook.SK}`} className="text-sm text-gray-700 dark:text-gray-300">
+                        {t('fields.isEnabled')}
                       </label>
                     </div>
                     <div className="flex justify-end gap-2">
@@ -348,7 +348,7 @@ export default function HookList({ initialHooks }: HookListProps) {
                         onClick={() => handleToggleStatus(hook)}
                         disabled={busyId === hook.SK}
                       >
-                        {hook.isActive ? t('archive') : t('activate')}
+                        {hook.isEnabled ? t('disable') : t('enable')}
                       </Button>
                     </div>
                   </div>

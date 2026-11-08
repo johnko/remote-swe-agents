@@ -27,7 +27,7 @@ export default function HookCreateForm() {
   const [event, setEvent] = useState(eventTypes[0]);
   const [command, setCommand] = useState('');
   const [script, setScript] = useState('');
-  const [isActive, setIsActive] = useState(true);
+  const [isEnabled, setIsActive] = useState(true);
 
   const { execute, isPending } = useAction(createUserHook, {
     onSuccess: () => {
@@ -126,14 +126,14 @@ export default function HookCreateForm() {
       <div className="flex items-center gap-2">
         <input
           type="checkbox"
-          id="isActive"
-          checked={isActive}
+          id="isEnabled"
+          checked={isEnabled}
           onChange={(e) => setIsActive(e.target.checked)}
           disabled={isPending}
           className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
         />
-        <label htmlFor="isActive" className="text-sm text-gray-700 dark:text-gray-300">
-          {t('fields.isActive')}
+        <label htmlFor="isEnabled" className="text-sm text-gray-700 dark:text-gray-300">
+          {t('fields.isEnabled')}
         </label>
       </div>
 
@@ -147,7 +147,7 @@ export default function HookCreateForm() {
               event,
               command,
               script: script || undefined,
-              isActive,
+              isEnabled,
             })
           }
           disabled={isPending || name.trim().length === 0 || command.trim().length === 0}
