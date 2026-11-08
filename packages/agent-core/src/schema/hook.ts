@@ -43,9 +43,6 @@ export const hookEventTypeSchema = z.enum([
 ]);
 export type HookEventType = z.infer<typeof hookEventTypeSchema>;
 
-export const hookStatusSchema = z.enum(['active', 'archived']);
-export type HookStatus = z.infer<typeof hookStatusSchema>;
-
 export const hookCreatedBySchema = z.enum(['agent', 'user']);
 export type HookCreatedBy = z.infer<typeof hookCreatedBySchema>;
 
@@ -63,9 +60,7 @@ export const hookSchema = z.object({
   /** Optional inline script content (stored as string) */
   script: z.string().max(MAX_HOOK_SCRIPT_LENGTH).optional(),
   /** Whether the hook is currently active/enabled */
-  isActive: z.boolean().default(true),
-  /** 'active' hooks are eligible for execution; 'archived' are hidden. */
-  status: hookStatusSchema.default('active'),
+  isActive: z.boolean().default(false),
   /** Where the hook originated. */
   createdBy: hookCreatedBySchema.default('user'),
   /** Session that produced the hook (for traceability). */
