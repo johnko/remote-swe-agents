@@ -3,7 +3,6 @@ import { ddb, TableName } from './aws/index.js';
 import {
   Hook,
   HookCreatedBy,
-  HookStatus,
   MAX_HOOKS_PER_USER,
 } from '../schema/hook.js';
 import { randomBytes } from 'crypto';
@@ -46,8 +45,7 @@ export const listHooks = async (userId: string): Promise<Hook[]> => {
 
 export const listActiveHooks = async (userId: string): Promise<Hook[]> => {
   const all = await listHooks(userId);
-  // Default status to 'active' for legacy items and check isActive flag
-  return all.filter((h) => (h.status ?? 'active') === 'active' && h.isActive !== false);
+  return all.filter((h) => h.isActive !== false);
 };
 
 export const listHooksByEvent = async (userId: string, event: string): Promise<Hook[]> => {
@@ -83,8 +81,7 @@ export const createHook = async (userId: string, input: CreateHookInput): Promis
     event: input.event as Hook['event'],
     command: input.command,
     script: input.script,
-    isActive: input.isActive ?? true,
-    status: 'active',
+    isActive: input.isActive ?? false,
     createdBy: input.createdBy ?? 'user',
     sourceSessionId: input.sourceSessionId,
     createdAt: now,
@@ -102,7 +99,6 @@ export interface UpdateHookInput {
   command?: string;
   script?: string;
   isActive?: boolean;
-  status?: HookStatus;
 }
 
 export const updateHook = async (userId: string, hookId: string, input: UpdateHookInput): Promise<Hook> => {
@@ -151,11 +147,6 @@ export const updateHook = async (userId: string, hookId: string, input: UpdateHo
     setExpr.push('#isActive = :isActive');
     names['#isActive'] = 'isActive';
     values[':isActive'] = input.isActive;
-  }
-  if (input.status !== undefined) {
-    setExpr.push('#status = :status');
-    names['#status'] = 'status';
-    values[':status'] = input.status;
   }
 
   const updateExpression = [`SET ${setExpr.join(', ')}`, removeExpr.length ? `REMOVE ${removeExpr.join(', ')}` : '']

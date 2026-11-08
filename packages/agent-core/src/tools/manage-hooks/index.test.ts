@@ -35,7 +35,6 @@ describe('manage-hooks lifecycle constraints', () => {
         event: 'sessionStart',
         command: 'echo "test"',
         isActive: false,
-        status: 'active',
         createdAt: Date.now(),
         updatedAt: Date.now(),
       };
@@ -68,7 +67,6 @@ describe('manage-hooks lifecycle constraints', () => {
         event: 'sessionStart',
         command: 'echo "test"',
         isActive: false,
-        status: 'active',
         createdAt: Date.now(),
         updatedAt: Date.now(),
       };
@@ -98,7 +96,6 @@ describe('manage-hooks lifecycle constraints', () => {
         event: 'sessionStart',
         command: 'echo "test"',
         isActive: false,
-        status: 'active',
         createdAt: Date.now(),
         updatedAt: Date.now(),
       };
@@ -126,7 +123,6 @@ describe('manage-hooks lifecycle constraints', () => {
         event: 'sessionStart',
         command: 'echo "test"',
         isActive: false,
-        status: 'active',
         createdAt: Date.now(),
         updatedAt: Date.now(),
       });
@@ -148,7 +144,6 @@ describe('manage-hooks lifecycle constraints', () => {
         event: 'sessionStart',
         command: 'echo "test"',
         isActive: true,
-        status: 'active',
         createdAt: Date.now(),
         updatedAt: Date.now(),
       });

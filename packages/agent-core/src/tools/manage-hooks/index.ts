@@ -9,7 +9,6 @@ import {
   MAX_HOOK_SCRIPT_LENGTH,
   MAX_HOOKS_PER_USER,
   hookEventTypeSchema,
-  hookStatusSchema,
 } from '../../schema/hook.js';
 
 const resolveUserId = async (workerId: string): Promise<string> => {
@@ -42,7 +41,6 @@ const updateHookSchema = z.object({
   event: hookEventTypeSchema.optional().describe('New event type.'),
   command: z.string().min(1).max(MAX_HOOK_COMMAND_LENGTH).optional().describe('New command.'),
   script: z.string().max(MAX_HOOK_SCRIPT_LENGTH).optional().describe('New script content.'),
-  status: hookStatusSchema.optional().describe('Set to "archived" to hide the hook without deleting it, or "active" to re-enable it.'),
 });
 const deleteHookSchema = z.object({
   hookId: z.string().describe('The ID of the hook to delete.'),
@@ -61,7 +59,6 @@ export const listHooksTool: ToolDefinition<z.infer<typeof listHooksSchema>> = {
       event: h.event,
       command: h.command,
       isActive: h.isActive,
-      status: h.status,
       createdBy: h.createdBy,
       createdAt: new Date(h.createdAt).toISOString(),
       updatedAt: new Date(h.updatedAt).toISOString(),
@@ -91,7 +88,6 @@ export const getHookTool: ToolDefinition<z.infer<typeof getHookSchema>> = {
         command: hook.command,
         script: hook.script,
         isActive: hook.isActive,
-        status: hook.status,
         createdBy: hook.createdBy,
         sourceSessionId: hook.sourceSessionId,
         createdAt: new Date(hook.createdAt).toISOString(),
@@ -146,8 +142,7 @@ export const updateHookTool: ToolDefinition<z.infer<typeof updateHookSchema>> = 
       input.description === undefined &&
       input.event === undefined &&
       input.command === undefined &&
-      input.script === undefined &&
-      input.status === undefined
+      input.script === undefined
     ) {
       return 'Error: Provide at least one field to update.';
     }
@@ -158,9 +153,8 @@ export const updateHookTool: ToolDefinition<z.infer<typeof updateHookSchema>> = 
         event: input.event,
         command: input.command,
         script: input.script,
-        status: input.status,
       });
-      return `Hook updated successfully.\n- ID: ${hook.SK}\n- Name: ${hook.name}\n- Status: ${hook.status}`;
+      return `Hook updated successfully.\n- ID: ${hook.SK}\n- Name: ${hook.name}\n- isActive: ${hook.isActive}`;
     } catch (e) {
       const err = e as Error;
       if (err.name === 'ConditionalCheckFailedException') {
@@ -172,7 +166,7 @@ export const updateHookTool: ToolDefinition<z.infer<typeof updateHookSchema>> = 
   schema: updateHookSchema,
   toolSpec: async () => ({
     name: 'update_hook',
-    description: `Update a hook's fields (name, description, event, command, script, or status).\n\n${hooksManagementDescription}`,
+    description: `Update a hook's fields (name, description, event, command, script, or isActive).\n\n${hooksManagementDescription}`,
     inputSchema: { json: zodToJsonSchemaBody(updateHookSchema) },
   }),
 };
@@ -192,7 +186,7 @@ export const deleteHookTool: ToolDefinition<z.infer<typeof deleteHookSchema>> = 
   schema: deleteHookSchema,
   toolSpec: async () => ({
     name: 'delete_hook',
-    description: `Delete a hook by ID. To keep it but disable it, use update_hook with status="archived" instead.\n\n${hooksManagementDescription}`,
+    description: `Delete a hook by ID. To keep it but disable it, use update_hook with isActive=false instead.\n\n${hooksManagementDescription}`,
     inputSchema: { json: zodToJsonSchemaBody(deleteHookSchema) },
   }),
 };
