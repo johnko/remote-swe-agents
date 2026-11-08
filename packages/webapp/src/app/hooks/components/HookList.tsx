@@ -51,7 +51,7 @@ export default function HookList({ initialHooks }: HookListProps) {
     setEditEvent(hook.event);
     setEditCommand(hook.command);
     setEditScript(hook.script ?? '');
-    setEditIsEnabled(hook.isEnabled ?? true);
+    setEditIsActive(hook.isEnabled ?? false);
     setExpandedId(hook.SK);
   };
 
