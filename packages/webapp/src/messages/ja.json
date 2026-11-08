@@ -604,7 +604,7 @@
       "event": "イベントタイプ",
       "command": "コマンド",
       "script": "スクリプト",
-      "isActive": "有効",
+      "isEnabled": "有効",
       "sourceSession": "元セッション"
     },
     "namePlaceholder": "フック名を入力（例：'ファイル変更を記録'）",

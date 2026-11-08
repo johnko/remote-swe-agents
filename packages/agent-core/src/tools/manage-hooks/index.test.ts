@@ -30,14 +30,14 @@ describe('manage-hooks lifecycle constraints', () => {
   });
 
   describe('create_hook', () => {
-    test('creates hook with isActive: false by default', async () => {
+    test('creates hook with isEnabled: false by default', async () => {
       const mockHook: Hook = {
         PK: 'hook-test-user',
         SK: 'hook-123',
         name: 'test-hook',
         event: 'sessionStart',
         command: 'echo "test"',
-        isActive: false,
+        isEnabled: false,
         createdAt: Date.now(),
         updatedAt: Date.now(),
         createdBy: 'user',
@@ -56,21 +56,21 @@ describe('manage-hooks lifecycle constraints', () => {
       expect(mockCreateHook).toHaveBeenCalledWith(
         'test-user',
         expect.objectContaining({
-          isActive: false,
+          isEnabled: false,
         })
       );
       expect(result).toContain('created successfully');
       expect(result).toContain('hook-123');
     });
 
-    test('does not accept isActive parameter', async () => {
+    test('does not accept isEnabled parameter', async () => {
       const mockHook: Hook = {
         PK: 'hook-test-user',
         SK: 'hook-123',
         name: 'test-hook',
         event: 'sessionStart',
         command: 'echo "test"',
-        isActive: false,
+        isEnabled: false,
         createdAt: Date.now(),
         updatedAt: Date.now(),
         createdBy: 'user',
@@ -86,21 +86,21 @@ describe('manage-hooks lifecycle constraints', () => {
         mockContext
       );
 
-      // Verify isActive is always false even if someone tries to pass it
+      // Verify isEnabled is always false even if someone tries to pass it
       const callArgs = mockCreateHook.mock.calls[0];
-      expect(callArgs[1].isActive).toBe(false);
+      expect(callArgs[1].isEnabled).toBe(false);
     });
   });
 
   describe('update_hook', () => {
-    test('does not update isActive', async () => {
+    test('does not update isEnabled', async () => {
       const mockHook: Hook = {
         PK: 'hook-test-user',
         SK: 'hook-123',
         name: 'updated-name',
         event: 'sessionStart',
         command: 'echo "test"',
-        isActive: false,
+        isEnabled: false,
         createdAt: Date.now(),
         updatedAt: Date.now(),
         createdBy: 'user',
@@ -116,7 +116,7 @@ describe('manage-hooks lifecycle constraints', () => {
       );
 
       const callArgs = mockUpdateHook.mock.calls[0];
-      expect(callArgs[2]).not.toHaveProperty('isActive');
+      expect(callArgs[2]).not.toHaveProperty('isEnabled');
     });
   });
 
@@ -128,7 +128,7 @@ describe('manage-hooks lifecycle constraints', () => {
         name: 'test-hook',
         event: 'sessionStart',
         command: 'echo "test"',
-        isActive: false,
+        isEnabled: false,
         createdAt: Date.now(),
         updatedAt: Date.now(),
         createdBy: 'user',
@@ -150,7 +150,7 @@ describe('manage-hooks lifecycle constraints', () => {
         name: 'test-hook',
         event: 'sessionStart',
         command: 'echo "test"',
-        isActive: true,
+        isEnabled: true,
         createdAt: Date.now(),
         updatedAt: Date.now(),
         createdBy: 'user',

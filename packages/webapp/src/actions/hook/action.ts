@@ -34,7 +34,7 @@ const createHookSchema = z.object({
   event: hookEventTypeSchema,
   command: z.string().min(1).max(MAX_HOOK_COMMAND_LENGTH),
   script: z.string().max(MAX_HOOK_SCRIPT_LENGTH).optional(),
-  isActive: z.boolean().optional(),
+  isEnabled: z.boolean().optional(),
 });
 
 export const createUserHook = authActionClient
@@ -58,7 +58,7 @@ const updateHookSchema = z.object({
   event: hookEventTypeSchema.optional(),
   command: z.string().min(1).max(MAX_HOOK_COMMAND_LENGTH).optional(),
   script: z.string().max(MAX_HOOK_SCRIPT_LENGTH).optional(),
-  isActive: z.boolean().optional(),
+  isEnabled: z.boolean().optional(),
 });
 
 export const updateUserHook = authActionClient

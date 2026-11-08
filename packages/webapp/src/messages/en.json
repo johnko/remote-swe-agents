@@ -510,7 +510,7 @@
       "title": "Agent Details",
       "description": "Configuration of this custom agent",
       "edit": "Edit",
-      "activeModel": "Active",
+      "activeModel": "Enabled",
       "allToolsEnabled": "All tools enabled",
       "toolsSelected": "{count} tools selected",
       "mcpConfigured": "{count} configured",
@@ -653,7 +653,7 @@
       "event": "Event Type",
       "command": "Command",
       "script": "Script",
-      "isActive": "Active",
+      "isEnabled": "Enabled",
       "sourceSession": "Source Session"
     },
     "namePlaceholder": "Enter hook name (e.g., 'Log File Changes')",
@@ -662,8 +662,8 @@
     "commandHelp": "Command to execute when the hook fires (the script will be passed via stdin)",
     "scriptPlaceholder": "#!/usr/bin/env node\n// Your hook script here\n// Receives event data via stdin as JSON",
     "status": {
-      "active": "Active",
-      "inactive": "Inactive"
+      "active": "Enabled",
+      "inactive": "Disabled"
     },
     "createdBy": {
       "agent": "Agent",
