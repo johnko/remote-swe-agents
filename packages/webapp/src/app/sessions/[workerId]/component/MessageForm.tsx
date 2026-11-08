@@ -30,12 +30,7 @@ import { isUsable } from '@/lib/local-image-urls';
 import { fallbackKeysForFailedLookup, planRollbackImageRestore } from '@/lib/rollback-attachments';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { KEYBOARD_OPEN_VIEWPORT_DELTA_PX, PINCH_ZOOM_SCALE_THRESHOLD } from '@/hooks/use-viewport-state';
-import {
-  ModelType,
-  getAvailableModelTypes,
-  modelConfigs,
-  AgentStatus,
-} from '@remote-swe-agents/agent-core/schema';
+import { ModelType, getAvailableModelTypes, modelConfigs, AgentStatus } from '@remote-swe-agents/agent-core/schema';
 
 const MAX_TEXTAREA_HEIGHT = 600;
 
@@ -478,7 +473,9 @@ export default function MessageForm({
     if (!message.trim()) return;
     const imageKeys = extractStringArray(raw.imageKeys);
     const fileKeys = extractStringArray(raw.fileKeys);
-    const { values: optionals, dropped } = salvageOptionalFields(sendMessageToAgentSchema.shape, raw, ['modelOverride']);
+    const { values: optionals, dropped } = salvageOptionalFields(sendMessageToAgentSchema.shape, raw, [
+      'modelOverride',
+    ]);
     const parsed = sendMessageToAgentSchema.safeParse({ workerId, message, imageKeys, fileKeys, ...optionals });
     const canResend = pending.mode === 'resend' && parsed.success;
     const values = parsed.success ? parsed.data : { workerId, message, imageKeys, fileKeys };
@@ -772,18 +769,18 @@ export default function MessageForm({
 
               <div className="flex gap-2 items-center">
                 <select
-                {...register('modelOverride', {
-                  onChange: (e) => handleModelChange('bedrock', e.target.value),
-                })}
-                disabled={isExecuting}
-                className="max-w-[120px] sm:max-w-[200px] px-2 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 dark:text-white focus:outline-none"
-              >
-                {getAvailableModelTypes().map((type) => (
-                  <option key={type} value={type}>
-                    {modelConfigs[type].name} (${modelConfigs[type].pricing.input}/1M)
-                  </option>
-                ))}
-              </select>
+                  {...register('modelOverride', {
+                    onChange: (e) => handleModelChange(e.target.value),
+                  })}
+                  disabled={isExecuting}
+                  className="max-w-[120px] sm:max-w-[200px] px-2 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 dark:text-white focus:outline-none"
+                >
+                  {getAvailableModelTypes().map((type) => (
+                    <option key={type} value={type}>
+                      {modelConfigs[type].name} (${modelConfigs[type].pricing.input}/1M)
+                    </option>
+                  ))}
+                </select>
                 {isAgentWorking && !isExecuting && !messageValue?.trim() ? (
                   <TooltipProvider delayDuration={100}>
                     <Tooltip>
