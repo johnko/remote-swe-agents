@@ -5,8 +5,20 @@ import { createNewSessionTool } from '../tools/create-session/index.js';
 import { createEventTriggerTool, listEventTriggersTool, deleteEventTriggerTool } from '../tools/event-trigger/index.js';
 import { ciTool } from '../tools/ci/index.js';
 import { getPRCommentsTool, replyPRCommentTool, addIssueCommentTool } from '../tools/github-comments/index.js';
-import { listAgentsTool, getAgentTool, createAgentTool, updateAgentTool, deleteAgentTool } from '../tools/manage-agent/index.js';
-import { listSkillsTool, getSkillTool, createSkillTool, updateSkillTool, deleteSkillTool } from '../tools/manage-skill/index.js';
+import {
+  listAgentsTool,
+  getAgentTool,
+  createAgentTool,
+  updateAgentTool,
+  deleteAgentTool,
+} from '../tools/manage-agent/index.js';
+import {
+  listSkillsTool,
+  getSkillTool,
+  createSkillTool,
+  updateSkillTool,
+  deleteSkillTool,
+} from '../tools/manage-skill/index.js';
 import {
   listLessonsTool,
   getLessonTool,

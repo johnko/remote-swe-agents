@@ -2,13 +2,13 @@
  * Security Logger
  * ===============
  * Structured logging for security-relevant events.
- * 
+ *
  * This module provides a centralized security audit logging facility that:
  * - Logs security events with consistent structure
  * - Includes correlation IDs for tracing
  * - Supports different log levels for security events
  * - Avoids logging sensitive data (PII, credentials)
- * 
+ *
  * Security event categories:
  * - session_lifecycle: Session start, resume, termination
  * - tool_execution: Tool invocations, results, failures
@@ -18,12 +18,7 @@
  */
 
 export type SecurityEventCategory =
-  | 'session_lifecycle'
-  | 'tool_execution'
-  | 'permission'
-  | 'authentication'
-  | 'error'
-  | 'audit';
+  'session_lifecycle' | 'tool_execution' | 'permission' | 'authentication' | 'error' | 'audit';
 
 export type SecurityEventLevel = 'info' | 'warn' | 'error';
 
@@ -50,13 +45,13 @@ type ToolExecutionDetails = {
  */
 const sanitizeDetails = (details: Record<string, unknown> | undefined): Record<string, unknown> | undefined => {
   if (!details) return undefined;
-  
+
   const sensitiveKeys = ['password', 'token', 'secret', 'apikey', 'api_key', 'credential', 'auth', 'authorization'];
   const sanitized: Record<string, unknown> = {};
-  
+
   for (const [key, value] of Object.entries(details)) {
     const lowerKey = key.toLowerCase();
-    if (sensitiveKeys.some(sk => lowerKey.includes(sk))) {
+    if (sensitiveKeys.some((sk) => lowerKey.includes(sk))) {
       sanitized[key] = '[REDACTED]';
     } else if (typeof value === 'string' && value.length > 500) {
       // Truncate long strings to prevent log flooding
@@ -65,7 +60,7 @@ const sanitizeDetails = (details: Record<string, unknown> | undefined): Record<s
       sanitized[key] = value;
     }
   }
-  
+
   return sanitized;
 };
 
@@ -77,12 +72,12 @@ const formatSecurityEvent = (event: SecurityEvent): string => {
     ...event,
     details: sanitizeDetails(event.details),
   };
-  
+
   const base = `[security:${sanitizedEvent.category}:${sanitizedEvent.level}]`;
   const meta = `session=${sanitizedEvent.sessionId} operation=${sanitizedEvent.operation}`;
   const msg = sanitizedEvent.message;
   const details = sanitizedEvent.details ? ` details=${JSON.stringify(sanitizedEvent.details)}` : '';
-  
+
   return `${base} ${meta} ${msg}${details}`;
 };
 
@@ -94,9 +89,9 @@ export const logSecurityEvent = (event: Omit<SecurityEvent, 'timestamp'>): void 
     ...event,
     timestamp: new Date().toISOString(),
   };
-  
+
   const formatted = formatSecurityEvent(fullEvent);
-  
+
   switch (event.level) {
     case 'error':
       console.error(formatted);
@@ -175,11 +170,7 @@ export const logToolExecution = (
   });
 };
 
-export const logToolBlocked = (
-  sessionId: string,
-  toolName: string,
-  reason: string
-): void => {
+export const logToolBlocked = (sessionId: string, toolName: string, reason: string): void => {
   logSecurityEvent({
     category: 'tool_execution',
     level: 'warn',

@@ -134,10 +134,7 @@ describe('manage-hooks lifecycle constraints', () => {
         createdBy: 'user',
       });
 
-      const result = await deleteHookTool.handler(
-        { hookId: 'hook-123' },
-        mockContext
-      );
+      const result = await deleteHookTool.handler({ hookId: 'hook-123' }, mockContext);
 
       expect(mockDeleteHook).toHaveBeenCalledWith('test-user', 'hook-123');
       expect(result).toContain('deleted successfully');
@@ -156,10 +153,7 @@ describe('manage-hooks lifecycle constraints', () => {
         createdBy: 'user',
       });
 
-      const result = await deleteHookTool.handler(
-        { hookId: 'hook-123' },
-        mockContext
-      );
+      const result = await deleteHookTool.handler({ hookId: 'hook-123' }, mockContext);
 
       expect(mockDeleteHook).not.toHaveBeenCalled();
       expect(result).toContain('Cannot delete an enabled hook');
@@ -168,10 +162,7 @@ describe('manage-hooks lifecycle constraints', () => {
     test('returns error when hook not found', async () => {
       mockGetHook.mockResolvedValue(undefined);
 
-      const result = await deleteHookTool.handler(
-        { hookId: 'non-existent' },
-        mockContext
-      );
+      const result = await deleteHookTool.handler({ hookId: 'non-existent' }, mockContext);
 
       expect(mockDeleteHook).not.toHaveBeenCalled();
       expect(result).toContain('not found');

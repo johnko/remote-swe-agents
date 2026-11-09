@@ -125,9 +125,7 @@ describe('executeHooksForEvent', () => {
       },
     ];
     mockListHooksByEvent.mockResolvedValue(hooks);
-    mockExecSync
-      .mockReturnValueOnce('First reminder\n')
-      .mockReturnValueOnce('Second reminder\n');
+    mockExecSync.mockReturnValueOnce('First reminder\n').mockReturnValueOnce('Second reminder\n');
 
     const result = await executeHooksForEvent({
       sessionId: 'test-session',
@@ -373,12 +371,10 @@ describe('executeHooksForEventWithSession', () => {
     ]);
     mockExecSync.mockReturnValue('echo hello\n');
 
-    await executeHooksForEventWithSession(
-      session,
-      'beforeShellExecution' as HookEventType,
-      '/tmp',
-      { command: 'echo hello', sessionId: 'test-session' }
-    );
+    await executeHooksForEventWithSession(session, 'beforeShellExecution' as HookEventType, '/tmp', {
+      command: 'echo hello',
+      sessionId: 'test-session',
+    });
 
     // Verify execSync was called with env containing HOOK_ variables
     const call = mockExecSync.mock.calls[0];

@@ -12,12 +12,7 @@ const inputSchema = z.object({
 const name = 'read_local_image';
 
 // Allowed base directories for file operations
-const ALLOWED_BASE_DIRS = [
-  resolve(homedir()),
-  resolve(tmpdir()),
-  '/tmp',
-  '/var/tmp',
-];
+const ALLOWED_BASE_DIRS = [resolve(homedir()), resolve(tmpdir()), '/tmp', '/var/tmp'];
 
 /**
  * Validates that filePath is within allowed directories and not attempting path traversal.
@@ -32,8 +27,8 @@ const validateFilePath = (filePath: string, operationDescription: string = 'file
   if (!isAbsolute(filePath)) {
     throw new Error(
       `Path "${filePath}" is not absolute. ` +
-      `Only absolute paths are allowed for ${operationDescription}. ` +
-      `Use an absolute path starting with "/"`
+        `Only absolute paths are allowed for ${operationDescription}. ` +
+        `Use an absolute path starting with "/"`
     );
   }
 
@@ -52,7 +47,7 @@ const validateFilePath = (filePath: string, operationDescription: string = 'file
   if (!isAllowed) {
     throw new Error(
       `Path "${filePath}" is outside allowed directories for ${operationDescription}. ` +
-      `Access denied for security reasons.`
+        `Access denied for security reasons.`
     );
   }
 

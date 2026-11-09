@@ -21,12 +21,12 @@ const DANGEROUS_SHELL_CHARS = /[;&|`<>=&$\n\r\x00]/;
 const DANGEROUS_SHELL_OPERATORS = /(\|\||&&|\|\&|;|`|\$\(|\$\{)/;
 // Blocked command prefixes (subshell execution)
 const BLOCKED_COMMAND_PATTERNS = [
-  /^\s*\(/,         // Parenthesis subshell: (command)
-  /^\s*\{/,          // Brace group: { command; }
-  /^\s*source\s/,    // Source command
-  /^\s*\.\s/,        // Dot command (source)
-  /^\s*exec\s/,      // Exec command (replaces shell)
-  /^\s*eval\s/,      // Eval command
+  /^\s*\(/, // Parenthesis subshell: (command)
+  /^\s*\{/, // Brace group: { command; }
+  /^\s*source\s/, // Source command
+  /^\s*\.\s/, // Dot command (source)
+  /^\s*exec\s/, // Exec command (replaces shell)
+  /^\s*eval\s/, // Eval command
 ];
 
 /**
@@ -49,7 +49,7 @@ const sanitizeCommand = (command: string): void => {
   if (DANGEROUS_SHELL_CHARS.test(command)) {
     throw new Error(
       `Command contains dangerous shell characters that could enable command injection. ` +
-      `Use the file_editor tool or other specific tools for file operations, pipes, or redirections.`
+        `Use the file_editor tool or other specific tools for file operations, pipes, or redirections.`
     );
   }
 
@@ -57,7 +57,7 @@ const sanitizeCommand = (command: string): void => {
   if (DANGEROUS_SHELL_OPERATORS.test(command)) {
     throw new Error(
       `Command contains shell operators that could chain multiple commands. ` +
-      `Execute multiple commands separately using the execute_command tool multiple times.`
+        `Execute multiple commands separately using the execute_command tool multiple times.`
     );
   }
 
@@ -66,7 +66,7 @@ const sanitizeCommand = (command: string): void => {
     if (pattern.test(command)) {
       throw new Error(
         `Command contains blocked pattern matching ${pattern.source}. ` +
-        `This pattern could enable shell injection or subshell execution.`
+          `This pattern could enable shell injection or subshell execution.`
       );
     }
   }
@@ -88,15 +88,9 @@ const sanitizeWorkingDirectory = (cwd?: string, command?: string): string => {
   const resolvedCwd = resolve(cwd);
 
   // Validate the path is absolute and within allowed directories
-  const allowedPrefixes = [
-    DefaultWorkingDirectory,
-    tmpdir(),
-    homedir(),
-    '/tmp',
-    '/var/tmp',
-  ];
+  const allowedPrefixes = [DefaultWorkingDirectory, tmpdir(), homedir(), '/tmp', '/var/tmp'];
 
-  const isAllowed = allowedPrefixes.some(prefix => {
+  const isAllowed = allowedPrefixes.some((prefix) => {
     const resolvedPrefix = resolve(prefix);
     return resolvedCwd === resolvedPrefix || resolvedCwd.startsWith(resolvedPrefix + '/');
   });
@@ -104,7 +98,7 @@ const sanitizeWorkingDirectory = (cwd?: string, command?: string): string => {
   if (!isAllowed) {
     throw new Error(
       `Working directory "${cwd}" is outside allowed directories. ` +
-      `Allowed directories include: ${DefaultWorkingDirectory}, /tmp, and user home directory.`
+        `Allowed directories include: ${DefaultWorkingDirectory}, /tmp, and user home directory.`
     );
   }
 
@@ -396,9 +390,7 @@ const handler = async (
   // Execute permission hooks for beforeShellExecution
   if (session) {
     try {
-      const userId = session.initiator?.includes('#')
-        ? session.initiator.split('#').pop()!
-        : session.initiator || '';
+      const userId = session.initiator?.includes('#') ? session.initiator.split('#').pop()! : session.initiator || '';
 
       const permissionResult = await executePermissionHooks({
         sessionId: context.workerId || 'unknown',
@@ -466,17 +458,12 @@ const handler = async (
   const durationMs = Date.now() - startTime;
 
   // Log tool execution result
-  logToolExecution(
-    context.workerId || 'unknown',
-    'execute_command',
-    res.exitCode === 0,
-    {
-      durationMs,
-      exitCode: res.exitCode,
-      longRunningProcess: input.longRunningProcess,
-      timeoutMs: input.timeoutMs ?? 60000,
-    }
-  );
+  logToolExecution(context.workerId || 'unknown', 'execute_command', res.exitCode === 0, {
+    durationMs,
+    exitCode: res.exitCode,
+    longRunningProcess: input.longRunningProcess,
+    timeoutMs: input.timeoutMs ?? 60000,
+  });
 
   // Execute afterShellExecution hook after command completes (whether successful or failed)
   if (session) {

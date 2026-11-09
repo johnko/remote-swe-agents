@@ -292,13 +292,13 @@ export const createSession = async (params: CreateSessionParams): Promise<string
   try {
     // Get the new session for hooks
     const newSession = await getSession(workerId);
-    
+
     // Fire sessionStart hook for all sessions before worker starts
     if (newSession) {
       const contextData: HookContextData = { sessionId: workerId };
       await executeHooksForEventWithSession(newSession, 'sessionStart', process.cwd(), contextData);
     }
-    
+
     // Fire subagentStart hook for child sessions before worker starts
     if (parentSessionId && newSession) {
       const contextData: HookContextData = { sessionId: workerId, subagentId: workerId };

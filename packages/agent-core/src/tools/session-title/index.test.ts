@@ -64,9 +64,7 @@ describe('getSessionTitle', () => {
   test('throws error when session not found', async () => {
     mockGetSession.mockResolvedValue(undefined);
 
-    await expect(getSessionTitleTool.handler({}, mockContext as any)).rejects.toThrow(
-      'Session not found',
-    );
+    await expect(getSessionTitleTool.handler({}, mockContext as any)).rejects.toThrow('Session not found');
 
     expect(mockGetSession).toHaveBeenCalledWith('test-worker-123');
   });
@@ -82,9 +80,12 @@ describe('updateSessionTitle', () => {
     mockUpdateSessionTitle.mockResolvedValue(undefined);
     mockSendWebappEvent.mockResolvedValue(undefined);
 
-    const result = await updateSessionTitleTool.handler({
-      title: newTitle,
-    }, mockContext as any);
+    const result = await updateSessionTitleTool.handler(
+      {
+        title: newTitle,
+      },
+      mockContext as any
+    );
 
     expect(mockUpdateSessionTitle).toHaveBeenCalledWith('test-worker-123', newTitle);
     expect(mockSendWebappEvent).toHaveBeenCalledWith('test-worker-123', {

@@ -9,12 +9,7 @@ import { homedir, tmpdir } from 'os';
 const HOOK_EXECUTION_TIMEOUT = 30000;
 
 // Allowed base directories for hook commands
-const ALLOWED_CWD_PREFIXES = [
-  resolve(homedir()),
-  resolve(tmpdir()),
-  '/tmp',
-  '/var/tmp',
-];
+const ALLOWED_CWD_PREFIXES = [resolve(homedir()), resolve(tmpdir()), '/tmp', '/var/tmp'];
 
 // Shell characters and patterns that could enable command injection
 const DANGEROUS_SHELL_CHARS = /[;&|`<>=&$\n\r\x00]/;
@@ -258,7 +253,7 @@ export const defaultAllowResult: PermissionHookResult = {
 /**
  * Execute all active hooks for a given event and user.
  * Hooks are executed sequentially, and errors in one hook do not prevent others from running.
- * 
+ *
  * @param context Hook execution context (sessionId, event, userId, optional workingDirectory)
  * @returns Execution result with counts and any errors/logs
  */
@@ -267,9 +262,9 @@ export const defaultAllowResult: PermissionHookResult = {
  */
 const buildHookEnv = (contextData?: HookContextData): NodeJS.ProcessEnv => {
   const env: NodeJS.ProcessEnv = { ...process.env };
-  
+
   if (!contextData) return env;
-  
+
   // Add HOOK_ prefixed environment variables without KIRO_ prefix
   if (contextData.toolName !== undefined) {
     env.HOOK_TOOL_NAME = contextData.toolName;
@@ -336,12 +331,7 @@ export const executeHooksForEvent = async (context: HookExecutionContext): Promi
         // SECURITY: Use validated hook execution to prevent command injection
         const validatedCwd = validateHookCwd(context.workingDirectory);
         try {
-          output = await executeHookCommand(
-            hook.command,
-            hook.script,
-            validatedCwd,
-            hookEnv
-          );
+          output = await executeHookCommand(hook.command, hook.script, validatedCwd, hookEnv);
         } catch (e: any) {
           // Scripts/commands that error should still report the output
           if (e.message.includes('STDERR:')) {
@@ -432,9 +422,7 @@ export const parsePermissionResult = (output: string): PermissionHookResult => {
  * @param context Hook execution context
  * @returns PermissionHookResult with decision and optional modifications
  */
-export const executePermissionHooks = async (
-  context: HookExecutionContext
-): Promise<PermissionHookResult> => {
+export const executePermissionHooks = async (context: HookExecutionContext): Promise<PermissionHookResult> => {
   try {
     // Get all active hooks for this event and user
     const hooks = await listHooksByEvent(context.userId, context.event);
@@ -460,9 +448,7 @@ export const executePermissionHooks = async (
           continue;
         }
 
-        console.log(
-          `[hook-execution] Executing permission hook "${hook.name}" for event: ${context.event}`
-        );
+        console.log(`[hook-execution] Executing permission hook "${hook.name}" for event: ${context.event}`);
 
         let output = '';
 
@@ -483,9 +469,7 @@ export const executePermissionHooks = async (
         }
 
         const permissionResult = parsePermissionResult(output);
-        console.log(
-          `[hook-execution] Permission hook "${hook.name}" returned: ${permissionResult.permission}`
-        );
+        console.log(`[hook-execution] Permission hook "${hook.name}" returned: ${permissionResult.permission}`);
 
         // If any hook denies, return immediately
         if (permissionResult.permission === 'deny') {

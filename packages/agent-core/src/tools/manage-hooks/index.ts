@@ -29,7 +29,11 @@ const getHookSchema = z.object({
 });
 const createHookSchema = z.object({
   name: z.string().min(1).max(MAX_HOOK_NAME_LENGTH).describe('The hook name (identifier).'),
-  description: z.string().max(MAX_HOOK_DESCRIPTION_LENGTH).optional().describe('Optional description of what the hook does.'),
+  description: z
+    .string()
+    .max(MAX_HOOK_DESCRIPTION_LENGTH)
+    .optional()
+    .describe('Optional description of what the hook does.'),
   event: hookEventTypeSchema.describe('The event type that triggers this hook.'),
   command: z.string().min(1).max(MAX_HOOK_COMMAND_LENGTH).describe('The command to execute when the hook fires.'),
   script: z.string().max(MAX_HOOK_SCRIPT_LENGTH).optional().describe('Optional inline script content.'),

@@ -31,17 +31,13 @@ describe('validateAgentTransition', () => {
   });
 });
 
-
-
-
-
 describe('batchValidateTransitions', () => {
   it('should validate multiple agent transitions', () => {
     const results = batchValidateTransitions([
       { type: 'agent', current: 'pending', requested: 'working' },
       { type: 'agent', current: 'pending', requested: 'completed' },
     ]);
-    
+
     expect(results).toHaveLength(2);
     expect(results[0]?.valid).toBe(true);
     expect(results[1]?.valid).toBe(false);
@@ -50,7 +46,12 @@ describe('batchValidateTransitions', () => {
 
 describe('formatValidationResult', () => {
   it('should format valid result', () => {
-    const result = { valid: true, current: 'pending', requested: 'working', allowedTransitions: ['working', 'completed'] };
+    const result = {
+      valid: true,
+      current: 'pending',
+      requested: 'working',
+      allowedTransitions: ['working', 'completed'],
+    };
     const formatted = formatValidationResult(result);
     expect(formatted).toContain('✓');
     expect(formatted).toContain('Valid transition');
@@ -101,7 +102,7 @@ describe('createStatusValidator', () => {
   it('should create a custom validator', () => {
     const states = ['idle', 'running', 'stopped'] as const;
     type TestStatus = (typeof states)[number];
-    
+
     const transitions: Record<TestStatus, readonly TestStatus[]> = {
       idle: ['running'],
       running: ['stopped'],

@@ -32,8 +32,9 @@ describe('Pricing Standardization Tests', () => {
     });
 
     test('long context pricing has same format when defined', () => {
-      const modelsWithLongContext = Object.entries(modelConfigs)
-        .filter(([_, config]) => config.pricing.longContextInput !== undefined);
+      const modelsWithLongContext = Object.entries(modelConfigs).filter(
+        ([_, config]) => config.pricing.longContextInput !== undefined
+      );
 
       for (const [modelType, config] of modelsWithLongContext) {
         expect(config.pricing.longContextInput).toBeGreaterThan(0);
@@ -102,12 +103,7 @@ describe('Pricing Standardization Tests', () => {
       const cost = calculateCost(modelId, inputTokens, outputTokens, cacheReadTokens, cacheWriteTokens);
 
       // opus4: input: 15.0, output: 75.0, cacheRead: 1.5, cacheWrite: 18.75 (per 1M tokens)
-      const expectedCost =
-        (1_000_000 * 15.0 +
-          500_000 * 75.0 +
-          200_000 * 1.5 +
-          100_000 * 18.75) /
-        1_000_000;
+      const expectedCost = (1_000_000 * 15.0 + 500_000 * 75.0 + 200_000 * 1.5 + 100_000 * 18.75) / 1_000_000;
       expect(cost).toBeCloseTo(expectedCost, 2);
     });
   });
@@ -329,8 +325,7 @@ describe('Pricing Standardization Tests', () => {
       const cost = calculateCost(modelId, inputTokens, outputTokens, cacheReadTokens, cacheWriteTokens);
 
       const expectedCost =
-        (inputTokens * 3.0 + outputTokens * 15.0 + cacheReadTokens * 0.3 + cacheWriteTokens * 3.75) /
-        1_000_000;
+        (inputTokens * 3.0 + outputTokens * 15.0 + cacheReadTokens * 0.3 + cacheWriteTokens * 3.75) / 1_000_000;
 
       expect(cost).toBeCloseTo(expectedCost, 8);
     });
@@ -346,8 +341,7 @@ describe('Pricing Standardization Tests', () => {
       const cost = calculateCost(modelId, inputTokens, outputTokens, cacheReadTokens, cacheWriteTokens);
 
       const expectedCost =
-        (inputTokens * 15.0 + outputTokens * 75.0 + cacheReadTokens * 1.5 + cacheWriteTokens * 18.75) /
-        1_000_000;
+        (inputTokens * 15.0 + outputTokens * 75.0 + cacheReadTokens * 1.5 + cacheWriteTokens * 18.75) / 1_000_000;
 
       expect(cost).toBeCloseTo(expectedCost, 8);
     });
@@ -363,8 +357,7 @@ describe('Pricing Standardization Tests', () => {
       const cost = calculateCost(modelId, inputTokens, outputTokens, cacheReadTokens, cacheWriteTokens);
 
       const expectedCost =
-        (inputTokens * 800.0 + outputTokens * 4000.0 + cacheReadTokens * 80.0 + cacheWriteTokens * 1000.0) /
-        1_000_000;
+        (inputTokens * 800.0 + outputTokens * 4000.0 + cacheReadTokens * 80.0 + cacheWriteTokens * 1000.0) / 1_000_000;
 
       expect(cost).toBeCloseTo(expectedCost, 8);
     });

@@ -100,7 +100,7 @@ export const updateSessionAgentStatus = async (workerId: string, agentStatus: Ag
       // Fire sessionEnd for all sessions
       const contextData: HookContextData = { sessionId: workerId };
       await executeHooksForEventWithSession(session, 'sessionEnd', process.cwd(), contextData);
-      
+
       // Fire subagentStop if this is a child session
       if (session.parentSessionId) {
         const subagentContextData: HookContextData = { sessionId: workerId, subagentId: workerId };
@@ -108,7 +108,7 @@ export const updateSessionAgentStatus = async (workerId: string, agentStatus: Ag
       }
     }
   }
-  
+
   await updateSession(workerId, { agentStatus });
 };
 

@@ -14,10 +14,7 @@ export interface AccessCheckResult {
  * @param userId - The Cognito user ID or API key owner ID attempting access
  * @returns AccessCheckResult indicating if access is allowed
  */
-export async function checkSessionAccess(
-  sessionId: string,
-  userId: string | undefined
-): Promise<AccessCheckResult> {
+export async function checkSessionAccess(sessionId: string, userId: string | undefined): Promise<AccessCheckResult> {
   if (!userId) {
     return { allowed: false, reason: 'No user identity provided' };
   }

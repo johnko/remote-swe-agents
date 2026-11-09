@@ -1,6 +1,11 @@
 import { z } from 'zod';
 import { ToolDefinition, zodToJsonSchemaBody } from '../../private/common/lib.js';
-import { getSession, updateSessionAgentStatus, stopWorkerInstance, executeHooksForEventWithSession } from '../../lib/index.js';
+import {
+  getSession,
+  updateSessionAgentStatus,
+  stopWorkerInstance,
+  executeHooksForEventWithSession,
+} from '../../lib/index.js';
 import { sendWebappEvent } from '../../lib/events.js';
 import { savePendingCompleteSession } from '../confirm-complete-session/index.js';
 import { terminatePreview } from '../preview/index.js';

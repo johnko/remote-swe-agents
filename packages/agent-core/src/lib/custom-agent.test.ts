@@ -48,7 +48,7 @@ describe('getAllCustomAgents - Small Result Sets', () => {
         yield { Items: [] };
       },
     };
-    
+
     mockPaginateQuery.mockReturnValueOnce(mockPaginator);
 
     const result = await getAllCustomAgents();
@@ -57,16 +57,14 @@ describe('getAllCustomAgents - Small Result Sets', () => {
   });
 
   it('returns all agents when count < page size (10 agents)', async () => {
-    const agents = Array.from({ length: 10 }, (_, i) =>
-      createMockAgent({ SK: `agent-${i}`, name: `Agent ${i}` })
-    );
+    const agents = Array.from({ length: 10 }, (_, i) => createMockAgent({ SK: `agent-${i}`, name: `Agent ${i}` }));
 
     const mockPaginator = {
       [Symbol.asyncIterator]: async function* () {
         yield { Items: agents };
       },
     };
-    
+
     mockPaginateQuery.mockReturnValueOnce(mockPaginator);
 
     const result = await getAllCustomAgents();
@@ -76,16 +74,14 @@ describe('getAllCustomAgents - Small Result Sets', () => {
   });
 
   it('returns all agents when count equals page size (50 agents)', async () => {
-    const agents = Array.from({ length: 50 }, (_, i) =>
-      createMockAgent({ SK: `agent-${i}`, name: `Agent ${i}` })
-    );
+    const agents = Array.from({ length: 50 }, (_, i) => createMockAgent({ SK: `agent-${i}`, name: `Agent ${i}` }));
 
     const mockPaginator = {
       [Symbol.asyncIterator]: async function* () {
         yield { Items: agents };
       },
     };
-    
+
     mockPaginateQuery.mockReturnValueOnce(mockPaginator);
 
     const result = await getAllCustomAgents();
@@ -105,7 +101,7 @@ describe('getAllCustomAgents - Small Result Sets', () => {
         yield { Items: [agent] };
       },
     };
-    
+
     mockPaginateQuery.mockReturnValueOnce(mockPaginator);
 
     const result = await getAllCustomAgents();
@@ -125,9 +121,7 @@ describe('getAllCustomAgents - Large Result Sets (Pagination)', () => {
   });
 
   it('handles 100 agents across 2 pages (page size 50)', async () => {
-    const page1 = Array.from({ length: 50 }, (_, i) =>
-      createMockAgent({ SK: `agent-${i}`, name: `Agent ${i}` })
-    );
+    const page1 = Array.from({ length: 50 }, (_, i) => createMockAgent({ SK: `agent-${i}`, name: `Agent ${i}` }));
     const page2 = Array.from({ length: 50 }, (_, i) =>
       createMockAgent({ SK: `agent-${50 + i}`, name: `Agent ${50 + i}` })
     );
@@ -138,7 +132,7 @@ describe('getAllCustomAgents - Large Result Sets (Pagination)', () => {
         yield { Items: page2 };
       },
     };
-    
+
     mockPaginateQuery.mockReturnValueOnce(mockPaginator);
 
     const result = await getAllCustomAgents();
@@ -161,7 +155,7 @@ describe('getAllCustomAgents - Large Result Sets (Pagination)', () => {
         }
       },
     };
-    
+
     mockPaginateQuery.mockReturnValueOnce(mockPaginator);
 
     const result = await getAllCustomAgents();
@@ -174,12 +168,8 @@ describe('getAllCustomAgents - Large Result Sets (Pagination)', () => {
   });
 
   it('handles edge case: 101 agents (2 pages with last page having 1 item)', async () => {
-    const page1 = Array.from({ length: 50 }, (_, i) =>
-      createMockAgent({ SK: `agent-${i}` })
-    );
-    const page2 = Array.from({ length: 51 }, (_, i) =>
-      createMockAgent({ SK: `agent-${50 + i}` })
-    );
+    const page1 = Array.from({ length: 50 }, (_, i) => createMockAgent({ SK: `agent-${i}` }));
+    const page2 = Array.from({ length: 51 }, (_, i) => createMockAgent({ SK: `agent-${50 + i}` }));
 
     const mockPaginator = {
       [Symbol.asyncIterator]: async function* () {
@@ -187,7 +177,7 @@ describe('getAllCustomAgents - Large Result Sets (Pagination)', () => {
         yield { Items: page2 };
       },
     };
-    
+
     mockPaginateQuery.mockReturnValueOnce(mockPaginator);
 
     const result = await getAllCustomAgents();
@@ -197,9 +187,7 @@ describe('getAllCustomAgents - Large Result Sets (Pagination)', () => {
   });
 
   it('handles page with no Items property gracefully', async () => {
-    const page1 = Array.from({ length: 25 }, (_, i) =>
-      createMockAgent({ SK: `agent-${i}` })
-    );
+    const page1 = Array.from({ length: 25 }, (_, i) => createMockAgent({ SK: `agent-${i}` }));
 
     const mockPaginator = {
       [Symbol.asyncIterator]: async function* () {
@@ -208,7 +196,7 @@ describe('getAllCustomAgents - Large Result Sets (Pagination)', () => {
         yield { Items: [createMockAgent({ SK: 'agent-25' })] };
       },
     };
-    
+
     mockPaginateQuery.mockReturnValueOnce(mockPaginator);
 
     const result = await getAllCustomAgents();
@@ -229,21 +217,21 @@ describe('getAllCustomAgents - Pagination Internals', () => {
         yield { Items: [] };
       },
     };
-    
+
     mockPaginateQuery.mockReturnValueOnce(mockPaginator);
 
     await getAllCustomAgents();
 
     expect(mockPaginateQuery).toHaveBeenCalledTimes(1);
     const [config, params] = mockPaginateQuery.mock.calls[0];
-    
+
     // Verify page size
     expect(config.pageSize).toBe(50);
-    
+
     // Verify key condition uses PK
     expect(params.KeyConditionExpression).toContain(':pk');
     expect(params.ExpressionAttributeValues[':pk']).toBe('custom-agent');
-    
+
     // Verify DESC order
     expect(params.ScanIndexForward).toBe(false);
   });
@@ -262,7 +250,7 @@ describe('getAllCustomAgents - Pagination Internals', () => {
         yield { Items: [agents[2]] };
       },
     };
-    
+
     mockPaginateQuery.mockReturnValueOnce(mockPaginator);
 
     const result = await getAllCustomAgents();
@@ -283,7 +271,7 @@ describe('getAllCustomAgents - Pagination Internals', () => {
         yield { Items: agents };
       },
     };
-    
+
     mockPaginateQuery.mockReturnValueOnce(mockPaginator);
 
     const result = await getAllCustomAgents();
@@ -312,7 +300,7 @@ describe('getAllCustomAgents - Performance/Load Tests', () => {
         }
       },
     };
-    
+
     mockPaginateQuery.mockReturnValueOnce(mockPaginator);
 
     const startTime = performance.now();
@@ -337,7 +325,7 @@ describe('getAllCustomAgents - Performance/Load Tests', () => {
         }
       },
     };
-    
+
     mockPaginateQuery.mockReturnValueOnce(mockPaginator);
 
     const result = await getAllCustomAgents();
@@ -351,14 +339,12 @@ describe('getAllCustomAgents - Performance/Load Tests', () => {
       [Symbol.asyncIterator]: async function* () {
         for (let p = 0; p < 50; p++) {
           yield {
-            Items: Array.from({ length: 50 }, (_, i) =>
-              createMockAgent({ SK: `agent-${p * 50 + i}` })
-            ),
+            Items: Array.from({ length: 50 }, (_, i) => createMockAgent({ SK: `agent-${p * 50 + i}` })),
           };
         }
       },
     };
-    
+
     mockPaginateQuery.mockReturnValueOnce(mockPaginator);
 
     const result = await getAllCustomAgents();
@@ -370,7 +356,7 @@ describe('getAllCustomAgents - Performance/Load Tests', () => {
         yield { Items: [createMockAgent({ SK: 'agent-final' })] };
       },
     };
-    
+
     mockPaginateQuery.mockReturnValueOnce(mockPaginator2);
     const result2 = await getAllCustomAgents();
     expect(result2).toHaveLength(1);
@@ -389,7 +375,7 @@ describe('getAllCustomAgents - Error Handling', () => {
         throw new Error('DynamoDB error');
       },
     };
-    
+
     mockPaginateQuery.mockReturnValueOnce(mockPaginator);
 
     await expect(getAllCustomAgents()).rejects.toThrow('DynamoDB error');
@@ -399,7 +385,7 @@ describe('getAllCustomAgents - Error Handling', () => {
 describe('Removed Pagination Functions Validation', () => {
   it('verifies old pagination patterns are not present in custom-agent.ts', async () => {
     const customAgentModule = await import('./custom-agent.js');
-    
+
     expect(customAgentModule).toHaveProperty('getAllCustomAgents');
     expect(customAgentModule).toHaveProperty('getCustomAgent');
     expect(customAgentModule).toHaveProperty('createCustomAgent');

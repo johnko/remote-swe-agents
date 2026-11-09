@@ -1,13 +1,13 @@
 /**
  * Explicit State Machine Types and Validators
- * 
+ *
  * This file provides type-safe state machine definitions for the core
  * entities in the system. It improves DX by providing:
  * - Compile-time guarantees for valid state transitions
  * - Self-documenting state diagrams in code
  * - Runtime validation helpers
  * - Clear state machine documentation for AI agents (AX)
- * 
+ *
  * @module StateMachines
  */
 
@@ -41,7 +41,7 @@ export type AgentStatus = z.infer<typeof agentStatusSchema>;
 /**
  * Valid instance status transitions.
  * Maps current state → array of valid next states.
- * 
+ *
  * Note: AWS handles instance lifecycle, so these are documented transitions
  * rather than strict validations. The actual transitions are controlled by AWS.
  */
@@ -74,7 +74,7 @@ export const AGENT_STATUS_TRANSITIONS: Record<AgentStatus, readonly AgentStatus[
  * @param current - Current status
  * @param next - Proposed next status
  * @returns true if the transition is valid
- * 
+ *
  * @example
  * ```typescript
  * isValidAgentTransition('pending', 'working'); // true
@@ -116,7 +116,7 @@ export type TodoStatus = z.infer<typeof todoStatusSchema>;
 /**
  * Valid todo status transitions.
  * Maps current state → array of valid next states.
- * 
+ *
  * NOTE: The todo list is a reflection of the agent's tool calls (todo_init, todo_update).
  * The agent is the source of truth, so we allow any transition to reflect
  * whatever state the agent decides the todo should be in.
@@ -167,7 +167,7 @@ export type LessonStatus = z.infer<typeof lessonStatusSchema>;
 /**
  * Valid lesson status transitions.
  * Both directions are allowed for lesson status (bidirectional).
- * 
+ *
  * Note: Since lessons only have two states with bidirectional transitions,
  * any transition is valid except self-to-self is also allowed.
  */
@@ -178,7 +178,7 @@ export const LESSON_STATUS_TRANSITIONS: Record<LessonStatus, readonly LessonStat
 
 /**
  * Checks if a lesson status transition is valid.
- * 
+ *
  * Note: Lessons have simple bidirectional transitions (active ↔ archived),
  * so this is essentially always true for any different state.
  * Kept for consistency with other state machines.
@@ -192,7 +192,7 @@ export function isValidLessonTransition(current: LessonStatus, next: LessonStatu
  * The circuit breaker logic is already implemented inline in
  * packages/worker/src/agent/strands/invoke-loop.ts
  * and is not used elsewhere.
- * 
+ *
  * Note: Connection Health state machine also intentionally omitted.
  * The real-time connection health tracking is implemented in
  * packages/webapp/src/lib/realtime-connection.ts with its own
@@ -206,7 +206,7 @@ export function isValidLessonTransition(current: LessonStatus, next: LessonStatu
 /**
  * Returns a markdown description of a state machine for documentation.
  * Improves AX by making state machines self-documenting.
- * 
+ *
  * @param name - Name of the state machine
  * @param states - All possible states
  * @param transitions - Valid transitions map
