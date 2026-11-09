@@ -313,7 +313,12 @@ export const executeHooksForEvent = async (context: HookExecutionContext): Promi
     // Execute each hook sequentially
     for (const hook of hooks) {
       try {
-        const content = hook.script || hook.command;
+        let content: string | undefined;
+        if (hook.script) {
+          content = hook.script;
+        } else {
+          content = hook.command;
+        }
 
         if (!content) {
           result.hooksSkipped++;
@@ -321,9 +326,8 @@ export const executeHooksForEvent = async (context: HookExecutionContext): Promi
           continue;
         }
 
-        const hookType = hook.script ? 'inline script' : 'command';
         console.log(
-          `[hook-execution] Executing hook "${hook.name}" (${hookType}) for event: ${context.event}`
+          `[hook-execution] Executing hook "${hook.name}" (${hook.script ? 'inline script' : 'command'}) for event: ${context.event}`
         );
 
         let output = '';
@@ -440,7 +444,12 @@ export const executePermissionHooks = async (context: HookExecutionContext): Pro
     // Execute each hook sequentially
     for (const hook of hooks) {
       try {
-        const content = hook.script || hook.command;
+        let content: string | undefined;
+        if (hook.script) {
+          content = hook.script;
+        } else {
+          content = hook.command;
+        }
 
         if (!content) {
           console.warn(`[hook-execution] Permission hook "${hook.name}" has no command or script`);
