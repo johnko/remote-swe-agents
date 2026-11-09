@@ -3,35 +3,14 @@
  */
 import { describe, it, expect } from 'vitest';
 import {
-  validateInstanceTransition,
   validateAgentTransition,
   batchValidateTransitions,
   formatValidationResult,
-  guardInstanceTransition,
   guardAgentTransition,
   createStatusValidator,
 } from './state-validator.js';
 
-describe('validateInstanceTransition', () => {
-  it('should validate valid transitions', () => {
-    const result = validateInstanceTransition('starting', 'running');
-    expect(result.valid).toBe(true);
-    expect(result.allowedTransitions).toContain('running');
-  });
-
-  it('should reject invalid transitions with helpful message', () => {
-    const result = validateInstanceTransition('terminated', 'running');
-    expect(result.valid).toBe(false);
-    expect(result.error).toContain('Cannot transition');
-    expect(result.suggestion).toContain('terminal state');
-  });
-
-  it('should suggest the correct path for stopped → running', () => {
-    const result = validateInstanceTransition('stopped', 'running');
-    expect(result.valid).toBe(false);
-    expect(result.suggestion).toContain('starting');
-  });
-});
+// Note: validateInstanceTransition removed - AWS handles instance lifecycle
 
 describe('validateAgentTransition', () => {
   it('should validate pending → working', () => {
@@ -57,9 +36,9 @@ describe('validateAgentTransition', () => {
 
 
 describe('batchValidateTransitions', () => {
-  it('should validate multiple transitions', () => {
+  it('should validate multiple agent transitions', () => {
     const results = batchValidateTransitions([
-      { type: 'instance', current: 'running', requested: 'terminated' },
+      { type: 'agent', current: 'pending', requested: 'working' },
       { type: 'agent', current: 'pending', requested: 'completed' },
     ]);
     
@@ -106,15 +85,7 @@ describe('formatValidationResult', () => {
   });
 });
 
-describe('guardInstanceTransition', () => {
-  it('should not throw for valid transition', () => {
-    expect(() => guardInstanceTransition('starting', 'running')).not.toThrow();
-  });
-
-  it('should throw for invalid transition', () => {
-    expect(() => guardInstanceTransition('terminated', 'running')).toThrow('Cannot transition');
-  });
-});
+// Note: guardInstanceTransition removed - AWS handles instance lifecycle
 
 describe('guardAgentTransition', () => {
   it('should not throw for valid transition', () => {

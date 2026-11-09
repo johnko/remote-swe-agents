@@ -4,15 +4,15 @@
  * Provides runtime validation of state transitions with helpful error messages.
  * Improves DX by catching invalid transitions early with clear feedback.
  * 
+ * Note: Instance status validation is intentionally omitted - AWS handles
+ * instance lifecycle, so the application does not validate those transitions.
+ * 
  * @module StateValidator
  */
 
 import {
-  type InstanceStatus,
   type AgentStatus,
-  isValidInstanceTransition,
   isValidAgentTransition,
-  getValidInstanceTransitions,
   getValidAgentTransitions,
 } from '../schema/state-machines.js';
 
@@ -29,52 +29,10 @@ export interface StateValidationResult {
 }
 
 /**
- * Validates an instance status transition.
- * 
- * @param current - Current instance status
- * @param requested - Requested new status
- * @returns Validation result with helpful error message if invalid
- * 
- * @example
- * ```typescript
- * const result = validateInstanceTransition('terminated', 'running');
- * if (!result.valid) {
- *   console.error(result.error); // "Cannot transition from 'terminated' to 'running'"
- *   console.log(result.suggestion); // "Instance is in terminal state. Create a new session."
- * }
- * ```
- */
-export function validateInstanceTransition(
-  current: InstanceStatus,
-  requested: InstanceStatus
-): StateValidationResult {
-  const allowed = getValidInstanceTransitions(current);
-  
-  if (isValidInstanceTransition(current, requested)) {
-    return {
-      valid: true,
-      current,
-      requested,
-      allowedTransitions: allowed,
-    };
-  }
-
-  let suggestion: string | undefined;
-  if (current === 'terminated') {
-    suggestion = 'Instance is in terminal state. Create a new session if you need a running instance.';
-  } else if (current === 'stopped' && requested === 'running') {
-    suggestion = 'Stopped instance must go through "starting" state first.';
-  }
-
-  return {
-    valid: false,
-    current,
-    requested,
-    allowedTransitions: allowed,
-    error: `Cannot transition instance from '${current}' to '${requested}'.`,
-    suggestion,
-  };
-}
+ * Note: validateInstanceTransition is intentionally omitted.
+ * AWS handles instance lifecycle, so the application does not validate
+ * those transitions. The instance types are exported from state-machines.ts
+ * for documentation purposes only.
 
 /**
  * Validates an agent status transition.
@@ -131,9 +89,11 @@ export function validateAgentTransition(
  * @returns Validation result with helpful error message if invalid
  */
 /**
- * Note: validateTodoTransition is intentionally omitted.
- * Since todo items are a reflection of agent tool calls and the agent
- * is the source of truth, any transition is valid (see TODO_STATUS_TRANSITIONS).
+ * Note: validateTodoTransition and validateLessonTransition are intentionally omitted.
+ * - Todo: Agent is source of truth, any transition is valid
+ * - Lesson: Simple bidirectional transitions (active ↔ archived)
+ * 
+ * Validation focuses on Agent status where the application has control.
  */
 
 /**
@@ -191,29 +151,25 @@ export function createStatusValidator<S extends string>(
  * ```
  */
 export interface TransitionRequest {
-  type: 'instance' | 'agent';
-  current: InstanceStatus | AgentStatus;
-  requested: InstanceStatus | AgentStatus;
+  type: 'agent';
+  current: AgentStatus;
+  requested: AgentStatus;
 }
 
 export function batchValidateTransitions(
   requests: TransitionRequest[]
 ): StateValidationResult[] {
   return requests.map((req) => {
-    switch (req.type) {
-      case 'instance':
-        return validateInstanceTransition(req.current as InstanceStatus, req.requested as InstanceStatus);
-      case 'agent':
-        return validateAgentTransition(req.current as AgentStatus, req.requested as AgentStatus);
-      default:
-        return {
-          valid: false,
-          current: req.current,
-          requested: req.requested,
-          allowedTransitions: [],
-          error: `Unknown status type: ${(req as TransitionRequest).type}`,
-        };
+    if (req.type === 'agent') {
+      return validateAgentTransition(req.current, req.requested);
     }
+    return {
+      valid: false,
+      current: req.current,
+      requested: req.requested,
+      allowedTransitions: [],
+      error: `Unknown status type: ${(req as TransitionRequest).type}`,
+    };
   });
 }
 
@@ -237,22 +193,6 @@ export function formatValidationResult(result: StateValidationResult): string {
   }
   
   return message;
-}
-
-/**
- * State transition guard function.
- * Throws an error if the transition is invalid.
- * 
- * @example
- * ```typescript
- * guardInstanceTransition('terminated', 'running'); // throws
- * ```
- */
-export function guardInstanceTransition(current: InstanceStatus, requested: InstanceStatus): void {
-  const result = validateInstanceTransition(current, requested);
-  if (!result.valid) {
-    throw new Error(formatValidationResult(result));
-  }
 }
 
 /**

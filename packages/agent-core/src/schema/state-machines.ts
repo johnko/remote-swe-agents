@@ -41,12 +41,15 @@ export type AgentStatus = z.infer<typeof agentStatusSchema>;
 /**
  * Valid instance status transitions.
  * Maps current state → array of valid next states.
+ * 
+ * Note: AWS handles instance lifecycle, so these are documented transitions
+ * rather than strict validations. The actual transitions are controlled by AWS.
  */
 export const INSTANCE_STATUS_TRANSITIONS: Record<InstanceStatus, readonly InstanceStatus[]> = {
   starting: ['running', 'stopped', 'terminated'],
-  running: ['stopped', 'terminated'],
-  stopped: ['starting', 'terminated'],
-  terminated: [], // Terminal state
+  running: ['stopped', 'terminated', 'starting'],
+  stopped: ['starting', 'terminated', 'running'],
+  terminated: ['starting'], // Can create new instance after termination
 } as const;
 
 /**

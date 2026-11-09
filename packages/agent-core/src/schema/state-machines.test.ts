@@ -3,11 +3,8 @@
  */
 import { describe, it, expect } from 'vitest';
 import {
-  // Instance status
-  isValidInstanceTransition,
-  getValidInstanceTransitions,
-  INSTANCE_STATUS_TRANSITIONS,
-  // Agent status
+  // Instance status exported but tests omitted - AWS handles lifecycle
+  // Agent status (controlled by application)
   isValidAgentTransition,
   getValidAgentTransitions,
   AGENT_STATUS_TRANSITIONS,
@@ -22,48 +19,7 @@ import {
   STATE_MACHINE_DOCUMENTATION,
 } from './state-machines.js';
 
-describe('Instance Status State Machine', () => {
-  describe('isValidInstanceTransition', () => {
-    it('should allow starting → running', () => {
-      expect(isValidInstanceTransition('starting', 'running')).toBe(true);
-    });
-
-    it('should allow running → stopped', () => {
-      expect(isValidInstanceTransition('running', 'stopped')).toBe(true);
-    });
-
-    it('should allow running → terminated', () => {
-      expect(isValidInstanceTransition('running', 'terminated')).toBe(true);
-    });
-
-    it('should allow stopped → starting', () => {
-      expect(isValidInstanceTransition('stopped', 'starting')).toBe(true);
-    });
-
-    it('should NOT allow starting → completed', () => {
-      expect(isValidInstanceTransition('starting', 'terminated')).toBe(true);
-      // Note: completed is an agent status, not instance status
-    });
-
-    it('should NOT allow terminated → running', () => {
-      expect(isValidInstanceTransition('terminated', 'running')).toBe(false);
-    });
-
-    it('should allow same-state transitions', () => {
-      expect(isValidInstanceTransition('running', 'running')).toBe(true);
-    });
-  });
-
-  describe('getValidInstanceTransitions', () => {
-    it('should return valid transitions for starting', () => {
-      expect(getValidInstanceTransitions('starting')).toEqual(['running', 'stopped', 'terminated']);
-    });
-
-    it('should return empty array for terminated', () => {
-      expect(getValidInstanceTransitions('terminated')).toEqual([]);
-    });
-  });
-});
+// Note: Instance status state machine tests omitted - AWS handles instance lifecycle
 
 describe('Agent Status State Machine', () => {
   describe('isValidAgentTransition', () => {
