@@ -177,8 +177,10 @@ jobs:
           npm ci
           npm run build -w packages/agent-core
         name: Install dependencies
-      - run: npm run format:check -w packages/webapp
-        name: Run static analysis
+      - run: |
+          npm run format:check
+        working-directory: ./packages/webapp
+        name: Install dependencies and run static analysis
       - run: cp ./packages/webapp/.env.local.example ./packages/webapp/.env.local && npm run build -w packages/webapp
         name: build
   Build-and-Test-AgentCore:
