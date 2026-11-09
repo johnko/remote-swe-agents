@@ -43,10 +43,7 @@ export default async function CustomAgentPage() {
         <div className="space-y-6">
           {topLevelAgents.length > 0 && (
             <PreferenceSection title={t('list.title')} description={t('list.description')}>
-              <CustomAgentList
-                agents={topLevelAgents}
-                subAgentCounts={subAgentCounts}
-              />
+              <CustomAgentList agents={topLevelAgents} subAgentCounts={subAgentCounts} />
             </PreferenceSection>
           )}
 

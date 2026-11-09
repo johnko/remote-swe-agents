@@ -14,10 +14,7 @@ type CustomAgentListProps = {
   subAgentCounts: Record<string, number>;
 };
 
-export default function CustomAgentList({
-  agents,
-  subAgentCounts,
-}: CustomAgentListProps) {
+export default function CustomAgentList({ agents, subAgentCounts }: CustomAgentListProps) {
   const t = useTranslations('customAgent');
 
   return (

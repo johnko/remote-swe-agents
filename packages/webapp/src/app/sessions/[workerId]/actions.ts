@@ -52,14 +52,7 @@ import { searchSessionContent } from '@remote-swe-agents/agent-core/lib';
 export const sendMessageToAgent = authActionClient
   .inputSchema(sendMessageToAgentSchema)
   .action(async ({ parsedInput, ctx }) => {
-    const {
-      workerId,
-      message,
-      imageKeys = [],
-      fileKeys = [],
-      modelOverride,
-      clientId,
-    } = parsedInput;
+    const { workerId, message, imageKeys = [], fileKeys = [], modelOverride, clientId } = parsedInput;
     const session = await getSession(workerId);
     if (!session) {
       throw new MyCustomError('Session not found');

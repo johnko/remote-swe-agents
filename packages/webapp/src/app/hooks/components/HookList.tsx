@@ -160,10 +160,7 @@ export default function HookList({ initialHooks }: HookListProps) {
                       {hook.event}
                     </span>
                     {getHookRuntimes(hook.event).map((runtime) => (
-                      <span
-                        key={runtime}
-                        className={`px-2 py-0.5 text-xs rounded ${getRuntimeBadgeColor(runtime)}`}
-                      >
+                      <span key={runtime} className={`px-2 py-0.5 text-xs rounded ${getRuntimeBadgeColor(runtime)}`}>
                         {runtime === 'agentcore' ? 'Agent Core' : runtime.charAt(0).toUpperCase() + runtime.slice(1)}
                       </span>
                     ))}

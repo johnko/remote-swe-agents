@@ -17,7 +17,8 @@ export function getSecurityHeaders(): SecurityHeaders {
     'X-Frame-Options': 'DENY',
     'X-XSS-Protection': '1; mode=block',
     'Strict-Transport-Security': 'max-age=31536000; includeSubDomains; preload',
-    'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' https:;",
+    'Content-Security-Policy':
+      "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' https:;",
     'Referrer-Policy': 'strict-origin-when-cross-origin',
   };
 }
@@ -35,20 +36,20 @@ export function applySecurityHeaders(response: NextResponse): NextResponse {
 export function sanitizePath(input: string): string | null {
   // Remove null bytes
   const cleaned = input.replace(/\0/g, '');
-  
+
   // Normalize separators
   const normalized = cleaned.replace(/\\/g, '/');
-  
+
   // Reject path traversal attempts
   if (normalized.includes('..') || normalized.startsWith('/')) {
     return null;
   }
-  
+
   // Reject empty strings
   if (normalized.length === 0) {
     return null;
   }
-  
+
   return normalized;
 }
 

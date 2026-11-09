@@ -37,19 +37,17 @@ const createHookSchema = z.object({
   isEnabled: z.boolean().optional(),
 });
 
-export const createUserHook = authActionClient
-  .inputSchema(createHookSchema)
-  .action(async ({ parsedInput, ctx }) => {
-    try {
-      const hook = await createHook(ctx.userId, {
-        ...parsedInput,
-        createdBy: 'user',
-      });
-      return toClientHook(hook);
-    } catch (e) {
-      throw new MyCustomError((e as Error).message);
-    }
-  });
+export const createUserHook = authActionClient.inputSchema(createHookSchema).action(async ({ parsedInput, ctx }) => {
+  try {
+    const hook = await createHook(ctx.userId, {
+      ...parsedInput,
+      createdBy: 'user',
+    });
+    return toClientHook(hook);
+  } catch (e) {
+    throw new MyCustomError((e as Error).message);
+  }
+});
 
 const updateHookSchema = z.object({
   hookId: z.string(),
@@ -61,29 +59,25 @@ const updateHookSchema = z.object({
   isEnabled: z.boolean().optional(),
 });
 
-export const updateUserHook = authActionClient
-  .inputSchema(updateHookSchema)
-  .action(async ({ parsedInput, ctx }) => {
-    const { hookId, ...input } = parsedInput;
-    try {
-      const hook = await updateHook(ctx.userId, hookId, input);
-      return toClientHook(hook);
-    } catch (e) {
-      throw new MyCustomError((e as Error).message);
-    }
-  });
+export const updateUserHook = authActionClient.inputSchema(updateHookSchema).action(async ({ parsedInput, ctx }) => {
+  const { hookId, ...input } = parsedInput;
+  try {
+    const hook = await updateHook(ctx.userId, hookId, input);
+    return toClientHook(hook);
+  } catch (e) {
+    throw new MyCustomError((e as Error).message);
+  }
+});
 
 const deleteHookSchema = z.object({
   hookId: z.string(),
 });
 
-export const deleteUserHook = authActionClient
-  .inputSchema(deleteHookSchema)
-  .action(async ({ parsedInput, ctx }) => {
-    const hook = await getHook(ctx.userId, parsedInput.hookId);
-    if (!hook) {
-      throw new MyCustomError('Hook not found.');
-    }
-    await deleteHook(ctx.userId, parsedInput.hookId);
-    return { success: true };
-  });
+export const deleteUserHook = authActionClient.inputSchema(deleteHookSchema).action(async ({ parsedInput, ctx }) => {
+  const hook = await getHook(ctx.userId, parsedInput.hookId);
+  if (!hook) {
+    throw new MyCustomError('Hook not found.');
+  }
+  await deleteHook(ctx.userId, parsedInput.hookId);
+  return { success: true };
+});

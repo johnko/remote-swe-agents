@@ -28,18 +28,21 @@ const DEFAULT_CONFIG: RateLimitConfig = {
 const rateLimitStore = new Map<string, RateLimitEntry>();
 
 // Cleanup old entries periodically
-setInterval(() => {
-  const now = Date.now();
-  for (const [key, entry] of rateLimitStore.entries()) {
-    if (entry.blocked && entry.blockExpiresAt && entry.blockExpiresAt < now) {
-      // Unblock expired entries
-      rateLimitStore.delete(key);
-    } else if (!entry.blocked && entry.firstAttempt + entry.lastAttempt < now - 24 * 60 * 60 * 1000) {
-      // Remove entries older than 24 hours
-      rateLimitStore.delete(key);
+setInterval(
+  () => {
+    const now = Date.now();
+    for (const [key, entry] of rateLimitStore.entries()) {
+      if (entry.blocked && entry.blockExpiresAt && entry.blockExpiresAt < now) {
+        // Unblock expired entries
+        rateLimitStore.delete(key);
+      } else if (!entry.blocked && entry.firstAttempt + entry.lastAttempt < now - 24 * 60 * 60 * 1000) {
+        // Remove entries older than 24 hours
+        rateLimitStore.delete(key);
+      }
     }
-  }
-}, 60 * 60 * 1000); // Run cleanup every hour
+  },
+  60 * 60 * 1000
+); // Run cleanup every hour
 
 /**
  * Check if a key is rate limited
@@ -159,16 +162,16 @@ export function clearRateLimit(key: string): void {
 export function getClientIP(request: Request): string | null {
   const forwardedFor = request.headers.get('x-forwarded-for');
   const realIp = request.headers.get('x-real-ip');
-  
+
   if (forwardedFor) {
     // Get first IP from X-Forwarded-For chain
     return forwardedFor.split(',')[0].trim();
   }
-  
+
   if (realIp) {
     return realIp;
   }
-  
+
   return null;
 }
 

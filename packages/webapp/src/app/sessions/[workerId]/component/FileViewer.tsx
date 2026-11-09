@@ -13,10 +13,7 @@ type FileViewerProps = {
  * Eliminates impossible states (loading=true + error=true) and makes
  * transitions explicit and type-safe.
  */
-type FileLoadingState =
-  | { status: 'loading' }
-  | { status: 'success'; url: string }
-  | { status: 'error' };
+type FileLoadingState = { status: 'loading' } | { status: 'success'; url: string } | { status: 'error' };
 
 type FileData = {
   key: string;

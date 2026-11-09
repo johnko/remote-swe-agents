@@ -94,9 +94,7 @@ export default function HookCreateForm() {
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-          {t('fields.command')}
-        </label>
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('fields.command')}</label>
         <Input
           value={command}
           onChange={(e) => setCommand(e.target.value)}

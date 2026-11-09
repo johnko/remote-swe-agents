@@ -1,7 +1,7 @@
 /**
  * Mapping of hook event types to their supported runtime environment.
  * Used to display runtime badges in the hooks UI.
- * 
+ *
  * All hooks currently work on the agentcore runtime only.
  */
 
@@ -46,4 +46,3 @@ export const getRuntimeBadgeColor = (runtime: RuntimeType): string => {
   };
   return colors[runtime];
 };
-

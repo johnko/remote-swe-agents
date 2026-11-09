@@ -26,9 +26,8 @@ function checkRateLimit(clientIp: string): boolean {
 
 export async function GET(request: Request) {
   // Get client IP for rate limiting
-  const clientIp = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-                   request.headers.get('x-real-ip') ||
-                   'unknown';
+  const clientIp =
+    request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || request.headers.get('x-real-ip') || 'unknown';
 
   // Check rate limit
   if (!checkRateLimit(clientIp)) {

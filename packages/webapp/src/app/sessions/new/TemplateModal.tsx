@@ -24,10 +24,7 @@ interface TemplateModalProps {
  * mutually-exclusive states. Prevents impossible states like
  * (isCreating=true && editingId!=null) and enables exhaustive switch handling.
  */
-type TemplateModalMode =
-  | { type: 'viewing' }
-  | { type: 'creating' }
-  | { type: 'editing'; templateId: string };
+type TemplateModalMode = { type: 'viewing' } | { type: 'creating' } | { type: 'editing'; templateId: string };
 
 export default function TemplateModal({ isOpen, onClose, templates, onSelectTemplate }: TemplateModalProps) {
   const t = useTranslations('new_session.templateModal');
@@ -177,11 +174,7 @@ export default function TemplateModal({ isOpen, onClose, templates, onSelectTemp
                           autoFocus
                         />
                         <div className="flex gap-2 mt-3">
-                          <Button
-                            onClick={handleSaveEdit}
-                            size="sm"
-                            disabled={!content.trim() || isUpdatingTemplate}
-                          >
+                          <Button onClick={handleSaveEdit} size="sm" disabled={!content.trim() || isUpdatingTemplate}>
                             <Save className="w-4 h-4 mr-1" />
                             {isUpdatingTemplate ? t('saving') : t('save')}
                           </Button>

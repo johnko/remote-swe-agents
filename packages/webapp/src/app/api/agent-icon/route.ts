@@ -15,27 +15,27 @@ function etagMatch(ifNoneMatch: string, etag: string): boolean {
 function sanitizeS3Key(key: string): string | null {
   // Remove null bytes and normalize path separators
   const normalized = key.replace(/\0/g, '').replace(/\\/g, '/');
-  
+
   // Reject keys that contain path traversal sequences
   if (normalized.includes('..')) {
     return null;
   }
-  
+
   // Reject absolute paths and keys starting with slashes
   if (normalized.startsWith('/')) {
     return null;
   }
-  
+
   // Reject empty keys
   if (normalized.length === 0) {
     return null;
   }
-  
+
   // Maximum length check
   if (normalized.length > 1024) {
     return null;
   }
-  
+
   return normalized;
 }
 

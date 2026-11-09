@@ -26,10 +26,7 @@ type ImageViewerProps = {
  * - 'success': Has valid URL (blob or pre-signed)
  * - 'error': Failed to load
  */
-type ImageLoadingState =
-  | { status: 'loading' }
-  | { status: 'success'; url: string }
-  | { status: 'error' };
+type ImageLoadingState = { status: 'loading' } | { status: 'success'; url: string } | { status: 'error' };
 
 type ImageData = {
   key: string;
@@ -243,13 +240,19 @@ export const ImageViewer = ({ imageKeys: inputKeys, localImageUrls }: ImageViewe
             switch (image.status) {
               case 'loading':
                 return (
-                  <div key={image.key} className="w-32 h-24 bg-gray-100 dark:bg-gray-800 rounded flex items-center justify-center">
+                  <div
+                    key={image.key}
+                    className="w-32 h-24 bg-gray-100 dark:bg-gray-800 rounded flex items-center justify-center"
+                  >
                     <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
                   </div>
                 );
               case 'error':
                 return (
-                  <div key={image.key} className="w-32 h-24 bg-gray-100 dark:bg-gray-800 rounded flex items-center justify-center">
+                  <div
+                    key={image.key}
+                    className="w-32 h-24 bg-gray-100 dark:bg-gray-800 rounded flex items-center justify-center"
+                  >
                     <span className="text-xs text-gray-500">Error</span>
                   </div>
                 );
