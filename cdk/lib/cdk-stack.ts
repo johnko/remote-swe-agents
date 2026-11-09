@@ -17,6 +17,7 @@ import { AsyncJob } from './constructs/async-job';
 import { Webapp } from './constructs/webapp';
 import { IRepository } from 'aws-cdk-lib/aws-ecr';
 import { VapidKeys } from './constructs/vapid-keys';
+import { CorsUpdater } from './constructs/cors-updater';
 import { Preview } from './constructs/preview';
 import { PolicyStatement } from 'aws-cdk-lib/aws-iam';
 
@@ -206,9 +207,14 @@ export class MainStack extends cdk.Stack {
       vapidKeys,
     });
 
-    // NOTE: Storage CORS is configured at bucket creation time via CORS_ALLOWED_ORIGINS
-    // env var. Adding origins via addAllowedOrigins after creation creates circular dependencies
-    // between Storage, Worker, and Webapp constructs.
+    // SECURITY FIX: Update Storage CORS to include the CloudFront domain
+    // Using CorsUpdater with bucket names instead of references to avoid circular dependencies
+    const webappOrigin = webapp.baseUrl.startsWith('https://') ? webapp.baseUrl : `https://${webapp.baseUrl}`;
+    new CorsUpdater(this, 'StorageCorsUpdater', {
+      cloudFrontDomain: webappOrigin,
+      imageBucketName: storage.bucket.bucketName,
+      skillBucketName: storage.skillBucket.bucketName,
+    });
 
     if (props.slack && botToken && signingSecret) {
       new SlackBolt(this, 'SlackBolt', {
