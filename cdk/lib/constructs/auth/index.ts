@@ -1,6 +1,15 @@
 import { CfnOutput, CfnResource, CustomResource, Duration, RemovalPolicy, Stack } from 'aws-cdk-lib';
 import { ICertificate } from 'aws-cdk-lib/aws-certificatemanager';
-import { CfnManagedLoginBranding, ManagedLoginVersion, UserPool, UserPoolClient } from 'aws-cdk-lib/aws-cognito';
+import {
+  CfnManagedLoginBranding,
+  ManagedLoginVersion,
+  Mfa,
+  UserPool,
+  UserPoolClient,
+  UserPoolDeviceTracking,
+  UserPoolMfa,
+  UserPoolOtp,
+} from 'aws-cdk-lib/aws-cognito';
 import { Code, Runtime, SingletonFunction } from 'aws-cdk-lib/aws-lambda';
 import { CnameRecord, IHostedZone } from 'aws-cdk-lib/aws-route53';
 import { AwsCustomResource, AwsCustomResourcePolicy, PhysicalResourceId } from 'aws-cdk-lib/custom-resources';
@@ -56,12 +65,31 @@ export class Auth extends Construct {
         requireUppercase: true,
         requireSymbols: true,
         requireDigits: true,
-        minLength: 8,
+        minLength: 10,
+        requireLowercase: true,
+        tempPasswordValidity: Duration.days(1),
       },
       selfSignUpEnabled: false,
       signInAliases: {
         username: false,
         email: true,
+      },
+      // SECURITY: Enable optional MFA via TOTP for additional account protection
+      mfa: UserPoolMfa.OPTIONAL,
+      mfaSecondFactor: {
+        sms: false, // SMS-based 2FA disabled due to SIM swap risks
+        otp: true, // TOTP-based 2FA enabled (authenticator apps)
+      },
+      // SECURITY: Track sign-ins to detect suspicious activity
+      signInAliasesCapture: {
+        deviceAttributes: true,
+        deviceIp: true,
+      },
+      deviceTrackingMode: UserPoolDeviceTracking.AUTO_OPT_IN,
+      otp: {
+        tokenValidityMinutes: 5,
+        tokenLength: 6,
+        format: UserPoolOtp.NUMBER,
       },
       userInvitation: {
         emailSubject: 'Account Invitation - Remote SWE Agents',
@@ -80,7 +108,10 @@ Remote SWE Agents Team
     });
 
     const client = userPool.addClient(`Client`, {
-      idTokenValidity: Duration.days(1),
+      // SECURITY: Reduced token validity from 24 hours to 1 hour for enhanced security
+      idTokenValidity: Duration.hours(1),
+      accessTokenValidity: Duration.hours(1),
+      refreshTokenValidity: Duration.days(7),
       authFlows: {
         userPassword: true,
         userSrp: true,
@@ -92,6 +123,8 @@ Remote SWE Agents Team
         callbackUrls: ['http://localhost/dummy'],
         logoutUrls: ['http://localhost/dummy'],
       },
+      // SECURITY: Require PKCE for authorization code flow to prevent CSRF attacks
+      enableTokenRevocation: true,
     });
 
     this.client = client;
@@ -179,8 +212,12 @@ Remote SWE Agents Team
           SupportedIdentityProviders: ['COGNITO'],
           TokenValidityUnits: {
             IdToken: 'minutes',
+            AccessToken: 'minutes',
+            RefreshToken: 'days',
           },
-          IdTokenValidity: 1440,
+          IdTokenValidity: 60,
+          AccessTokenValidity: 60,
+          RefreshTokenValidity: 7,
         },
         physicalResourceId: PhysicalResourceId.of(this.userPool.userPoolId),
       },

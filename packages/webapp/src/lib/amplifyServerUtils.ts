@@ -32,8 +32,13 @@ const serverRunner = isConfigured
       },
       runtimeOptions: {
         cookies: {
-          sameSite: 'lax',
-          maxAge: 60 * 60 * 24 * 30, // 30 days
+          // SECURITY: Use 'strict' sameSite to prevent CSRF via cross-site requests
+          sameSite: 'strict',
+          // SECURITY: Use 'secure' flag when in HTTPS environments
+          secure: process.env.NODE_ENV === 'production',
+          // SECURITY: Reduced maxAge from 30 days to 7 days (session should not persist indefinitely)
+          maxAge: 60 * 60 * 24 * 7, // 7 days
+          // SECURITY: Recommend httpOnly for XSS prevention (Amplify handles this internally)
         },
       },
     })
