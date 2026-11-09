@@ -5,8 +5,6 @@ import { describe, it, expect } from 'vitest';
 import {
   validateInstanceTransition,
   validateAgentTransition,
-  validateTodoTransition,
-  validateLessonTransition,
   batchValidateTransitions,
   formatValidationResult,
   guardInstanceTransition,
@@ -54,9 +52,9 @@ describe('validateAgentTransition', () => {
   });
 });
 
-// Note: validateTodoTransition removed - todo allows any transition since agent is source of truth
 
-// Note: validateLessonTransition removed - lessons have simple bidirectional transitions
+
+
 
 describe('batchValidateTransitions', () => {
   it('should validate multiple transitions', () => {

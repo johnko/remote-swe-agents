@@ -191,9 +191,9 @@ export function createStatusValidator<S extends string>(
  * ```
  */
 export interface TransitionRequest {
-  type: 'instance' | 'agent' | 'todo' | 'lesson';
-  current: InstanceStatus | AgentStatus | TodoStatus | LessonStatus;
-  requested: InstanceStatus | AgentStatus | TodoStatus | LessonStatus;
+  type: 'instance' | 'agent';
+  current: InstanceStatus | AgentStatus;
+  requested: InstanceStatus | AgentStatus;
 }
 
 export function batchValidateTransitions(
@@ -205,10 +205,6 @@ export function batchValidateTransitions(
         return validateInstanceTransition(req.current as InstanceStatus, req.requested as InstanceStatus);
       case 'agent':
         return validateAgentTransition(req.current as AgentStatus, req.requested as AgentStatus);
-      case 'todo':
-        return validateTodoTransition(req.current as TodoStatus, req.requested as TodoStatus);
-      case 'lesson':
-        return validateLessonTransition(req.current as LessonStatus, req.requested as LessonStatus);
       default:
         return {
           valid: false,
