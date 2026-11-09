@@ -74,6 +74,7 @@ export class Auth extends Construct {
         username: false,
         email: true,
       },
+
       // SECURITY: Enable optional MFA via TOTP for additional account protection
       mfa: Mfa.OPTIONAL,
       mfaSecondFactor: {
