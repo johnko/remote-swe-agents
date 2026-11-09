@@ -1,15 +1,15 @@
-FROM public.ecr.aws/docker/library/node:24-slim AS builder
+FROM public.ecr.aws/docker/library/node:24.9.0-slim AS builder
 WORKDIR /app
 COPY package.json ./
-RUN npm install
+RUN npm install --ignore-scripts && npm audit --audit-level=low
 COPY tsconfig.json ./
 COPY src/ ./src/
 RUN npx tsc
 
-FROM public.ecr.aws/docker/library/node:24-slim
+FROM public.ecr.aws/docker/library/node:24.9.0-slim
 WORKDIR /app
 COPY package.json ./
-RUN npm install --omit=dev && npm cache clean --force
+RUN npm install --omit=dev --ignore-scripts && npm cache clean --force
 COPY --from=builder /app/dist ./dist
 EXPOSE 8080 9000
 CMD ["node", "dist/index.js"]
