@@ -590,6 +590,7 @@ systemctl start myapp
           'ce:GetCostAndUsage',
           'ce:GetCostForecast',
           'ce:GetUsageForecast',
+          'cloudformation:ContinueUpdateRollback',
           'cloudformation:DescribeStackEvents',
           'cloudformation:DescribeStackResource',
           'ecr:DescribeImages',
