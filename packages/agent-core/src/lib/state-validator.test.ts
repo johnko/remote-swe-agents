@@ -55,14 +55,10 @@ describe('validateAgentTransition', () => {
 });
 
 describe('validateTodoTransition', () => {
-  it('should validate valid transitions', () => {
-    const result = validateTodoTransition('pending', 'in_progress');
-    expect(result.valid).toBe(true);
-  });
-
-  it('should allow cancelled → pending (restore)', () => {
-    const result = validateTodoTransition('cancelled', 'pending');
-    expect(result.valid).toBe(true);
+  it('should allow all transitions since todo is reflection of agent state', () => {
+    expect(validateTodoTransition('pending', 'in_progress').valid).toBe(true);
+    expect(validateTodoTransition('cancelled', 'pending').valid).toBe(true);
+    expect(validateTodoTransition('completed', 'in_progress').valid).toBe(true);
   });
 });
 
