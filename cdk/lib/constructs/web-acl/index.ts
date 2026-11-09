@@ -1,4 +1,5 @@
 import { CfnIPSet, CfnWebACL, CfnWebACLProps } from 'aws-cdk-lib/aws-wafv2';
+import { Duration } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 
 export interface CommonWebAclProps {
@@ -6,6 +7,11 @@ export interface CommonWebAclProps {
   allowedIpV4AddressRanges?: string[] | null;
   allowedIpV6AddressRanges?: string[] | null;
   allowedCountryCodes?: string[] | null;
+  /**
+   * Rate limiting configuration
+   * @default 1000 requests per 5 minutes per IP
+   */
+  rateLimit?: number;
 }
 
 export class CommonWebAcl extends Construct {
@@ -114,6 +120,27 @@ export class CommonWebAcl extends Construct {
         },
       });
     }
+
+    // SECURITY FIX: Add rate-based rule to protect against DDoS and brute force
+    // Priority 0 must come before IP/geo rules
+    const rateLimit = props.rateLimit ?? 1000;
+    rules.unshift({
+      priority: 0,
+      name: 'RateLimitRule',
+      statement: {
+        rateBasedStatement: {
+          limit: rateLimit,
+          evaluationWindowSec: 300, // 5 minute window
+          aggregateKeyType: 'IP',
+        },
+      },
+      action: { block: {} },
+      visibilityConfig: {
+        sampledRequestsEnabled: true,
+        cloudWatchMetricsEnabled: true,
+        metricName: 'RateLimitRule',
+      },
+    });
 
     const webAcl = new CfnWebACL(this, 'WebAcl', {
       defaultAction: { block: {} },

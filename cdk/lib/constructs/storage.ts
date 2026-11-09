@@ -38,6 +38,15 @@ export class Storage extends Construct {
       ],
     });
 
+    // Security: Restrict CORS to specific allowed origins
+    // Configure CORS_ALLOWED_ORIGINS env var with comma-separated domains
+    const allowedOrigins = process.env.CORS_ALLOWED_ORIGINS?.split(',').filter(Boolean) || [
+      // Default: require explicit origin (no wildcard)
+    ];
+    if (allowedOrigins.length === 0) {
+      console.warn('[Storage] No CORS_ALLOWED_ORIGINS configured - CORS will not be functional');
+    }
+
     const bucket = new Bucket(this, 'ImageBucket', {
       removalPolicy: RemovalPolicy.DESTROY,
       autoDeleteObjects: true,
@@ -47,9 +56,13 @@ export class Storage extends Construct {
       serverAccessLogsPrefix: 's3AccessLog/ImageBucket/',
       cors: [
         {
-          allowedOrigins: ['*'],
-          allowedHeaders: ['*'],
-          allowedMethods: [HttpMethods.GET, HttpMethods.HEAD, HttpMethods.PUT, HttpMethods.POST],
+          // SECURITY FIX: Remove wildcard origins - explicit whitelist only
+          allowedOrigins: allowedOrigins.length > 0 ? allowedOrigins : ['https://placeholder.example.com'],
+          // SECURITY FIX: Restrict to minimal required headers only
+          allowedHeaders: ['authorization', 'content-type', 'x-amz-content-sha256', 'x-amz-date', 'x-requested-with'],
+          // SECURITY FIX: Remove PUT/POST - only allow read operations via CORS
+          // Uploads should use presigned POST URLs or server-side proxying
+          allowedMethods: [HttpMethods.GET, HttpMethods.HEAD],
           maxAge: 3000,
         },
       ],
@@ -73,9 +86,12 @@ export class Storage extends Construct {
       serverAccessLogsPrefix: 's3AccessLog/SkillBucket/',
       cors: [
         {
-          allowedOrigins: ['*'],
-          allowedHeaders: ['*'],
-          allowedMethods: [HttpMethods.GET, HttpMethods.HEAD, HttpMethods.PUT, HttpMethods.POST],
+          // SECURITY FIX: Remove wildcard origins - explicit whitelist only
+          allowedOrigins: allowedOrigins.length > 0 ? allowedOrigins : ['https://placeholder.example.com'],
+          // SECURITY FIX: Restrict to minimal required headers only
+          allowedHeaders: ['authorization', 'content-type', 'x-amz-content-sha256', 'x-amz-date', 'x-requested-with'],
+          // SECURITY FIX: Only allow read operations via CORS
+          allowedMethods: [HttpMethods.GET, HttpMethods.HEAD],
           maxAge: 3000,
         },
       ],
