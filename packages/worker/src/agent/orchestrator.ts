@@ -165,7 +165,8 @@ export const extractQueryTextFromHistory = (
         .trim();
     }
     if (typeof parsed === 'string') return parsed.trim();
-  } catch {
+  } catch (e) {
+    console.error('[orchestrator] Failed to parse message content:', e);
     return lastUser.content.trim();
   }
   return '';
@@ -288,8 +289,8 @@ const buildSystemPrompt = async (opts: {
           bedrockDefaultModel: globalPrefs.modelOverride as import('@remote-swe-agents/agent-core/schema').ModelType,
         };
       }
-    } catch {
-      /* best-effort */
+    } catch (e) {
+      console.error('[orchestrator] Failed to get user preferences:', e);
     }
 
     return buildRuntimeEnvironmentBlock({ session, customAgent, overrides, userPreferences: userPrefs });
@@ -396,7 +397,8 @@ const extractUserMessage = (lastItem: import('@remote-swe-agents/agent-core/sche
       .filter((c): c is { text: string } => c.text !== undefined)
       .map((c) => c.text)
       .join('\n');
-  } catch {
+  } catch (e) {
+    console.error('[orchestrator] Failed to parse user message content:', e);
     return lastItem.content;
   }
 };

@@ -29,7 +29,8 @@ const workerVersion = (() => {
   try {
     const versionContent = readFileSync(join(__dirname, '../.build-version'), 'utf-8');
     return sanitizeVersion(versionContent);
-  } catch {
+  } catch (e) {
+    console.error('[agent-core] Failed to read .build-version:', e);
     try {
       const pkgContent = readFileSync(join(__dirname, '../package.json'), 'utf-8');
       const parsed = JSON.parse(pkgContent);
@@ -38,7 +39,8 @@ const workerVersion = (() => {
         return `pkg-${sanitizeVersion(parsed.version)}`;
       }
       return 'unknown';
-    } catch {
+    } catch (e2) {
+      console.error('[agent-core] Failed to read package.json:', e2);
       return 'unknown';
     }
   }
