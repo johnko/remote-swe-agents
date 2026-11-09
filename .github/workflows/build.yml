@@ -146,7 +146,8 @@ jobs:
         name: Install dev tools globally
       - run: npm run format:check -w packages/worker
         name: Run static analyses
-      - run: cd packages/worker && vitest run --passWithNoTests
+      - run: npm run test
+        working-directory: ./packages/worker
         name: Run unit tests
       - run: npm run build -w packages/worker
         name: Run build
@@ -184,7 +185,8 @@ jobs:
         name: Install dev tools globally
       - run: npm run format:check -w packages/agent-core
         name: Run static analyses
-      - run: cd packages/agent-core && vitest run
+      - run: npm run test
+        working-directory: ./packages/agent-core
         name: Run unit tests
       - run: npm run build -w packages/agent-core
         name: Run build
