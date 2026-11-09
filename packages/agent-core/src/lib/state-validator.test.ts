@@ -54,13 +54,7 @@ describe('validateAgentTransition', () => {
   });
 });
 
-describe('validateTodoTransition', () => {
-  it('should allow all transitions since todo is reflection of agent state', () => {
-    expect(validateTodoTransition('pending', 'in_progress').valid).toBe(true);
-    expect(validateTodoTransition('cancelled', 'pending').valid).toBe(true);
-    expect(validateTodoTransition('completed', 'in_progress').valid).toBe(true);
-  });
-});
+// Note: validateTodoTransition removed - todo allows any transition since agent is source of truth
 
 describe('validateLessonTransition', () => {
   it('should allow active → archived', () => {

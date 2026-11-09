@@ -10,18 +10,14 @@
 import {
   type InstanceStatus,
   type AgentStatus,
-  type TodoStatus,
   type LessonStatus,
   isValidInstanceTransition,
   isValidAgentTransition,
-  isValidTodoTransition,
   isValidLessonTransition,
   getValidInstanceTransitions,
   getValidAgentTransitions,
-  getValidTodoTransitions,
   AGENT_STATUS_TRANSITIONS,
   INSTANCE_STATUS_TRANSITIONS,
-  TODO_STATUS_TRANSITIONS,
   LESSON_STATUS_TRANSITIONS,
 } from '../schema/state-machines.js';
 
@@ -139,34 +135,11 @@ export function validateAgentTransition(
  * @param requested - Requested new status
  * @returns Validation result with helpful error message if invalid
  */
-export function validateTodoTransition(
-  current: TodoStatus,
-  requested: TodoStatus
-): StateValidationResult {
-  const allowed = getValidTodoTransitions(current);
-  
-  if (isValidTodoTransition(current, requested)) {
-    return {
-      valid: true,
-      current,
-      requested,
-      allowedTransitions: allowed,
-    };
-  }
-
-  const suggestion = current === 'cancelled'
-    ? 'Cancelled todos cannot be reopened. Create a new todo item instead.'
-    : undefined;
-
-  return {
-    valid: false,
-    current,
-    requested,
-    allowedTransitions: allowed,
-    error: `Cannot transition todo from '${current}' to '${requested}'.`,
-    suggestion,
-  };
-}
+/**
+ * Note: validateTodoTransition is intentionally omitted.
+ * Since todo items are a reflection of agent tool calls and the agent
+ * is the source of truth, any transition is valid (see TODO_STATUS_TRANSITIONS).
+ */
 
 /**
  * Validates a lesson status transition.
