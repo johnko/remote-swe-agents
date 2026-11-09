@@ -7,8 +7,8 @@
     "build": "tsc",
     "watch": "tsc -w",
     "start": "npx tsx src/index.ts",
-    "format": "npx prettier --write \"src/**/*.ts\"",
-    "format:check": "npx prettier --check \"src/**/*.ts\""
+    "format": "prettier --write \"src/**/*.ts\"",
+    "format:check": "prettier --check \"src/**/*.ts\""
   },
   "dependencies": {
     "@actions/core": "^2.0.2",
