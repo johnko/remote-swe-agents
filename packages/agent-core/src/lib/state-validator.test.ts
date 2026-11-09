@@ -60,10 +60,9 @@ describe('validateTodoTransition', () => {
     expect(result.valid).toBe(true);
   });
 
-  it('should reject cancelled transitions', () => {
+  it('should allow cancelled → pending (restore)', () => {
     const result = validateTodoTransition('cancelled', 'pending');
-    expect(result.valid).toBe(false);
-    expect(result.suggestion).toContain('Create a new todo');
+    expect(result.valid).toBe(true);
   });
 });
 

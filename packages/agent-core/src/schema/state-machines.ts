@@ -128,12 +128,15 @@ export type TodoStatus = z.infer<typeof todoStatusSchema>;
 /**
  * Valid todo status transitions.
  * Maps current state → array of valid next states.
+ * 
+ * Note: cancelled → pending is allowed to support "restore" use case
+ * where a user or agent changes their mind about cancelling a todo.
  */
 export const TODO_STATUS_TRANSITIONS: Record<TodoStatus, readonly TodoStatus[]> = {
   pending: ['in_progress', 'cancelled'],
   in_progress: ['completed', 'cancelled'],
   completed: ['cancelled'], // Can cancel even after completion
-  cancelled: [], // Terminal state
+  cancelled: ['pending'], // Can restore to pending (undo cancellation)
 } as const;
 
 /**

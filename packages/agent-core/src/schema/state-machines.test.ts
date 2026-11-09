@@ -140,14 +140,19 @@ describe('Todo Status State Machine', () => {
       expect(isValidTodoTransition('completed', 'in_progress')).toBe(false);
     });
 
-    it('should NOT allow cancelled → pending', () => {
-      expect(isValidTodoTransition('cancelled', 'pending')).toBe(false);
+    it('should allow cancelled → pending (restore)', () => {
+      expect(isValidTodoTransition('cancelled', 'pending')).toBe(true);
+    });
+
+    it('should NOT allow cancelled → completed or in_progress directly', () => {
+      expect(isValidTodoTransition('cancelled', 'completed')).toBe(false);
+      expect(isValidTodoTransition('cancelled', 'in_progress')).toBe(false);
     });
   });
 
   describe('isTerminalTodoStatus', () => {
-    it('should return true for cancelled', () => {
-      expect(isTerminalTodoStatus('cancelled')).toBe(true);
+    it('should return false for cancelled (restore is allowed)', () => {
+      expect(isTerminalTodoStatus('cancelled')).toBe(false);
     });
 
     it('should return false for pending', () => {
@@ -168,8 +173,8 @@ describe('Todo Status State Machine', () => {
       expect(getValidTodoTransitions('pending')).toEqual(['in_progress', 'cancelled']);
     });
 
-    it('should return empty array for cancelled', () => {
-      expect(getValidTodoTransitions('cancelled')).toEqual([]);
+    it('should return pending for cancelled (restore option)', () => {
+      expect(getValidTodoTransitions('cancelled')).toEqual(['pending']);
     });
   });
 });
