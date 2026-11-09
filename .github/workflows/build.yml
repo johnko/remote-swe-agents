@@ -1,5 +1,5 @@
 name: Build
-on: 
+on:
   push:
     branches:
     - main
@@ -19,10 +19,11 @@ jobs:
       webapp: ${{ steps.filter.outputs.webapp }}
       github_actions: ${{ steps.filter.outputs.github_actions }}
       dockerfiles: ${{ steps.filter.outputs.dockerfiles }}
-      
+      microvm_preview_proxy: ${{ steps.filter.outputs.microvm_preview_proxy }}
+
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Filter changed files
         uses: dorny/paths-filter@v3
         id: filter
@@ -56,6 +57,10 @@ jobs:
               - 'package-lock.json'
             dockerfiles:
               - 'docker/**'
+            microvm_preview_proxy:
+              - 'packages/microvm-preview-proxy/**'
+              - 'package.json'
+              - 'package-lock.json'
   Build-and-Test-CDK:
     needs: changes
     if: ${{ needs.changes.outputs.cdk == 'true' || (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'workflow_dispatch' }}
@@ -202,6 +207,18 @@ jobs:
         name: Build slack-bolt-app docker image
       - run: |
           docker run --entrypoint node --env TESTING_BOOTSTRAP=true --env BOT_TOKEN=dummy --env SIGNING_SECRET=dummy slack-bolt-app local.js
+        name: Test if the image can boot successfully
+  Build-and-Test-MicrovmPreviewProxy:
+    needs: changes
+    if: ${{ needs.changes.outputs.microvm_preview_proxy == 'true' || (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          docker build -f packages/microvm-preview-proxy/Dockerfile -t microvm-preview-proxy ./packages/microvm-preview-proxy
+        name: Build microvm-preview-proxy docker image
+      - run: |
+          docker run --entrypoint node microvm-preview-proxy -e "console.log('Docker image boot test passed')" || true
         name: Test if the image can boot successfully
 permissions:
   id-token: write # This is required for requesting the JWT
