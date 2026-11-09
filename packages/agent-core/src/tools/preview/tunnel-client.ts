@@ -51,9 +51,22 @@ export class TunnelClient {
         resolve();
       });
 
+      // Maximum message size to prevent memory exhaustion attacks (10MB)
+      const MAX_TUNNEL_MESSAGE_SIZE = 10 * 1024 * 1024;
+
       this.ws.on('message', (data) => {
         try {
-          const msg: TunnelMessage = JSON.parse(data.toString());
+          // Validate message size
+          if (Buffer.isBuffer(data) && data.length > MAX_TUNNEL_MESSAGE_SIZE) {
+            console.error('[tunnel-client] Message exceeds maximum size');
+            return;
+          }
+          const msgStr = data.toString();
+          if (msgStr.length > MAX_TUNNEL_MESSAGE_SIZE) {
+            console.error('[tunnel-client] Message exceeds maximum size');
+            return;
+          }
+          const msg: TunnelMessage = JSON.parse(msgStr);
           this.handleMessage(msg);
         } catch (e) {
           console.error('[tunnel-client] Invalid message:', e);
@@ -100,7 +113,17 @@ export class TunnelClient {
 
     newWs.on('message', (data) => {
       try {
-        const msg: TunnelMessage = JSON.parse(data.toString());
+        // Validate message size
+        if (Buffer.isBuffer(data) && data.length > MAX_TUNNEL_MESSAGE_SIZE) {
+          console.error('[tunnel-client] Message exceeds maximum size');
+          return;
+        }
+        const msgStr = data.toString();
+        if (msgStr.length > MAX_TUNNEL_MESSAGE_SIZE) {
+          console.error('[tunnel-client] Message exceeds maximum size');
+          return;
+        }
+        const msg: TunnelMessage = JSON.parse(msgStr);
         this.handleMessage(msg);
       } catch (e) {
         console.error('[tunnel-client] Invalid message:', e);
