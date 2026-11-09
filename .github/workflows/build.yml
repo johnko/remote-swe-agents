@@ -23,44 +23,71 @@ jobs:
 
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
 
       - name: Filter changed files
-        uses: dorny/paths-filter@v3
         id: filter
-        with:
-          filters: |
-            cdk:
-              - 'cdk/**'
-            agent_core:
-              - 'packages/agent-core/**'
-              - 'package.json'
-              - 'package-lock.json'
-            slack_bolt_app:
-              - 'packages/slack-bolt-app/**'
-              - 'packages/agent-core/**'
-              - 'package.json'
-              - 'package-lock.json'
-            worker:
-              - 'packages/worker/**'
-              - 'packages/agent-core/**'
-              - 'package.json'
-              - 'package-lock.json'
-            webapp:
-              - 'packages/webapp/**'
-              - 'packages/agent-core/**'
-              - 'package.json'
-              - 'package-lock.json'
-            github_actions:
-              - 'packages/github-actions/**'
-              - 'packages/agent-core/**'
-              - 'package.json'
-              - 'package-lock.json'
-            dockerfiles:
-              - 'docker/**'
-            microvm_preview_proxy:
-              - 'packages/microvm-preview-proxy/**'
-              - 'package.json'
-              - 'package-lock.json'
+        shell: bash
+        run: |
+          # Determine base and head for comparison
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            base="${{ github.event.pull_request.base.sha }}"
+            head="${{ github.event.pull_request.head.sha }}"
+          elif [[ "${{ github.event_name }}" == "push" ]]; then
+            base="${{ github.event.before }}"
+            head="${{ github.sha }}"
+          else
+            # For workflow_dispatch, compare against the previous commit
+            base="HEAD~1"
+            head="HEAD"
+          fi
+
+          # Function to check if any file matches the patterns
+          check_changes() {
+            local patterns="$1"
+            for pattern in $patterns; do
+              if git diff --name-only "$base" "$head" | grep -qE "^${pattern}"; then
+                echo "true"
+                return 0
+              fi
+            done
+            echo "false"
+            return 0
+          }
+
+          # Check each path filter
+          cdk=$(check_changes "cdk/")
+          echo "cdk=$cdk" >> "$GITHUB_OUTPUT"
+          echo "cdk=$cdk"
+
+          agent_core=$(check_changes "packages/agent-core/ package\.json package-lock\.json")
+          echo "agent_core=$agent_core" >> "$GITHUB_OUTPUT"
+          echo "agent_core=$agent_core"
+
+          slack_bolt_app=$(check_changes "packages/slack-bolt-app/ packages/agent-core/ package\.json package-lock\.json")
+          echo "slack_bolt_app=$slack_bolt_app" >> "$GITHUB_OUTPUT"
+          echo "slack_bolt_app=$slack_bolt_app"
+
+          worker=$(check_changes "packages/worker/ packages/agent-core/ package\.json package-lock\.json")
+          echo "worker=$worker" >> "$GITHUB_OUTPUT"
+          echo "worker=$worker"
+
+          webapp=$(check_changes "packages/webapp/ packages/agent-core/ package\.json package-lock\.json")
+          echo "webapp=$webapp" >> "$GITHUB_OUTPUT"
+          echo "webapp=$webapp"
+
+          github_actions=$(check_changes "packages/github-actions/ packages/agent-core/ package\.json package-lock\.json")
+          echo "github_actions=$github_actions" >> "$GITHUB_OUTPUT"
+          echo "github_actions=$github_actions"
+
+          dockerfiles=$(check_changes "docker/")
+          echo "dockerfiles=$dockerfiles" >> "$GITHUB_OUTPUT"
+          echo "dockerfiles=$dockerfiles"
+
+          microvm_preview_proxy=$(check_changes "packages/microvm-preview-proxy/ package\.json package-lock\.json")
+          echo "microvm_preview_proxy=$microvm_preview_proxy" >> "$GITHUB_OUTPUT"
+          echo "microvm_preview_proxy=$microvm_preview_proxy"
   Build-and-Test-CDK:
     needs: changes
     if: ${{ needs.changes.outputs.cdk == 'true' || (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'workflow_dispatch' }}
@@ -95,9 +122,7 @@ jobs:
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: '22.x'
-      - run: |
-          npm ci
-          npm run build -w packages/agent-core
+      - run: npm ci
         name: Install dependencies
       - run: |
           npm run build
@@ -114,9 +139,7 @@ jobs:
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: '22.x'
-      - run: |
-          npm ci
-          npm run build -w packages/agent-core
+      - run: npm ci
         name: Install dependencies
       - run: |
           npm run format:check
@@ -140,9 +163,7 @@ jobs:
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: '22.x'
-      - run: |
-          npm ci
-          npm run build -w packages/agent-core
+      - run: npm ci
         name: Install dependencies
       - run: |
           npm run format:check
@@ -185,9 +206,7 @@ jobs:
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: '22.x'
-      - run: |
-          npm ci
-          npm run build -w packages/agent-core
+      - run: npm ci
         name: Install dependencies
       - run: |
           npm run format:check -w packages/github-actions
