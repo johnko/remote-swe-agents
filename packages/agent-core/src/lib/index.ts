@@ -53,3 +53,4 @@ export * from './rewind-filter.js';
 export * from './state-validator.js';
 export * from './hooks.js';
 export * from './hook-execution.js';
+export * from './session-access.js';
