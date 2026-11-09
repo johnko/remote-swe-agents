@@ -196,12 +196,14 @@ jobs:
       - run: |
           npm ci
           npm run format:check -w packages/agent-core
-        name: Install dependencies
         name: Run static analyses
-      - run: npm run test
+      - run: |
+          npm run test
         working-directory: ./packages/agent-core
         name: Run unit tests
-      - run: npm run build -w packages/agent-core
+      - run: |
+          npm run build
+        working-directory: ./packages/agent-core
         name: Run build
   Build-and-Test-GitHubActions:
     needs: changes
