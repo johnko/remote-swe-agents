@@ -321,8 +321,9 @@ export const executeHooksForEvent = async (context: HookExecutionContext): Promi
           continue;
         }
 
+        const hookType = hook.script ? 'inline script' : 'command';
         console.log(
-          `[hook-execution] Executing hook "${hook.name}" (${isScript ? 'inline script' : 'command'}) for event: ${context.event}`
+          `[hook-execution] Executing hook "${hook.name}" (${hookType}) for event: ${context.event}`
         );
 
         let output = '';
