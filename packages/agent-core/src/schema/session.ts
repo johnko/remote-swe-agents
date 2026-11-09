@@ -1,15 +1,11 @@
 import { z } from 'zod';
 import { agentStatusSchema, runtimeTypeSchema } from './agent.js';
 import { inferenceModeSchema, modelTypeSchema } from './model.js';
+import { instanceStatusSchema } from './state-machines.js';
 
-export const instanceStatusSchema = z.union([
-  z.literal('starting'),
-  z.literal('running'),
-  z.literal('stopped'),
-  z.literal('terminated'),
-]);
-
-export type InstanceStatus = z.infer<typeof instanceStatusSchema>;
+// Re-export from state-machines for backward compatibility
+export { instanceStatusSchema } from './state-machines.js';
+export type { InstanceStatus } from './state-machines.js';
 
 export const sessionItemSchema = z.object({
   PK: z.literal('sessions'),
