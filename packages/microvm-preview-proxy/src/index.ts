@@ -15,6 +15,12 @@ const PROXY_PORT = 8080;
 const TUNNEL_PORT = 9000;
 const LIFECYCLE_PREFIX = '/aws/lambda-microvms/runtime/v1';
 
+// Maximum message size to prevent memory exhaustion attacks (10MB)
+const MAX_MESSAGE_SIZE = 10 * 1024 * 1024;
+
+// Request ID validation regex
+const VALID_REQUEST_ID_REGEX = /^[a-zA-Z0-9-_.]+$/;
+
 let tunnelSocket: WebSocket | null = null;
 const pendingRequests = new Map<string, { res: ServerResponse; timer: NodeJS.Timeout; streaming: boolean }>();
 const browserWsSockets = new Map<string, WebSocket>();
@@ -22,6 +28,15 @@ const browserWsQueues = new Map<string, (Buffer | string)[]>();
 
 let requestCounter = 0;
 const nextId = () => `req-${Date.now()}-${++requestCounter}`;
+
+// Request ID creation with validation
+function createRequestId(): string {
+  const id = nextId();
+  if (!VALID_REQUEST_ID_REGEX.test(id)) {
+    throw new Error('Generated request ID contains invalid characters');
+  }
+  return id;
+}
 
 // --- Tunnel server (port 9000) ---
 const tunnelWss = new WebSocketServer({ port: TUNNEL_PORT });
@@ -37,7 +52,29 @@ tunnelWss.on('connection', (ws) => {
 
   ws.on('message', (data) => {
     try {
-      const msg: TunnelMessage = JSON.parse(data.toString());
+      // Validate message size
+      if (data instanceof ArrayBuffer) {
+        if (data.byteLength > MAX_MESSAGE_SIZE) {
+          console.error('[tunnel] Message exceeds maximum size');
+          ws.close(1009, 'Message too large');
+          return;
+        }
+      } else if (Buffer.isBuffer(data)) {
+        if (data.length > MAX_MESSAGE_SIZE) {
+          console.error('[tunnel] Message exceeds maximum size');
+          ws.close(1009, 'Message too large');
+          return;
+        }
+      }
+
+      const msgStr = data.toString();
+      if (msgStr.length > MAX_MESSAGE_SIZE) {
+        console.error('[tunnel] Message exceeds maximum size');
+        ws.close(1009, 'Message too large');
+        return;
+      }
+
+      const msg: TunnelMessage = JSON.parse(msgStr);
       handleTunnelMessage(msg);
     } catch (e) {
       console.error('[tunnel] Invalid message:', e);

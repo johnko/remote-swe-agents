@@ -16,6 +16,24 @@ import {
 import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
+import { mcpConfigSchema } from '@remote-swe-agents/agent-core/schema';
+
+// Safely load and validate MCP configuration
+const loadMcpConfig = () => {
+  try {
+    const configPath = join(dirname(fileURLToPath(import.meta.url)), '../../../mcp.json');
+    const content = readFileSync(configPath).toString();
+
+    // Parse and validate with schema
+    const parsed = JSON.parse(content);
+    const validated = mcpConfigSchema.parse(parsed);
+
+    return JSON.stringify(validated);
+  } catch (e) {
+    console.warn('Failed to load or validate mcp.json, using empty config:', e);
+    return JSON.stringify({ mcpServers: {} });
+  }
+};
 
 /**
  * Essential system prompt that is ALWAYS included regardless of custom agent configuration.
@@ -225,7 +243,7 @@ export const DefaultAgent: CustomAgent = {
   bedrockDefaultModel: defaultAgentConfig.bedrockDefaultModel,
   systemPrompt: '',
   tools: [...allOptionalTools, ...requiredToolNames],
-  mcpConfig: readFileSync(join(dirname(fileURLToPath(import.meta.url)), '../../../mcp.json')).toString(),
+  mcpConfig: loadMcpConfig(),
   runtimeType: defaultAgentConfig.runtimeType,
   createdAt: 0,
   updatedAt: 0,
