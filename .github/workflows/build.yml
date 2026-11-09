@@ -192,7 +192,7 @@ jobs:
       - run: npm install -g typescript@5.7.3 vitest@3.2.6 next@16.1.6 prettier@3.5.1 esbuild@0.28.1 tsx@4.19.2
         name: Install dev tools globally
       - run: |
-          npm ci
+          npm ci --include=dev
           npm run format:check -w packages/agent-core
         name: Run static analyses
       - run: |
