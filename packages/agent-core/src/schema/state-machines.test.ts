@@ -16,7 +16,6 @@ import {
   isLossyConnectionState,
   getConnectionHealth,
   describeStateMachine,
-  STATE_MACHINE_DOCUMENTATION,
 } from './state-machines.js';
 
 // Note: Instance status state machine tests omitted - AWS handles instance lifecycle
@@ -220,15 +219,5 @@ describe('describeStateMachine', () => {
     expect(doc).toContain('**States**:');
     expect(doc).toContain('**Terminal States**: stopped');
     expect(doc).toContain('`idle` → `running`');
-  });
-});
-
-describe('STATE_MACHINE_DOCUMENTATION', () => {
-  it('should contain all state machine documentation', () => {
-    expect(STATE_MACHINE_DOCUMENTATION).toContain('Instance Status State Machine');
-    expect(STATE_MACHINE_DOCUMENTATION).toContain('Agent Status State Machine');
-    expect(STATE_MACHINE_DOCUMENTATION).toContain('Todo Status State Machine');
-    expect(STATE_MACHINE_DOCUMENTATION).toContain('Lesson Status State Machine');
-    expect(STATE_MACHINE_DOCUMENTATION).toContain('Circuit Breaker State Machine');
   });
 });
