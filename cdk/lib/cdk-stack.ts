@@ -206,6 +206,11 @@ export class MainStack extends cdk.Stack {
       vapidKeys,
     });
 
+    // SECURITY FIX: Update Storage CORS to include the CloudFront domain
+    // This ensures the webapp can access S3 resources via browser CORS
+    const webappOrigin = webapp.baseUrl.startsWith('https://') ? webapp.baseUrl : `https://${webapp.baseUrl}`;
+    storage.addAllowedOrigins([webappOrigin]);
+
     if (props.slack && botToken && signingSecret) {
       new SlackBolt(this, 'SlackBolt', {
         botTokenParameter: botToken,
