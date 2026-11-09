@@ -178,7 +178,10 @@ export type LessonStatus = z.infer<typeof lessonStatusSchema>;
 
 /**
  * Valid lesson status transitions.
- * Both directions are allowed for lesson status.
+ * Both directions are allowed for lesson status (bidirectional).
+ * 
+ * Note: Since lessons only have two states with bidirectional transitions,
+ * any transition is valid except self-to-self is also allowed.
  */
 export const LESSON_STATUS_TRANSITIONS: Record<LessonStatus, readonly LessonStatus[]> = {
   active: ['archived'],
@@ -187,6 +190,10 @@ export const LESSON_STATUS_TRANSITIONS: Record<LessonStatus, readonly LessonStat
 
 /**
  * Checks if a lesson status transition is valid.
+ * 
+ * Note: Lessons have simple bidirectional transitions (active ↔ archived),
+ * so this is essentially always true for any different state.
+ * Kept for consistency with other state machines.
  */
 export function isValidLessonTransition(current: LessonStatus, next: LessonStatus): boolean {
   return current === next || LESSON_STATUS_TRANSITIONS[current].includes(next);

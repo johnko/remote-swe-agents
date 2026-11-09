@@ -10,15 +10,10 @@
 import {
   type InstanceStatus,
   type AgentStatus,
-  type LessonStatus,
   isValidInstanceTransition,
   isValidAgentTransition,
-  isValidLessonTransition,
   getValidInstanceTransitions,
   getValidAgentTransitions,
-  AGENT_STATUS_TRANSITIONS,
-  INSTANCE_STATUS_TRANSITIONS,
-  LESSON_STATUS_TRANSITIONS,
 } from '../schema/state-machines.js';
 
 /**
@@ -140,37 +135,6 @@ export function validateAgentTransition(
  * Since todo items are a reflection of agent tool calls and the agent
  * is the source of truth, any transition is valid (see TODO_STATUS_TRANSITIONS).
  */
-
-/**
- * Validates a lesson status transition.
- * 
- * @param current - Current lesson status
- * @param requested - Requested new status
- * @returns Validation result (lessons have bidirectional transitions)
- */
-export function validateLessonTransition(
-  current: LessonStatus,
-  requested: LessonStatus
-): StateValidationResult {
-  const allowed = LESSON_STATUS_TRANSITIONS[current];
-  
-  if (isValidLessonTransition(current, requested)) {
-    return {
-      valid: true,
-      current,
-      requested,
-      allowedTransitions: [...allowed],
-    };
-  }
-
-  return {
-    valid: false,
-    current,
-    requested,
-    allowedTransitions: [...allowed],
-    error: `Cannot transition lesson from '${current}' to '${requested}'.`,
-  };
-}
 
 /**
  * Creates a typed state transition validator for a specific status type.

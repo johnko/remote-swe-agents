@@ -56,17 +56,7 @@ describe('validateAgentTransition', () => {
 
 // Note: validateTodoTransition removed - todo allows any transition since agent is source of truth
 
-describe('validateLessonTransition', () => {
-  it('should allow active → archived', () => {
-    const result = validateLessonTransition('active', 'archived');
-    expect(result.valid).toBe(true);
-  });
-
-  it('should allow archived → active', () => {
-    const result = validateLessonTransition('archived', 'active');
-    expect(result.valid).toBe(true);
-  });
-});
+// Note: validateLessonTransition removed - lessons have simple bidirectional transitions
 
 describe('batchValidateTransitions', () => {
   it('should validate multiple transitions', () => {
