@@ -75,7 +75,7 @@ export class Auth extends Construct {
         email: true,
       },
       // SECURITY: Enable optional MFA via TOTP for additional account protection
-      mfa: UserPoolMfa.OPTIONAL,
+      mfa: Mfa.OPTIONAL,
       mfaSecondFactor: {
         sms: false, // SMS-based 2FA disabled due to SIM swap risks
         otp: true, // TOTP-based 2FA enabled (authenticator apps)
