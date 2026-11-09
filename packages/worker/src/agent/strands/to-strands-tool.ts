@@ -27,6 +27,7 @@ import { tool, type ToolContext } from '@strands-agents/sdk';
 import type { z, ZodType } from 'zod';
 import { renderToolResult, getSession, executeHooksForEventWithSession, executePermissionHooks, HookContextData } from '@remote-swe-agents/agent-core/lib';
 import { reportProgressTool, sendToAgentTool, acknowledgeAgentTool } from '@remote-swe-agents/agent-core/tools';
+import { logToolExecution, logPermissionDenied, logToolBlocked } from '@remote-swe-agents/agent-core/lib/security-logger.js';
 
 /** Sanitize tool names: Strands ToolRegistry requires ^[a-zA-Z0-9_-]+$ */
 export const sanitizeToolName = (name: string): string => name.replace(/[^a-zA-Z0-9_-]/g, '_');
@@ -254,6 +255,7 @@ export async function toStrandsTool<Input>(def: RemoteSweToolLike<Input>, deps: 
           // Handle hook blocking
           if (permissionResult.permission === 'deny') {
             console.log(`[toStrandsTool] Tool "${sanitizedName}" blocked by permission hook`);
+            logToolBlocked(workerId, sanitizedName, permissionResult.userMessage || 'blocked by permission hook');
             const errorMsg = permissionResult.userMessage || `Tool "${sanitizedName}" blocked by hook`;
             return flattenToolResult(`[Tool Blocked] ${errorMsg}`);
           }
@@ -264,6 +266,8 @@ export async function toStrandsTool<Input>(def: RemoteSweToolLike<Input>, deps: 
       }
 
       let result: string | ToolResultContentBlock[];
+      const toolExecStart = Date.now();
+      let toolSuccess = true;
       try {
         // Execute the actual tool
         result = await def.handler(input as Input, {
@@ -284,6 +288,7 @@ export async function toStrandsTool<Input>(def: RemoteSweToolLike<Input>, deps: 
           }
         }
       } catch (toolError) {
+        toolSuccess = false;
         // Execute postToolUseFailure hook on error
         if (session) {
           try {
@@ -297,6 +302,13 @@ export async function toStrandsTool<Input>(def: RemoteSweToolLike<Input>, deps: 
         // Return error as string result instead of throwing
         const errorMsg = toolError instanceof Error ? toolError.message : String(toolError);
         result = `[Tool Error] ${sanitizedName} failed: ${errorMsg}`;
+      } finally {
+        // Log tool execution result
+        const durationMs = Date.now() - toolExecStart;
+        logToolExecution(workerId, sanitizedName, toolSuccess, {
+          durationMs,
+          toolUseId,
+        });
       }
 
       // forceReport timer — reset on communication tools
