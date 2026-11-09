@@ -126,7 +126,7 @@ export class Webapp extends Construct {
     props.agentCoreRuntime.grantStop(handler);
     if (props.vapidKeys) {
       props.vapidKeys.grantRead(handler);
-      handler.node.addResourceDependency(props.vapidKeys.customResource);
+      handler.node.addDependency(props.vapidKeys.customResource);
     }
 
     // Grant Bedrock embedding access for the lesson (memory) store. The webapp

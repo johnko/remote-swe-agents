@@ -241,7 +241,7 @@ export class AgentCoreRuntime extends Construct implements IGrantable {
         ...workerLaunchEnv,
       },
     });
-    runtime.node.addResourceDependency(role);
+    runtime.node.addDependency(role);
 
     this.runtimeArn = runtime.attrAgentRuntimeArn;
 
