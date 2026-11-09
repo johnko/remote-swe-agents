@@ -122,8 +122,10 @@ jobs:
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: '22.x'
-      - run: npm ci && npm install -g typescript vitest next prettier esbuild tsx
-        name: Install dependencies and global dev tools
+      - run: npm ci
+        name: Install dependencies
+      - run: for bin in tsc vitest next prettier esbuild tsx; do sudo ln -sf "$(pwd)/node_modules/.bin/$bin" "/usr/local/bin/$bin" 2>/dev/null || true; done
+        name: Symlink dev tools to PATH
       - run: npm run build -w packages/slack-bolt-app
         name: Run build
       - run: npm run format:check -w packages/slack-bolt-app
@@ -138,8 +140,10 @@ jobs:
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: '22.x'
-      - run: npm ci && npm install -g typescript vitest next prettier esbuild tsx
-        name: Install dependencies and global dev tools
+      - run: npm ci
+        name: Install dependencies
+      - run: for bin in tsc vitest next prettier esbuild tsx; do sudo ln -sf "$(pwd)/node_modules/.bin/$bin" "/usr/local/bin/$bin" 2>/dev/null || true; done
+        name: Symlink dev tools to PATH
       - run: npm run format:check -w packages/worker
         name: Run static analyses
       - run: npm run test -w packages/worker
@@ -156,8 +160,10 @@ jobs:
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: '22.x'
-      - run: npm ci && npm install -g typescript vitest next prettier esbuild tsx
-        name: Install dependencies and global dev tools
+      - run: npm ci
+        name: Install dependencies
+      - run: for bin in tsc vitest next prettier esbuild tsx; do sudo ln -sf "$(pwd)/node_modules/.bin/$bin" "/usr/local/bin/$bin" 2>/dev/null || true; done
+        name: Symlink dev tools to PATH
       - run: npm run format:check -w packages/webapp
         name: Run static analysis
       - run: cp ./packages/webapp/.env.local.example ./packages/webapp/.env.local && npm run build -w packages/webapp
@@ -172,8 +178,10 @@ jobs:
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: '22.x'
-      - run: npm ci && npm install -g typescript vitest next prettier esbuild tsx
-        name: Install dependencies and global dev tools
+      - run: npm ci
+        name: Install dependencies
+      - run: for bin in tsc vitest next prettier esbuild tsx; do sudo ln -sf "$(pwd)/node_modules/.bin/$bin" "/usr/local/bin/$bin" 2>/dev/null || true; done
+        name: Symlink dev tools to PATH
       - run: npm run format:check -w packages/agent-core
         name: Run static analyses
       - run: npm run test -w packages/agent-core
@@ -190,8 +198,10 @@ jobs:
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: '22.x'
-      - run: npm ci && npm install -g typescript vitest next prettier esbuild tsx
-        name: Install dependencies and global dev tools
+      - run: npm ci
+        name: Install dependencies
+      - run: for bin in tsc vitest next prettier esbuild tsx; do sudo ln -sf "$(pwd)/node_modules/.bin/$bin" "/usr/local/bin/$bin" 2>/dev/null || true; done
+        name: Symlink dev tools to PATH
       - run: npm run format:check -w packages/github-actions
         name: Run static analyses
       - run: npm run build -w packages/github-actions
