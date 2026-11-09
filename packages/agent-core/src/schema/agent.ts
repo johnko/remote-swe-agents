@@ -1,8 +1,10 @@
 import { z } from 'zod';
 import { inferenceModeSchema, ModelType, modelTypeSchema } from './model.js';
+import { agentStatusSchema, runtimeTypeSchema } from './state-machines.js';
 
-export const agentStatusSchema = z.union([z.literal('working'), z.literal('pending'), z.literal('completed')]);
-export const runtimeTypeSchema = z.union([z.literal('ec2'), z.literal('agent-core')]);
+// Re-export from state-machines for backward compatibility
+export { agentStatusSchema, runtimeTypeSchema } from './state-machines.js';
+export type { AgentStatus, RuntimeType } from './state-machines.js';
 export const defaultRuntimeType: RuntimeType = 'agent-core';
 
 export type AgentStatus = z.infer<typeof agentStatusSchema>;

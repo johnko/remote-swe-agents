@@ -15,3 +15,6 @@ export * from './skill.js';
 export * from './lesson.js';
 export * from './hook.js';
 export * from './user-preferences.js';
+
+// State machines - explicit state definitions and validators
+export * from './state-machines.js';

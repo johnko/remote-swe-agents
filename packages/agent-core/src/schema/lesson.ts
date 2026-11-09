@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { lessonStatusSchema } from './state-machines.js';
 
 /**
  * Maximum number of lessons a single user may persist. Keeps the per-user
@@ -51,8 +52,9 @@ export const LESSON_INJECTION_MAX_BYTES = 3072;
 export const LESSON_EMBEDDING_MODEL_ID = 'amazon.titan-embed-text-v2:0';
 export const LESSON_EMBEDDING_DIMENSIONS = 1024;
 
-export const lessonStatusSchema = z.enum(['active', 'archived']);
-export type LessonStatus = z.infer<typeof lessonStatusSchema>;
+// Re-export from state-machines for backward compatibility
+export { lessonStatusSchema } from './state-machines.js';
+export type { LessonStatus } from './state-machines.js';
 
 export const lessonCreatedBySchema = z.enum(['agent', 'user']);
 export type LessonCreatedBy = z.infer<typeof lessonCreatedBySchema>;
