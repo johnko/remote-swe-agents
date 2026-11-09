@@ -60,12 +60,12 @@ export const validateApiKey = async (apiKey: string): Promise<boolean> => {
  * same API key always renders as the same sender across messages, but it
  * cannot be reversed back into the secret.
  *
- * Format: `apikey-<12-hex-chars>`. The fingerprint length is intentionally
- * generous (48 bits) so accidental collisions are astronomically unlikely
- * across the realistic key population (a few hundred keys per deployment).
+ * Format: `apikey-<16-base64url-chars>`. The fingerprint length provides
+ * 96 bits of entropy (16 chars * 6 bits per base64url char), making accidental
+ * collisions astronomically unlikely across any realistic key population.
  */
 export const deriveApiKeyId = (apiKey: string): string => {
-  const fingerprint = crypto.createHash('sha256').update(apiKey).digest('hex').slice(0, 12);
+  const fingerprint = crypto.createHash('sha256').update(apiKey).digest('base64url').slice(0, 16);
   return `apikey-${fingerprint}`;
 };
 
