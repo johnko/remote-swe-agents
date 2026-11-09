@@ -18,7 +18,12 @@
  */
 
 export type SecurityEventCategory =
-  'session_lifecycle' | 'tool_execution' | 'permission' | 'authentication' | 'error' | 'audit';
+  | 'session_lifecycle'
+  | 'tool_execution'
+  | 'permission'
+  | 'authentication'
+  | 'error'
+  | 'audit';
 
 export type SecurityEventLevel = 'info' | 'warn' | 'error';
 
