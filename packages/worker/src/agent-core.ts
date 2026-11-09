@@ -10,13 +10,34 @@ import { join } from 'path';
 
 setProcessRuntimeType('agent-core');
 
+// Version validation regex - allow alphanumeric, hyphens, dots, underscores
+const VALID_VERSION_REGEX = /^[a-zA-Z0-9._-]{1,64}$/;
+
+const sanitizeVersion = (version: string): string => {
+  if (!version || typeof version !== 'string') {
+    return 'unknown';
+  }
+  const trimmed = version.trim();
+  if (!VALID_VERSION_REGEX.test(trimmed)) {
+    console.warn(`[agent-core] Invalid version format, using 'unknown'`);
+    return 'unknown';
+  }
+  return trimmed;
+};
+
 const workerVersion = (() => {
   try {
-    return readFileSync(join(__dirname, '../.build-version'), 'utf-8').trim();
+    const versionContent = readFileSync(join(__dirname, '../.build-version'), 'utf-8');
+    return sanitizeVersion(versionContent);
   } catch {
     try {
-      const pkg = JSON.parse(readFileSync(join(__dirname, '../package.json'), 'utf-8'));
-      return `pkg-${pkg.version}`;
+      const pkgContent = readFileSync(join(__dirname, '../package.json'), 'utf-8');
+      const parsed = JSON.parse(pkgContent);
+      // Validate parsed version
+      if (parsed && typeof parsed.version === 'string' && VALID_VERSION_REGEX.test(parsed.version)) {
+        return `pkg-${sanitizeVersion(parsed.version)}`;
+      }
+      return 'unknown';
     } catch {
       return 'unknown';
     }
