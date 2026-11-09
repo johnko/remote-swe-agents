@@ -18,19 +18,30 @@ interface TemplateModalProps {
   onSelectTemplate: (template: PromptTemplate) => void;
 }
 
+/**
+ * State machine for template modal UI mode.
+ * Replaces fragmented boolean flags (isCreating, editingId) with explicit,
+ * mutually-exclusive states. Prevents impossible states like
+ * (isCreating=true && editingId!=null) and enables exhaustive switch handling.
+ */
+type TemplateModalMode =
+  | { type: 'viewing' }
+  | { type: 'creating' }
+  | { type: 'editing'; templateId: string };
+
 export default function TemplateModal({ isOpen, onClose, templates, onSelectTemplate }: TemplateModalProps) {
   const t = useTranslations('new_session.templateModal');
   const locale = useLocale();
   const localeForDate = locale === 'ja' ? 'ja-JP' : 'en-US';
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [editingContent, setEditingContent] = useState('');
-  const [isCreating, setIsCreating] = useState(false);
-  const [newContent, setNewContent] = useState('');
+
+  // Single state machine for modal mode
+  const [mode, setMode] = useState<TemplateModalMode>({ type: 'viewing' });
+  const [content, setContent] = useState('');
 
   const { execute: executeCreate, isExecuting: isCreatingTemplate } = useAction(createPromptTemplate, {
     onSuccess: () => {
-      setIsCreating(false);
-      setNewContent('');
+      setMode({ type: 'viewing' });
+      setContent('');
       toast.success(t('createSuccess'));
     },
     onError: ({ error }) => {
@@ -40,8 +51,8 @@ export default function TemplateModal({ isOpen, onClose, templates, onSelectTemp
 
   const { execute: executeUpdate, isExecuting: isUpdatingTemplate } = useAction(updatePromptTemplate, {
     onSuccess: () => {
-      setEditingId(null);
-      setEditingContent('');
+      setMode({ type: 'viewing' });
+      setContent('');
       toast.success(t('updateSuccess'));
     },
     onError: ({ error }) => {
@@ -59,18 +70,18 @@ export default function TemplateModal({ isOpen, onClose, templates, onSelectTemp
   });
 
   const handleEdit = (template: PromptTemplate) => {
-    setEditingId(template.SK);
-    setEditingContent(template.content);
+    setMode({ type: 'editing', templateId: template.SK });
+    setContent(template.content);
   };
 
   const handleSaveEdit = () => {
-    if (!editingId || !editingContent.trim()) return;
-    executeUpdate({ id: editingId, content: editingContent });
+    if (mode.type !== 'editing' || !content.trim()) return;
+    executeUpdate({ id: mode.templateId, content });
   };
 
   const handleCancelEdit = () => {
-    setEditingId(null);
-    setEditingContent('');
+    setMode({ type: 'viewing' });
+    setContent('');
   };
 
   const handleDelete = (id: string) => {
@@ -79,13 +90,18 @@ export default function TemplateModal({ isOpen, onClose, templates, onSelectTemp
   };
 
   const handleCreate = () => {
-    if (!newContent.trim()) return;
-    executeCreate({ content: newContent });
+    if (!content.trim()) return;
+    executeCreate({ content });
   };
 
   const handleCancelCreate = () => {
-    setIsCreating(false);
-    setNewContent('');
+    setMode({ type: 'viewing' });
+    setContent('');
+  };
+
+  const startCreate = () => {
+    setMode({ type: 'creating' });
+    setContent('');
   };
 
   return (
@@ -96,70 +112,94 @@ export default function TemplateModal({ isOpen, onClose, templates, onSelectTemp
         </DialogHeader>
 
         <div className="flex-1 overflow-y-auto space-y-4">
-          {/* Create new template */}
-          {isCreating ? (
-            <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-gray-50 dark:bg-gray-800">
-              <textarea
-                value={newContent}
-                onChange={(e) => setNewContent(e.target.value)}
-                placeholder={t('placeholder')}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white resize-vertical"
-                rows={4}
-                autoFocus
-              />
-              <div className="flex gap-2 mt-3">
-                <Button onClick={handleCreate} size="sm" disabled={!newContent.trim() || isCreatingTemplate}>
-                  <Save className="w-4 h-4 mr-1" />
-                  {isCreatingTemplate ? t('saving') : t('save')}
-                </Button>
-                <Button onClick={handleCancelCreate} size="sm" variant="outline">
-                  <X className="w-4 h-4 mr-1" />
-                  {t('cancel')}
-                </Button>
-              </div>
-            </div>
-          ) : (
-            <Button onClick={() => setIsCreating(true)} variant="outline" className="w-full border-dashed">
-              <Plus className="w-4 h-4 mr-2" />
-              {t('createNew')}
-            </Button>
-          )}
+          {/* Create new template - state machine-driven rendering */}
+          {(() => {
+            switch (mode.type) {
+              case 'creating':
+                return (
+                  <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-gray-50 dark:bg-gray-800">
+                    <textarea
+                      value={content}
+                      onChange={(e) => setContent(e.target.value)}
+                      placeholder={t('placeholder')}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white resize-vertical"
+                      rows={4}
+                      autoFocus
+                    />
+                    <div className="flex gap-2 mt-3">
+                      <Button onClick={handleCreate} size="sm" disabled={!content.trim() || isCreatingTemplate}>
+                        <Save className="w-4 h-4 mr-1" />
+                        {isCreatingTemplate ? t('saving') : t('save')}
+                      </Button>
+                      <Button onClick={handleCancelCreate} size="sm" variant="outline">
+                        <X className="w-4 h-4 mr-1" />
+                        {t('cancel')}
+                      </Button>
+                    </div>
+                  </div>
+                );
+              case 'viewing':
+              case 'editing':
+                return (
+                  <Button onClick={startCreate} variant="outline" className="w-full border-dashed">
+                    <Plus className="w-4 h-4 mr-2" />
+                    {t('createNew')}
+                  </Button>
+                );
+              default:
+                // Exhaustiveness check
+                const _exhaustiveCheck: never = mode;
+                return _exhaustiveCheck;
+            }
+          })()}
 
-          {/* Template list */}
+          {/* Template list - state machine-driven rendering per item */}
           {templates.length === 0 ? (
             <div className="text-center py-8 text-gray-500 dark:text-gray-400">{t('noTemplates')}</div>
           ) : (
             <div className="space-y-3">
-              {templates.map((template) => (
-                <div
-                  key={template.SK}
-                  className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-gray-800"
-                >
-                  {editingId === template.SK ? (
-                    <div>
-                      <textarea
-                        value={editingContent}
-                        onChange={(e) => setEditingContent(e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white resize-vertical"
-                        rows={4}
-                        autoFocus
-                      />
-                      <div className="flex gap-2 mt-3">
-                        <Button
-                          onClick={handleSaveEdit}
-                          size="sm"
-                          disabled={!editingContent.trim() || isUpdatingTemplate}
-                        >
-                          <Save className="w-4 h-4 mr-1" />
-                          {isUpdatingTemplate ? t('saving') : t('save')}
-                        </Button>
-                        <Button onClick={handleCancelEdit} size="sm" variant="outline">
-                          <X className="w-4 h-4 mr-1" />
-                          {t('cancel')}
-                        </Button>
+              {templates.map((template) => {
+                // Check if this specific template is being edited using state machine
+                const isEditingThisTemplate = mode.type === 'editing' && mode.templateId === template.SK;
+
+                if (isEditingThisTemplate) {
+                  return (
+                    <div
+                      key={template.SK}
+                      className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-gray-800"
+                    >
+                      <div>
+                        <textarea
+                          value={content}
+                          onChange={(e) => setContent(e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white resize-vertical"
+                          rows={4}
+                          autoFocus
+                        />
+                        <div className="flex gap-2 mt-3">
+                          <Button
+                            onClick={handleSaveEdit}
+                            size="sm"
+                            disabled={!content.trim() || isUpdatingTemplate}
+                          >
+                            <Save className="w-4 h-4 mr-1" />
+                            {isUpdatingTemplate ? t('saving') : t('save')}
+                          </Button>
+                          <Button onClick={handleCancelEdit} size="sm" variant="outline">
+                            <X className="w-4 h-4 mr-1" />
+                            {t('cancel')}
+                          </Button>
+                        </div>
                       </div>
                     </div>
-                  ) : (
+                  );
+                }
+
+                return (
+                  <div
+                    key={template.SK}
+                    className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-gray-800"
+                  >
                     <div>
                       <div className="cursor-pointer mb-3" onClick={() => onSelectTemplate(template)}>
                         <p className="text-sm text-gray-900 dark:text-gray-100 whitespace-pre-wrap">
@@ -186,9 +226,9 @@ export default function TemplateModal({ isOpen, onClose, templates, onSelectTemp
                         </div>
                       </div>
                     </div>
-                  )}
-                </div>
-              ))}
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>

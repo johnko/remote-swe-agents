@@ -14,6 +14,18 @@ interface SessionContentSearchProps {
   sidebarOpen?: boolean;
 }
 
+/**
+ * State machine for search async operations.
+ * Replaces fragmented { query, results, error, timedOut, isExecuting } booleans
+ * with a single, type-safe state that prevents impossible combinations
+ * (e.g., results present while error is set).
+ */
+type SearchState =
+  | { type: 'idle' }
+  | { type: 'loading' }
+  | { type: 'success'; results: SearchResult[]; query: string; timedOut: boolean }
+  | { type: 'error'; error: string };
+
 function HighlightedSnippet({
   snippet,
   matchOffset,
@@ -43,16 +55,17 @@ export default function SessionContentSearch({ workerId, sidebarOpen }: SessionC
   const pathname = usePathname();
   const router = useRouter();
   const [query, setQuery] = useState('');
-  const [submittedQuery, setSubmittedQuery] = useState('');
-  const [results, setResults] = useState<SearchResult[] | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  // State machine for search async operation
+  const [searchState, setSearchState] = useState<SearchState>({ type: 'idle' });
   const [isOpen, setIsOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const toggleRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
-  const [timedOut, setTimedOut] = useState(false);
   const [panelStyle, setPanelStyle] = useState<React.CSSProperties>({});
   const mounted = useMounted();
+
+  // Derived loading state for UI
+  const isLoading = searchState.type === 'loading';
 
   // Close the search panel when the sidebar opens. This synchronizes local
   // panel visibility with an external UI signal (the sidebar), so a
@@ -67,34 +80,29 @@ export default function SessionContentSearch({ workerId, sidebarOpen }: SessionC
   const { execute, isExecuting } = useAction(searchSessionContentAction, {
     onSuccess: ({ data }) => {
       if (data) {
-        setResults(data.results);
-        setTimedOut(data.timedOut ?? false);
-        setError(null);
+        setSearchState({
+          type: 'success',
+          results: data.results,
+          query: query.trim(),
+          timedOut: data.timedOut ?? false,
+        });
       }
     },
     onError: (err) => {
-      setError(err.error?.serverError || t('searchError'));
-      setResults(null);
-      setTimedOut(false);
+      setSearchState({ type: 'error', error: err.error?.serverError || t('searchError') });
     },
   });
 
   const handleSearch = useCallback(() => {
     const trimmed = query.trim();
     if (!trimmed || isExecuting) return;
-    setSubmittedQuery(trimmed);
-    setError(null);
-    setResults(null);
-    setTimedOut(false);
+    setSearchState({ type: 'loading' });
     execute({ workerId, query: trimmed });
   }, [query, workerId, execute, isExecuting]);
 
   const handleClear = useCallback(() => {
     setQuery('');
-    setSubmittedQuery('');
-    setResults(null);
-    setError(null);
-    setTimedOut(false);
+    setSearchState({ type: 'idle' });
     inputRef.current?.focus();
   }, []);
 
@@ -112,14 +120,16 @@ export default function SessionContentSearch({ workerId, sidebarOpen }: SessionC
       } else if (e.key === 'Escape') {
         e.preventDefault();
         e.stopPropagation();
-        if (query || results || error) {
+        // Check if there's active search content using state machine
+        const hasContent = query || searchState.type === 'success' || searchState.type === 'error';
+        if (hasContent) {
           handleClear();
         } else {
           handleClose();
         }
       }
     },
-    [handleSearch, handleClear, handleClose, query, results, error]
+    [handleSearch, handleClear, handleClose, query, searchState]
   );
 
   const handleResultClick = useCallback(
@@ -234,7 +244,8 @@ export default function SessionContentSearch({ workerId, sidebarOpen }: SessionC
                       <X className="w-4 h-4" />
                     </button>
                   )}
-                  {isExecuting && (
+                  {/* State machine-driven rendering */}
+                  {isLoading && (
                     <div className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400">
                       <Loader2 className="w-4 h-4 animate-spin" />
                     </div>
@@ -243,68 +254,84 @@ export default function SessionContentSearch({ workerId, sidebarOpen }: SessionC
               </div>
             </div>
 
-            {error && (
-              <div
-                id="search-error"
-                role="alert"
-                className="mx-3 mb-3 flex items-center gap-2 p-2 rounded-md bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-sm"
-              >
-                <AlertCircle className="w-4 h-4 flex-shrink-0" />
-                <span className="flex-1">{error}</span>
-                <button
-                  onClick={handleSearch}
-                  className="flex items-center gap-1 text-sm font-medium hover:underline"
-                  aria-label={t('searchRetry')}
-                >
-                  <RefreshCw className="w-3.5 h-3.5" />
-                  {t('searchRetry')}
-                </button>
-              </div>
-            )}
-
-            {results !== null && !error && (
-              <div
-                className="border-t border-gray-200 dark:border-gray-700 max-h-80 overflow-y-auto"
-                role="region"
-                aria-label={t('searchResults')}
-              >
-                {results.length === 0 ? (
-                  <div className="p-4 text-center text-sm text-gray-500 dark:text-gray-400">{t('searchNoResults')}</div>
-                ) : (
-                  <ul className="divide-y divide-gray-100 dark:divide-gray-700">
-                    {results.map((result) => (
-                      <li key={`${result.sessionId}-${result.messageId}`}>
-                        <button
-                          type="button"
-                          onClick={() => handleResultClick(result.sessionId, result.messageSK)}
-                          className="block w-full text-left p-3 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-                        >
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className="text-xs font-medium text-blue-600 dark:text-blue-400 truncate max-w-[200px]">
-                              {result.sessionTitle}
-                            </span>
-                            <span className="text-xs text-gray-400 dark:text-gray-500">
-                              {new Date(result.timestamp).toLocaleString()}
-                            </span>
-                          </div>
-                          <HighlightedSnippet
-                            snippet={result.snippet}
-                            matchOffset={result.matchOffset}
-                            queryLength={submittedQuery.length}
-                          />
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-                {results.length > 0 && (
-                  <div className="p-2 text-center text-xs text-gray-400 dark:text-gray-500 border-t border-gray-100 dark:border-gray-700">
-                    {timedOut && <div className="text-amber-500 dark:text-amber-400 mb-1">{t('searchTimedOut')}</div>}
-                    {t('searchResultCount', { count: results.length })}
-                  </div>
-                )}
-              </div>
-            )}
+            {(() => {
+              switch (searchState.type) {
+                case 'error':
+                  return (
+                    <div
+                      id="search-error"
+                      role="alert"
+                      className="mx-3 mb-3 flex items-center gap-2 p-2 rounded-md bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-sm"
+                    >
+                      <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                      <span className="flex-1">{searchState.error}</span>
+                      <button
+                        onClick={handleSearch}
+                        className="flex items-center gap-1 text-sm font-medium hover:underline"
+                        aria-label={t('searchRetry')}
+                      >
+                        <RefreshCw className="w-3.5 h-3.5" />
+                        {t('searchRetry')}
+                      </button>
+                    </div>
+                  );
+                case 'success':
+                  return (
+                    <div
+                      className="border-t border-gray-200 dark:border-gray-700 max-h-80 overflow-y-auto"
+                      role="region"
+                      aria-label={t('searchResults')}
+                    >
+                      {searchState.results.length === 0 ? (
+                        <div className="p-4 text-center text-sm text-gray-500 dark:text-gray-400">
+                          {t('searchNoResults')}
+                        </div>
+                      ) : (
+                        <ul className="divide-y divide-gray-100 dark:divide-gray-700">
+                          {searchState.results.map((result) => (
+                            <li key={`${result.sessionId}-${result.messageId}`}>
+                              <button
+                                type="button"
+                                onClick={() => handleResultClick(result.sessionId, result.messageSK)}
+                                className="block w-full text-left p-3 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                              >
+                                <div className="flex items-center gap-2 mb-1">
+                                  <span className="text-xs font-medium text-blue-600 dark:text-blue-400 truncate max-w-[200px]">
+                                    {result.sessionTitle}
+                                  </span>
+                                  <span className="text-xs text-gray-400 dark:text-gray-500">
+                                    {new Date(result.timestamp).toLocaleString()}
+                                  </span>
+                                </div>
+                                <HighlightedSnippet
+                                  snippet={result.snippet}
+                                  matchOffset={result.matchOffset}
+                                  queryLength={searchState.query.length}
+                                />
+                              </button>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                      {searchState.results.length > 0 && (
+                        <div className="p-2 text-center text-xs text-gray-400 dark:text-gray-500 border-t border-gray-100 dark:border-gray-700">
+                          {searchState.timedOut && (
+                            <div className="text-amber-500 dark:text-amber-400 mb-1">{t('searchTimedOut')}</div>
+                          )}
+                          {t('searchResultCount', { count: searchState.results.length })}
+                        </div>
+                      )}
+                    </div>
+                  );
+                case 'idle':
+                case 'loading':
+                  return null;
+                default:
+                  // Exhaustiveness check
+                  const _exhaustiveCheck: never = searchState;
+                  return _exhaustiveCheck;
+              }
+            })()}
           </div>,
           document.body
         )
