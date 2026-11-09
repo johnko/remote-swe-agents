@@ -9,7 +9,7 @@
     "format:check": "npx prettier --check './**/*.{ts,tsx,mjs,mts}'",
     "start": "next start",
     "lint": "next lint",
-    "test": "npx vitest run"
+    "test": "vitest run"
   },
   "dependencies": {
     "@aws-amplify/adapter-nextjs": "1.7.1",
