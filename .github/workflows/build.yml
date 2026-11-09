@@ -162,9 +162,7 @@ jobs:
         working-directory: ./packages/worker
         name: Run build
   Build-and-Test-Webapp:
-    needs:
-      - changes
-      - Build-and-Test-AgentCore
+    needs: changes
     if: ${{ needs.changes.outputs.webapp == 'true' || (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
     steps:
