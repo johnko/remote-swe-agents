@@ -44,7 +44,7 @@ export class EventTrigger extends Construct {
         scopes: [cognito.OAuthScope.custom('appsync-events/publish')],
       },
     });
-    m2mClient.node.addDependency(resourceServer);
+    m2mClient.node.addResourceDependency(resourceServer);
 
     // EventBridge Connection with OAuth client_credentials → Cognito token endpoint
     const tokenEndpoint = `https://${props.cognitoDomainName}/oauth2/token`;
