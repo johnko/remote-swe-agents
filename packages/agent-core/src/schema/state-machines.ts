@@ -192,81 +192,12 @@ export function isValidLessonTransition(current: LessonStatus, next: LessonStatu
  * The circuit breaker logic is already implemented inline in
  * packages/worker/src/agent/strands/invoke-loop.ts
  * and is not used elsewhere.
- */
-
-// =============================================================================
-// Connection Health State Machine
-// =============================================================================
-
-/**
- * WebSocket connection states from AWS Amplify.
  * 
- * This is a flattened state machine from ConnectionHealthTracker
- * that tracks both connection state and health.
+ * Note: Connection Health state machine also intentionally omitted.
+ * The real-time connection health tracking is implemented in
+ * packages/webapp/src/lib/realtime-connection.ts with its own
+ * ConnectionHealthTracker class.
  */
-export const connectionStateSchema = z.enum([
-  'Connecting',
-  'Connected',
-  'ConnectedPendingNetwork',
-  'ConnectionDisrupted',
-  'ConnectionDisruptedPendingNetwork',
-  'ConnectedPendingDisconnect',
-  'Disconnected',
-  'ConnectedPendingKeepAlive',
-]);
-
-export type ConnectionState = z.infer<typeof connectionStateSchema>;
-
-/**
- * Simplified connection health status.
- * Derived from the full connection state.
- */
-export const connectionHealthSchema = z.enum(['healthy', 'degraded', 'disconnected']);
-
-export type ConnectionHealth = z.infer<typeof connectionHealthSchema>;
-
-/**
- * Maps full connection state to simplified health status.
- * Improves UX by reducing complexity for UI display.
- */
-export const CONNECTION_STATE_TO_HEALTH: Record<ConnectionState, ConnectionHealth> = {
-  Connecting: 'degraded',
-  Connected: 'healthy',
-  ConnectedPendingNetwork: 'degraded',
-  ConnectionDisrupted: 'disconnected',
-  ConnectionDisruptedPendingNetwork: 'disconnected',
-  ConnectedPendingDisconnect: 'degraded',
-  Disconnected: 'disconnected',
-  ConnectedPendingKeepAlive: 'degraded',
-} as const;
-
-/**
- * States where events may be lost (need catch-up on recovery).
- */
-export const LOSSY_CONNECTION_STATES: readonly ConnectionState[] = [
-  'ConnectionDisrupted',
-  'ConnectionDisruptedPendingNetwork',
-  'ConnectedPendingNetwork',
-  'ConnectedPendingKeepAlive',
-  'Disconnected',
-  'ConnectedPendingDisconnect',
-] as const;
-
-/**
- * Checks if a connection state indicates potential event loss.
- * @param state - Current connection state
- * @returns true if events may be lost
- */
-export function isLossyConnectionState(state: ConnectionState): boolean {
-  return LOSSY_CONNECTION_STATES.includes(state);
-}
-
-/**
- * Gets the simplified health status from a connection state.
- */
-export function getConnectionHealth(state: ConnectionState): ConnectionHealth {
-  return CONNECTION_STATE_TO_HEALTH[state];
-}
 
 // =============================================================================
 // State Machine Documentation

@@ -9,10 +9,7 @@ import {
   getValidAgentTransitions,
   AGENT_STATUS_TRANSITIONS,
   // Todo/Lesson status exported but tests omitted (simple transitions)
-  // Circuit breaker exported but tests omitted (not used)
-  // Connection health
-  isLossyConnectionState,
-  getConnectionHealth,
+  // Circuit breaker / Connection Health exported but tests omitted (implemented elsewhere)
   describeStateMachine,
 } from './state-machines.js';
 
@@ -71,34 +68,7 @@ describe('Agent Status State Machine', () => {
 // bidirectional transitions (active ↔ archived), all transitions are valid
 
 // Note: Circuit Breaker state machine tests omitted - not used in codebase
-
-describe('Connection Health State Machine', () => {
-  describe('isLossyConnectionState', () => {
-    it('should return true for disrupted states', () => {
-      expect(isLossyConnectionState('ConnectionDisrupted')).toBe(true);
-      expect(isLossyConnectionState('Disconnected')).toBe(true);
-    });
-
-    it('should return false for healthy states', () => {
-      expect(isLossyConnectionState('Connected')).toBe(false);
-      expect(isLossyConnectionState('Connecting')).toBe(false);
-    });
-  });
-
-  describe('getConnectionHealth', () => {
-    it('should return healthy for Connected', () => {
-      expect(getConnectionHealth('Connected')).toBe('healthy');
-    });
-
-    it('should return degraded for Connecting', () => {
-      expect(getConnectionHealth('Connecting')).toBe('degraded');
-    });
-
-    it('should return disconnected for Disconnected', () => {
-      expect(getConnectionHealth('Disconnected')).toBe('disconnected');
-    });
-  });
-});
+// Note: Connection Health state machine tests omitted - implemented in realtime-connection.ts
 
 describe('describeStateMachine', () => {
   it('should generate markdown documentation', () => {
