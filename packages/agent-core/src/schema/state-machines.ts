@@ -63,23 +63,11 @@ export const AGENT_STATUS_TRANSITIONS: Record<AgentStatus, readonly AgentStatus[
 } as const;
 
 /**
- * Checks if an instance status transition is valid.
- * @param current - Current status
- * @param next - Proposed next status
- * @returns true if the transition is valid
- * 
- * @example
- * ```typescript
- * isValidInstanceTransition('starting', 'running'); // true
- * isValidInstanceTransition('terminated', 'running'); // false
- * ```
+ * Note: isValidInstanceTransition is intentionally omitted.
+ * AWS handles instance lifecycle, so the application does not validate
+ * those transitions. The instance types and transitions map are documented
+ * in INSTANCE_STATUS_TRANSITIONS for reference only.
  */
-export function isValidInstanceTransition(
-  current: InstanceStatus,
-  next: InstanceStatus
-): boolean {
-  return current === next || INSTANCE_STATUS_TRANSITIONS[current].includes(next);
-}
 
 /**
  * Checks if an agent status transition is valid.
@@ -98,12 +86,9 @@ export function isValidAgentTransition(current: AgentStatus, next: AgentStatus):
 }
 
 /**
- * Gets all valid next states for an instance status.
- * Useful for UI dropdowns and agent decision-making.
+ * Note: getValidInstanceTransitions is intentionally omitted.
+ * AWS handles instance lifecycle. See isValidInstanceTransition note above.
  */
-export function getValidInstanceTransitions(current: InstanceStatus): InstanceStatus[] {
-  return [...INSTANCE_STATUS_TRANSITIONS[current]];
-}
 
 /**
  * Gets all valid next states for an agent status.
