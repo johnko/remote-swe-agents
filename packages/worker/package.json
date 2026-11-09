@@ -1,11 +1,10 @@
 {
   "name": "worker",
   "scripts": {
-    "build": "tsc",
-    "format": "prettier --write './**/*.ts'",
-    "format:check": "prettier --check './**/*.ts'",
-    "test": "npm run testv -- run --silent",
-    "testv": "vitest --passWithNoTests",
+    "build": "npx tsc",
+    "format": "npx prettier --write './**/*.ts'",
+    "format:check": "npx prettier --check './**/*.ts'",
+    "test": "npx vitest run --passWithNoTests",
     "setup:local": "docker compose up -d && npx tsx --env-file=.env.local scripts/setup-dynamodb-local.ts",
     "start:local": "tsx --env-file=.env.local src/local.ts"
   },

@@ -3,13 +3,13 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack -p 3011",
-    "build": "next build",
-    "format": "prettier --write './**/*.{ts,tsx,mjs,mts}'",
-    "format:check": "prettier --check './**/*.{ts,tsx,mjs,mts}'",
-    "start": "next start",
-    "lint": "next lint",
-    "test": "vitest run"
+    "dev": "npx next dev --turbopack -p 3011",
+    "build": "npx next build",
+    "format": "npx prettier --write './**/*.{ts,tsx,mjs,mts}'",
+    "format:check": "npx prettier --check './**/*.{ts,tsx,mjs,mts}'",
+    "start": "npx next start",
+    "lint": "npx next lint",
+    "test": "npx vitest run"
   },
   "dependencies": {
     "@aws-amplify/adapter-nextjs": "1.7.1",
