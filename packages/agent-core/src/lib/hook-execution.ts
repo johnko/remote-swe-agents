@@ -313,14 +313,14 @@ export const executeHooksForEvent = async (context: HookExecutionContext): Promi
     // Execute each hook sequentially
     for (const hook of hooks) {
       try {
-        if (!hook.script && !hook.command) {
+        // Use hook.script if available, otherwise use hook.command
+        const content = hook.script || hook.command;
+
+        if (!content) {
           result.hooksSkipped++;
           console.warn(`[hook-execution] Hook "${hook.name}" has no command or script content`);
           continue;
         }
-
-        // Use hook.script if available, otherwise use hook.command
-        const content = hook.script || hook.command!;
 
         console.log(
           `[hook-execution] Executing hook "${hook.name}" (${hook.script ? 'inline script' : 'command'}) for event: ${context.event}`
@@ -331,7 +331,7 @@ export const executeHooksForEvent = async (context: HookExecutionContext): Promi
         // SECURITY: Use validated hook execution to prevent command injection
         const validatedCwd = validateHookCwd(context.workingDirectory);
         try {
-          output = await executeHookCommand(hook.command, content, validatedCwd, hookEnv);
+          output = await executeHookCommand(hook.command!, content, validatedCwd, hookEnv);
         } catch (e: any) {
           // Scripts/commands that error should still report the output
           if (e.message.includes('STDERR:')) {
@@ -440,13 +440,13 @@ export const executePermissionHooks = async (context: HookExecutionContext): Pro
     // Execute each hook sequentially
     for (const hook of hooks) {
       try {
-        if (!hook.script && !hook.command) {
+        // Use hook.script if available, otherwise use hook.command
+        const content = hook.script || hook.command;
+
+        if (!content) {
           console.warn(`[hook-execution] Permission hook "${hook.name}" has no command or script`);
           continue;
         }
-
-        // Use hook.script if available, otherwise use hook.command
-        const content = hook.script || hook.command!;
 
         console.log(`[hook-execution] Executing permission hook "${hook.name}" for event: ${context.event}`);
 
@@ -455,7 +455,7 @@ export const executePermissionHooks = async (context: HookExecutionContext): Pro
         // SECURITY: Use validated hook execution to prevent command injection
         const validatedCwd = validateHookCwd(context.workingDirectory);
         try {
-          output = await executeHookCommand(hook.command, content, validatedCwd, hookEnv, JSON.stringify(hookInput));
+          output = await executeHookCommand(hook.command!, content, validatedCwd, hookEnv, JSON.stringify(hookInput));
         } catch (e: any) {
           // Permission hooks that error are treated as allowing (fail-open)
           console.error(`[hook-execution] Permission hook "${hook.name}" failed:`, e);
