@@ -177,8 +177,6 @@ jobs:
           npm ci
           npm run build -w packages/agent-core
         name: Install dependencies
-      - run: npm install -g typescript@5.7.3 vitest@4.1.10 next@16.1.6 prettier@3.5.1 esbuild@0.28.1 tsx@4.19.2
-        name: Install dev tools globally
       - run: npm run format:check -w packages/webapp
         name: Run static analysis
       - run: cp ./packages/webapp/.env.local.example ./packages/webapp/.env.local && npm run build -w packages/webapp
