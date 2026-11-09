@@ -313,8 +313,7 @@ export const executeHooksForEvent = async (context: HookExecutionContext): Promi
     // Execute each hook sequentially
     for (const hook of hooks) {
       try {
-        const isScript = !!hook.script;
-        const content = isScript ? hook.script : hook.command;
+        const content = hook.script || hook.command;
 
         if (!content) {
           result.hooksSkipped++;
@@ -440,8 +439,7 @@ export const executePermissionHooks = async (context: HookExecutionContext): Pro
     // Execute each hook sequentially
     for (const hook of hooks) {
       try {
-        const isScript = !!hook.script;
-        const content = isScript ? hook.script : hook.command;
+        const content = hook.script || hook.command;
 
         if (!content) {
           console.warn(`[hook-execution] Permission hook "${hook.name}" has no command or script`);
