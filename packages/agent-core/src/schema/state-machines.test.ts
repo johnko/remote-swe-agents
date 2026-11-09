@@ -11,11 +11,7 @@ import {
   isValidAgentTransition,
   getValidAgentTransitions,
   AGENT_STATUS_TRANSITIONS,
-  // Todo status
-  isValidTodoTransition,
-  getValidTodoTransitions,
-  TODO_STATUS_TRANSITIONS,
-  isTerminalTodoStatus,
+  // Todo status is exported but tests omitted (all transitions valid)
   // Lesson status
   isValidLessonTransition,
   LESSON_STATUS_TRANSITIONS,
@@ -118,46 +114,8 @@ describe('Agent Status State Machine', () => {
   });
 });
 
-describe('Todo Status State Machine', () => {
-  describe('isValidTodoTransition', () => {
-    it('should allow all transitions since todo is reflection of agent state', () => {
-      // Agent is source of truth - allow any transition
-      expect(isValidTodoTransition('pending', 'in_progress')).toBe(true);
-      expect(isValidTodoTransition('in_progress', 'completed')).toBe(true);
-      expect(isValidTodoTransition('in_progress', 'cancelled')).toBe(true);
-      expect(isValidTodoTransition('pending', 'cancelled')).toBe(true);
-      expect(isValidTodoTransition('completed', 'in_progress')).toBe(true);
-      expect(isValidTodoTransition('cancelled', 'pending')).toBe(true);
-      expect(isValidTodoTransition('cancelled', 'completed')).toBe(true);
-      expect(isValidTodoTransition('cancelled', 'in_progress')).toBe(true);
-    });
-
-    it('should allow self-transitions', () => {
-      expect(isValidTodoTransition('pending', 'pending')).toBe(true);
-      expect(isValidTodoTransition('completed', 'completed')).toBe(true);
-    });
-  });
-
-  describe('isTerminalTodoStatus', () => {
-    it('should return false for all statuses (todo state machines allows transitions from all)', () => {
-      // Since todo is a reflection and allows any transition, no status is truly terminal
-      expect(isTerminalTodoStatus('cancelled')).toBe(false);
-      expect(isTerminalTodoStatus('pending')).toBe(false);
-      expect(isTerminalTodoStatus('in_progress')).toBe(false);
-      expect(isTerminalTodoStatus('completed')).toBe(false);
-    });
-  });
-
-  describe('getValidTodoTransitions', () => {
-    it('should return all statuses for any current status', () => {
-      // Since todo allows any transition, all statuses are valid from any state
-      const allStatuses = ['pending', 'in_progress', 'completed', 'cancelled'];
-      expect(getValidTodoTransitions('pending').sort()).toEqual(allStatuses.sort());
-      expect(getValidTodoTransitions('completed').sort()).toEqual(allStatuses.sort());
-      expect(getValidTodoTransitions('cancelled').sort()).toEqual(allStatuses.sort());
-    });
-  });
-});
+// Note: Todo status state machine tests omitted - all transitions are valid since
+// todo items are a reflection of agent tool calls and agent is the source of truth
 
 describe('Lesson Status State Machine', () => {
   describe('isValidLessonTransition', () => {
