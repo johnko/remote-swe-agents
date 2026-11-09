@@ -211,8 +211,8 @@ export class Worker extends Construct {
 apt-get -o DPkg::Lock::Timeout=-1 update
 apt-get -o DPkg::Lock::Timeout=-1 upgrade -y
 
-# Install python3
-apt-get -o DPkg::Lock::Timeout=-1 install -y python3-pip unzip
+# Install python3 and jq
+apt-get -o DPkg::Lock::Timeout=-1 install -y python3-pip unzip jq
 ln -s -f /usr/bin/pip3 /usr/bin/pip
 ln -s -f /usr/bin/python3 /usr/bin/python
 
