@@ -181,7 +181,10 @@ jobs:
           npm run format:check
         working-directory: ./packages/webapp
         name: Install dependencies and run static analysis
-      - run: cp ./packages/webapp/.env.local.example ./packages/webapp/.env.local && npm run build -w packages/webapp
+      - run: |
+          cp .env.local.example .env.local
+          npm run build
+        working-directory: ./packages/webapp
         name: build
   Build-and-Test-AgentCore:
     needs: changes
