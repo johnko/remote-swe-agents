@@ -399,7 +399,8 @@ export default async function SessionPage({ params }: { params: Promise<{ worker
   // Also checks for MicroVM preview sessions (previewSession metadata).
   const rawPortMetadata = (await readMetadata('openedPorts', workerId)) as PortMapping | undefined;
   const rawPreviewMetadata = (await readMetadata('previewSession', workerId)) as
-    { previewUrl?: string; localPort?: number; startedAt?: number } | undefined;
+    | { previewUrl?: string; localPort?: number; startedAt?: number }
+    | undefined;
   let initialPortMapping: PortMapping | null = null;
   if (rawPreviewMetadata?.previewUrl && rawPreviewMetadata?.localPort) {
     initialPortMapping = {
