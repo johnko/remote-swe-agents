@@ -111,7 +111,7 @@ export class WorkerImageBuilder extends Construct {
     });
 
     // Ensure the SSM parameter exists before the Image Builder pipeline resources
-    pipeline.node.addDependency(props.amiIdParameter);
+    pipeline.node.addResourceDependency(props.amiIdParameter);
 
     // avoid duplicated SSM state association
     const cfnPipeline = pipeline.node.findChild('ImagePipeline') as CfnResource;
@@ -155,7 +155,7 @@ export class WorkerImageBuilder extends Construct {
         }),
       ]),
     });
-    purgeAmiCache.node.addDependency(props.amiIdParameter);
+    purgeAmiCache.node.addResourceDependency(props.amiIdParameter);
 
     // Override Lambda runtime to Python 3.13
     // Recursively find and update all Lambda functions in the pipeline construct tree
