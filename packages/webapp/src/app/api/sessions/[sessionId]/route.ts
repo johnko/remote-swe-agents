@@ -11,6 +11,7 @@ import {
   notifyOtherParticipants,
   addSessionParticipant,
   MSG_TOOLS,
+  checkSessionAccess,
 } from '@remote-swe-agents/agent-core/lib';
 import { toolNameInSet } from '@remote-swe-agents/agent-core/tool-name-utils';
 import { ddb, TableName } from '@remote-swe-agents/agent-core/aws';
@@ -63,6 +64,13 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
 
   if (!session) {
     return NextResponse.json({ error: 'Session not found' }, { status: 404 });
+  }
+
+  // Authorization check: verify user has access to this session
+  const userId = sender.ownerId ?? sender.id;
+  const accessCheck = await checkSessionAccess(sessionId, userId);
+  if (!accessCheck.allowed) {
+    return NextResponse.json({ error: accessCheck.reason || 'Unauthorized' }, { status: 403 });
   }
 
   // Wrap with the LLM-side `[from: ... (apikey)]` envelope so the recipient
@@ -136,11 +144,12 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
 }
 
 export async function GET(request: NextRequest, { params }: RouteParams) {
-  // Validate API key
-  const apiKeyValidation = await validateApiKeyMiddleware(request);
-  if (apiKeyValidation) {
-    return apiKeyValidation;
+  // Authenticate API key and get sender info
+  const auth = await authenticateApiKey(request);
+  if (!auth.ok) {
+    return auth.response;
   }
+  const { sender } = auth;
 
   // Get session ID from the URL params
   const { sessionId } = await params;
@@ -150,6 +159,13 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
   if (!session) {
     return NextResponse.json({ error: 'Session not found' }, { status: 404 });
+  }
+
+  // Authorization check: verify user has access to this session
+  const userId = sender.ownerId ?? sender.id;
+  const accessCheck = await checkSessionAccess(sessionId, userId);
+  if (!accessCheck.allowed) {
+    return NextResponse.json({ error: accessCheck.reason || 'Unauthorized' }, { status: 403 });
   }
 
   // Get conversation history. This endpoint only renders user / assistant / sendMessageToUser
