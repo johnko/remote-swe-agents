@@ -124,9 +124,9 @@ jobs:
           node-version: '22.x'
       - run: npm ci
         name: Install dependencies
-      - run: |
-          npm run build -w packages/slack-bolt-app
-          npm run format:check -w packages/slack-bolt-app
+      - run: export PATH="$PWD/node_modules/.bin:$PATH" && npm run build -w packages/slack-bolt-app
+        name: Run build
+      - run: export PATH="$PWD/node_modules/.bin:$PATH" && npm run format:check -w packages/slack-bolt-app
         name: Run static analyses
   Build-and-Test-Worker:
     needs: changes
@@ -140,14 +140,11 @@ jobs:
           node-version: '22.x'
       - run: npm ci
         name: Install dependencies
-      - run: |
-          npm run format:check -w packages/worker
+      - run: export PATH="$PWD/node_modules/.bin:$PATH" && npm run format:check -w packages/worker
         name: Run static analyses
-      - run: |
-          npm run test -w packages/worker
+      - run: export PATH="$PWD/node_modules/.bin:$PATH" && npm run test -w packages/worker
         name: Run unit tests
-      - run: |
-          npm run build -w packages/worker
+      - run: export PATH="$PWD/node_modules/.bin:$PATH" && npm run build -w packages/worker
         name: Run build
   Build-and-Test-Webapp:
     needs: changes
@@ -161,12 +158,9 @@ jobs:
           node-version: '22.x'
       - run: npm ci
         name: Install dependencies
-      - run: |
-          npm run format:check -w packages/webapp
-        name: Install dependencies and run static analysis
-      - run: |
-          cp ./packages/webapp/.env.local.example ./packages/webapp/.env.local
-          npm run build -w packages/webapp
+      - run: export PATH="$PWD/node_modules/.bin:$PATH" && npm run format:check -w packages/webapp
+        name: Run static analysis
+      - run: cp ./packages/webapp/.env.local.example ./packages/webapp/.env.local && export PATH="$PWD/node_modules/.bin:$PATH" && npm run build -w packages/webapp
         name: build
   Build-and-Test-AgentCore:
     needs: changes
@@ -180,14 +174,11 @@ jobs:
           node-version: '22.x'
       - run: npm ci
         name: Install dependencies
-      - run: |
-          npm run format:check -w packages/agent-core
+      - run: export PATH="$PWD/node_modules/.bin:$PATH" && npm run format:check -w packages/agent-core
         name: Run static analyses
-      - run: |
-          npm run test -w packages/agent-core
+      - run: export PATH="$PWD/node_modules/.bin:$PATH" && npm run test -w packages/agent-core
         name: Run unit tests
-      - run: |
-          npm run build -w packages/agent-core
+      - run: export PATH="$PWD/node_modules/.bin:$PATH" && npm run build -w packages/agent-core
         name: Run build
   Build-and-Test-GitHubActions:
     needs: changes
@@ -201,11 +192,9 @@ jobs:
           node-version: '22.x'
       - run: npm ci
         name: Install dependencies
-      - run: |
-          npm run format:check -w packages/github-actions
+      - run: export PATH="$PWD/node_modules/.bin:$PATH" && npm run format:check -w packages/github-actions
         name: Run static analyses
-      - run: |
-          npm run build -w packages/github-actions
+      - run: export PATH="$PWD/node_modules/.bin:$PATH" && npm run build -w packages/github-actions
         name: Run build
   Build-and-Test-Dockerfiles:
     needs: changes
