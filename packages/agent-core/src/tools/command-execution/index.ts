@@ -2,12 +2,108 @@ import { spawn } from 'child_process';
 import { authorizeGitHubCli } from './github.js';
 export { isGitHubConfigured, authorizeGitHubCli } from './github.js';
 import { homedir, tmpdir } from 'os';
-import { join } from 'path';
+import { join, isAbsolute, resolve } from 'path';
 import { mkdirSync, writeFileSync, unlinkSync } from 'fs';
 import { z } from 'zod';
 import { CancellationToken, ToolDefinition, truncate, zodToJsonSchemaBody } from '../../private/common/lib.js';
 import { generateSuggestion } from './suggestion.js';
 import { getSession, executeHooksForEventWithSession, executePermissionHooks } from '../../lib/index.js';
+
+// Shell characters that could enable command injection - these are blocked in the command
+const DANGEROUS_SHELL_CHARS = /[;&|`<>=&$\n\r\x00]/;
+// Shell operators that could chain commands
+const DANGEROUS_SHELL_OPERATORS = /(\|\||&&|\|\&|;|`|\$\(|\$\{)/;
+// Blocked command prefixes (subshell execution)
+const BLOCKED_COMMAND_PATTERNS = [
+  /^\s*\(/,         // Parenthesis subshell: (command)
+  /^\s*\{/,          // Brace group: { command; }
+  /^\s*source\s/,    // Source command
+  /^\s*\.\s/,        // Dot command (source)
+  /^\s*exec\s/,      // Exec command (replaces shell)
+  /^\s*eval\s/,      // Eval command
+];
+
+/**
+ * Validates that a command doesn't contain dangerous characters or patterns
+ * that could enable command injection.
+ * @param command The command string to validate
+ * @throws Error if dangerous patterns are detected
+ */
+const sanitizeCommand = (command: string): void => {
+  if (!command || typeof command !== 'string') {
+    throw new Error('Command must be a non-empty string');
+  }
+
+  // Check for null bytes (could confuse shell)
+  if (command.includes('\x00')) {
+    throw new Error('Command contains null byte characters');
+  }
+
+  // Check for dangerous shell characters
+  if (DANGEROUS_SHELL_CHARS.test(command)) {
+    throw new Error(
+      `Command contains dangerous shell characters that could enable command injection. ` +
+      `Use the file_editor tool or other specific tools for file operations, pipes, or redirections.`
+    );
+  }
+
+  // Check for dangerous operators
+  if (DANGEROUS_SHELL_OPERATORS.test(command)) {
+    throw new Error(
+      `Command contains shell operators that could chain multiple commands. ` +
+      `Execute multiple commands separately using the execute_command tool multiple times.`
+    );
+  }
+
+  // Check for blocked command patterns
+  for (const pattern of BLOCKED_COMMAND_PATTERNS) {
+    if (pattern.test(command)) {
+      throw new Error(
+        `Command contains blocked pattern matching ${pattern.source}. ` +
+        `This pattern could enable shell injection or subshell execution.`
+      );
+    }
+  }
+};
+
+/**
+ * Validates and sanitizes the working directory path
+ * @param cwd The working directory to validate
+ * @param command The command being executed (for error messages)
+ * @returns The sanitized absolute path
+ * @throws Error if the path is outside allowed directories
+ */
+const sanitizeWorkingDirectory = (cwd?: string, command?: string): string => {
+  if (!cwd) {
+    return DefaultWorkingDirectory;
+  }
+
+  // Resolve to absolute path
+  const resolvedCwd = resolve(cwd);
+
+  // Validate the path is absolute and within allowed directories
+  const allowedPrefixes = [
+    DefaultWorkingDirectory,
+    tmpdir(),
+    homedir(),
+    '/tmp',
+    '/var/tmp',
+  ];
+
+  const isAllowed = allowedPrefixes.some(prefix => {
+    const resolvedPrefix = resolve(prefix);
+    return resolvedCwd === resolvedPrefix || resolvedCwd.startsWith(resolvedPrefix + '/');
+  });
+
+  if (!isAllowed) {
+    throw new Error(
+      `Working directory "${cwd}" is outside allowed directories. ` +
+      `Allowed directories include: ${DefaultWorkingDirectory}, /tmp, and user home directory.`
+    );
+  }
+
+  return resolvedCwd;
+};
 
 const inputSchema = z.object({
   command: z.string().describe('The command to execute.'),
@@ -70,10 +166,14 @@ export const executeCommand = async (
   toolUseId?: string,
   cancellationToken?: CancellationToken
 ) => {
+  // CRITICAL SECURITY: Sanitize command to prevent injection attacks
+  sanitizeCommand(command);
+
+  // Validate working directory to prevent path traversal
+  cwd = sanitizeWorkingDirectory(cwd, command);
+
   // Ignore error when github token is not available
   const token = await authorizeGitHubCli().catch((e) => console.log(e));
-
-  cwd = cwd ?? DefaultWorkingDirectory;
 
   return new Promise<{
     stdout: string;

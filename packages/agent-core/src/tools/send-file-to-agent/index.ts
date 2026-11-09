@@ -5,9 +5,63 @@ import { getSession } from '../../lib/sessions.js';
 import { s3, BucketName } from '../../lib/aws/s3.js';
 import { S3Client, PutObjectCommand, GetObjectCommand, GetBucketLocationCommand } from '@aws-sdk/client-s3';
 import { readFileSync, statSync, writeFileSync } from 'fs';
-import { extname, basename } from 'path';
+import { extname, basename, resolve, isAbsolute, posix } from 'path';
+import { homedir, tmpdir } from 'os';
 import { buildAttachmentSentinel, getAttachedFileKey } from '../../lib/index.js';
 import { sendFileToSlack } from '../../lib/slack.js';
+
+// Allowed base directories for file operations
+const ALLOWED_BASE_DIRS = [
+  resolve(homedir()),
+  resolve(tmpdir()),
+  '/tmp',
+  '/var/tmp',
+];
+
+/**
+ * CRITICAL SECURITY: Validates that filePath is within allowed directories
+ * to prevent directory traversal attacks (e.g., ../../../etc/passwd).
+ * @param filePath The file path to validate
+ * @param operationDescription Description of the operation for error messages
+ * @returns The normalized absolute path, or original path for S3 URIs
+ * @throws Error if path is outside allowed directories
+ */
+const validateLocalFilePath = (filePath: string, operationDescription: string = 'file access'): string => {
+  // S3 URIs are handled separately - don't validate them here
+  if (filePath.startsWith('s3://')) {
+    return filePath;
+  }
+
+  // Check if path is absolute
+  if (!isAbsolute(filePath)) {
+    throw new Error(
+      `Path "${filePath}" is not absolute. ` +
+      `Only absolute paths are allowed for ${operationDescription}. ` +
+      `Use an absolute path starting with "/"`
+    );
+  }
+
+  // Resolve and normalize the path (removes .. and . segments)
+  const resolvedPath = resolve(filePath);
+
+  // Verify the path is within one of the allowed base directories
+  const isAllowed = ALLOWED_BASE_DIRS.some((allowedDir) => {
+    // Ensure the path starts with the allowed directory followed by a separator
+    // or is exactly the allowed directory
+    const normalizedAllowed = posix.normalize(allowedDir);
+    const normalizedPath = posix.normalize(resolvedPath);
+    return normalizedPath === normalizedAllowed || normalizedPath.startsWith(normalizedAllowed + '/');
+  });
+
+  if (!isAllowed) {
+    throw new Error(
+      `Path "${filePath}" is outside allowed directories for ${operationDescription}. ` +
+      `Access denied for security reasons.`
+    );
+  }
+
+  return resolvedPath;
+};
 
 const inputSchema = z.object({
   filePath: z.string().describe('the local file system path to the file, or an S3 URI (s3://bucket/key)'),
@@ -30,11 +84,14 @@ export const sendFileToAgentTool: ToolDefinition<z.infer<typeof inputSchema>> = 
       return 'Error: No targetSessionId provided and this session has no parent session.';
     }
 
+    // SECURITY: Validate filePath to prevent directory traversal attacks
+    const validatedFilePath = validateLocalFilePath(input.filePath, 'send file to agent');
+
     let fileBuffer: Buffer;
     let fileName: string;
     let fileSize: number;
 
-    if (input.filePath.startsWith('s3://')) {
+    if (validatedFilePath.startsWith('s3://')) {
       const match = input.filePath.match(/^s3:\/\/([^/]+)\/(.+)$/);
       if (!match) {
         return `Error: Invalid S3 URI: ${input.filePath}`;
@@ -59,9 +116,9 @@ export const sendFileToAgentTool: ToolDefinition<z.infer<typeof inputSchema>> = 
       }
     } else {
       try {
-        fileBuffer = readFileSync(input.filePath);
-        fileName = basename(input.filePath);
-        fileSize = statSync(input.filePath).size;
+        fileBuffer = readFileSync(validatedFilePath);
+        fileName = basename(validatedFilePath);
+        fileSize = statSync(validatedFilePath).size;
       } catch (e: any) {
         return `Error reading file: ${e.message}`;
       }
