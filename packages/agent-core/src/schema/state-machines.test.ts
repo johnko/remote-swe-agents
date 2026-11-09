@@ -9,9 +9,7 @@ import {
   getValidAgentTransitions,
   AGENT_STATUS_TRANSITIONS,
   // Todo/Lesson status exported but tests omitted (simple transitions)
-  // Circuit breaker
-  attemptCircuitBreakerTransition,
-  CircuitBreakerContext,
+  // Circuit breaker exported but tests omitted (not used)
   // Connection health
   isLossyConnectionState,
   getConnectionHealth,
@@ -72,109 +70,7 @@ describe('Agent Status State Machine', () => {
 // Note: Lesson status state machine tests omitted - only has simple
 // bidirectional transitions (active ↔ archived), all transitions are valid
 
-describe('Circuit Breaker State Machine', () => {
-  const defaultConfig = {
-    failureThreshold: 3,
-    timeoutMs: 30000,
-  };
-
-  describe('CLOSED state', () => {
-    it('should stay closed on success', () => {
-      const context: CircuitBreakerContext = {
-        state: 'CLOSED',
-        consecutiveErrors: 0,
-        lastErrorType: '',
-        lastFailureTime: null,
-        config: defaultConfig,
-      };
-      const result = attemptCircuitBreakerTransition(context, true);
-      expect(result.allowed).toBe(true);
-      expect(result.newState).toBe('CLOSED');
-    });
-
-    it('should stay closed on first failure', () => {
-      const context: CircuitBreakerContext = {
-        state: 'CLOSED',
-        consecutiveErrors: 0,
-        lastErrorType: 'timeout',
-        lastFailureTime: null,
-        config: defaultConfig,
-      };
-      const result = attemptCircuitBreakerTransition(context, false);
-      expect(result.allowed).toBe(true);
-      expect(result.newState).toBe('CLOSED');
-    });
-
-    it('should open on threshold exceeded', () => {
-      const context: CircuitBreakerContext = {
-        state: 'CLOSED',
-        consecutiveErrors: 2, // One more will exceed threshold of 3
-        lastErrorType: 'timeout',
-        lastFailureTime: Date.now(),
-        config: defaultConfig,
-      };
-      const result = attemptCircuitBreakerTransition(context, false);
-      expect(result.allowed).toBe(false);
-      expect(result.newState).toBe('OPEN');
-    });
-  });
-
-  describe('OPEN state', () => {
-    it('should transition to half-open after timeout', () => {
-      const context: CircuitBreakerContext = {
-        state: 'OPEN',
-        consecutiveErrors: 3,
-        lastErrorType: 'timeout',
-        lastFailureTime: Date.now() - 31000, // 31 seconds ago
-        config: defaultConfig,
-      };
-      const result = attemptCircuitBreakerTransition(context, true);
-      expect(result.allowed).toBe(true);
-      expect(result.newState).toBe('HALF_OPEN');
-    });
-
-    it('should stay open before timeout', () => {
-      const context: CircuitBreakerContext = {
-        state: 'OPEN',
-        consecutiveErrors: 3,
-        lastErrorType: 'timeout',
-        lastFailureTime: Date.now() - 1000, // 1 second ago
-        config: defaultConfig,
-      };
-      const result = attemptCircuitBreakerTransition(context, true);
-      expect(result.allowed).toBe(false);
-      expect(result.reason).toContain('Circuit is open');
-    });
-  });
-
-  describe('HALF_OPEN state', () => {
-    it('should close on success', () => {
-      const context: CircuitBreakerContext = {
-        state: 'HALF_OPEN',
-        consecutiveErrors: 0,
-        lastErrorType: '',
-        lastFailureTime: null,
-        config: defaultConfig,
-      };
-      const result = attemptCircuitBreakerTransition(context, true);
-      expect(result.allowed).toBe(true);
-      expect(result.newState).toBe('CLOSED');
-    });
-
-    it('should reopen on failure', () => {
-      const context: CircuitBreakerContext = {
-        state: 'HALF_OPEN',
-        consecutiveErrors: 0,
-        lastErrorType: '',
-        lastFailureTime: null,
-        config: defaultConfig,
-      };
-      const result = attemptCircuitBreakerTransition(context, false);
-      expect(result.allowed).toBe(false);
-      expect(result.newState).toBe('OPEN');
-    });
-  });
-});
+// Note: Circuit Breaker state machine tests omitted - not used in codebase
 
 describe('Connection Health State Machine', () => {
   describe('isLossyConnectionState', () => {

@@ -187,112 +187,12 @@ export function isValidLessonTransition(current: LessonStatus, next: LessonStatu
   return current === next || LESSON_STATUS_TRANSITIONS[current].includes(next);
 }
 
-// =============================================================================
-// Circuit Breaker State Machine
-// =============================================================================
-
 /**
- * Circuit breaker states.
- * 
- * CLOSED: Normal operation, requests pass through
- * OPEN: Failure threshold exceeded, requests blocked
- * HALF_OPEN: Testing if service recovered
+ * Note: Circuit Breaker state machine intentionally omitted.
+ * The circuit breaker logic is already implemented inline in
+ * packages/worker/src/agent/strands/invoke-loop.ts
+ * and is not used elsewhere.
  */
-export const circuitBreakerStateSchema = z.enum(['CLOSED', 'OPEN', 'HALF_OPEN']);
-
-export type CircuitBreakerState = z.infer<typeof circuitBreakerStateSchema>;
-
-/**
- * Circuit breaker state transitions.
- * 
- * CLOSED → OPEN: Failure threshold exceeded
- * OPEN → HALF_OPEN: Timeout elapsed, test request allowed
- * HALF_OPEN → CLOSED: Test request succeeded
- * HALF_OPEN → OPEN: Test request failed
- */
-export const CIRCUIT_BREAKER_TRANSITIONS: Record<CircuitBreakerState, readonly CircuitBreakerState[]> = {
-  CLOSED: ['OPEN'],
-  OPEN: ['HALF_OPEN'],
-  HALF_OPEN: ['CLOSED', 'OPEN'],
-} as const;
-
-/**
- * Result of attempting a circuit breaker transition.
- */
-export interface CircuitBreakerTransitionResult {
-  allowed: boolean;
-  newState?: CircuitBreakerState;
-  reason?: string;
-}
-
-/**
- * Circuit breaker configuration.
- */
-export interface CircuitBreakerConfig {
-  /** Number of consecutive failures before opening circuit */
-  failureThreshold: number;
-  /** Time in ms before transitioning OPEN → HALF_OPEN */
-  timeoutMs: number;
-}
-
-/**
- * Circuit breaker state with context.
- */
-export interface CircuitBreakerContext {
-  state: CircuitBreakerState;
-  consecutiveErrors: number;
-  lastErrorType: string;
-  lastFailureTime: number | null;
-  config: CircuitBreakerConfig;
-}
-
-/**
- * Attempts to transition the circuit breaker based on operation result.
- * 
- * @param context - Current circuit breaker context
- * @param success - Whether the operation succeeded
- * @returns Transition result with new state if allowed
- */
-export function attemptCircuitBreakerTransition(
-  context: CircuitBreakerContext,
-  success: boolean
-): CircuitBreakerTransitionResult {
-  const now = Date.now();
-
-  switch (context.state) {
-    case 'CLOSED':
-      if (success) {
-        return { allowed: true, newState: 'CLOSED' };
-      }
-      if (context.consecutiveErrors + 1 >= context.config.failureThreshold) {
-        return {
-          allowed: false,
-          newState: 'OPEN',
-          reason: `Failure threshold (${context.config.failureThreshold}) exceeded`,
-        };
-      }
-      return { allowed: true, newState: 'CLOSED' };
-
-    case 'OPEN':
-      if (context.lastFailureTime && now - context.lastFailureTime >= context.config.timeoutMs) {
-        return { allowed: true, newState: 'HALF_OPEN', reason: 'Timeout elapsed, testing recovery' };
-      }
-      return { allowed: false, reason: 'Circuit is open' };
-
-    case 'HALF_OPEN':
-      if (success) {
-        return { allowed: true, newState: 'CLOSED', reason: 'Recovery confirmed' };
-      }
-      return {
-        allowed: false,
-        newState: 'OPEN',
-        reason: 'Test request failed, circuit reopened',
-      };
-
-    default:
-      return { allowed: false, reason: 'Unknown circuit breaker state' };
-  }
-}
 
 // =============================================================================
 // Connection Health State Machine
@@ -415,8 +315,6 @@ ${describeStateMachine('Agent Status', ['pending', 'working', 'completed'], AGEN
 ${describeStateMachine('Todo Status', ['pending', 'in_progress', 'completed', 'cancelled'], TODO_STATUS_TRANSITIONS)}
 
 ${describeStateMachine('Lesson Status', ['active', 'archived'], LESSON_STATUS_TRANSITIONS)}
-
-${describeStateMachine('Circuit Breaker', ['CLOSED', 'OPEN', 'HALF_OPEN'], CIRCUIT_BREAKER_TRANSITIONS)}
 `;
 
 // =============================================================================
