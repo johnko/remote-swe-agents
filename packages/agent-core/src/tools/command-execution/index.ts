@@ -8,6 +8,12 @@ import { z } from 'zod';
 import { CancellationToken, ToolDefinition, truncate, zodToJsonSchemaBody } from '../../private/common/lib.js';
 import { generateSuggestion } from './suggestion.js';
 import { getSession, executeHooksForEventWithSession, executePermissionHooks } from '../../lib/index.js';
+import {
+  logToolExecution,
+  logPermissionDenied,
+  logPermissionModified,
+  logSecurityError,
+} from '../../lib/security-logger.js';
 
 // Shell characters that could enable command injection - these are blocked in the command
 const DANGEROUS_SHELL_CHARS = /[;&|`<>=&$\n\r\x00]/;
@@ -381,6 +387,9 @@ const handler = async (
       session = await getSession(context.workerId);
     } catch (e) {
       console.error('[command-execution] Failed to get session for hooks:', e);
+      logSecurityError(context.workerId || 'unknown', 'get_session_for_hooks', e, {
+        toolName: 'execute_command',
+      });
     }
   }
 
@@ -405,6 +414,13 @@ const handler = async (
       // Handle hook blocking
       if (permissionResult.permission === 'deny') {
         console.log('[command-execution] Command blocked by permission hook');
+        logPermissionDenied(
+          context.workerId || 'unknown',
+          userId,
+          'shell_command',
+          'execute',
+          permissionResult.userMessage || 'Command blocked by hook'
+        );
         return JSON.stringify(
           {
             stdout: '',
@@ -420,14 +436,25 @@ const handler = async (
       // Use modified command if provided
       if (permissionResult.updatedCommand) {
         console.log('[command-execution] Command modified by permission hook');
+        logPermissionModified(
+          context.workerId || 'unknown',
+          input.command,
+          permissionResult.updatedCommand,
+          'Permission hook modification'
+        );
         input.command = permissionResult.updatedCommand;
       }
     } catch (e) {
       console.error('[command-execution] beforeShellExecution permission hook failed:', e);
+      logSecurityError(context.workerId || 'unknown', 'permission_hook_before_shell', e, {
+        toolName: 'execute_command',
+        command: input.command,
+      });
       // Don't throw - fail-open and continue with command execution
     }
   }
 
+  const startTime = Date.now();
   const res = await executeCommand(
     input.command,
     input.cwd,
@@ -435,6 +462,20 @@ const handler = async (
     input.longRunningProcess,
     context.toolUseId,
     context.cancellationToken
+  );
+  const durationMs = Date.now() - startTime;
+
+  // Log tool execution result
+  logToolExecution(
+    context.workerId || 'unknown',
+    'execute_command',
+    res.exitCode === 0,
+    {
+      durationMs,
+      exitCode: res.exitCode,
+      longRunningProcess: input.longRunningProcess,
+      timeoutMs: input.timeoutMs ?? 60000,
+    }
   );
 
   // Execute afterShellExecution hook after command completes (whether successful or failed)
@@ -446,6 +487,10 @@ const handler = async (
       });
     } catch (e) {
       console.error('[command-execution] afterShellExecution hook failed:', e);
+      logSecurityError(context.workerId || 'unknown', 'permission_hook_after_shell', e, {
+        toolName: 'execute_command',
+        command: input.command,
+      });
       // Don't throw - hook errors don't affect command result
     }
   }
