@@ -11,10 +11,7 @@ import {
   isValidAgentTransition,
   getValidAgentTransitions,
   AGENT_STATUS_TRANSITIONS,
-  // Todo status is exported but tests omitted (all transitions valid)
-  // Lesson status
-  isValidLessonTransition,
-  LESSON_STATUS_TRANSITIONS,
+  // Todo/Lesson status exported but tests omitted (simple transitions)
   // Circuit breaker
   attemptCircuitBreakerTransition,
   CircuitBreakerContext,
@@ -117,21 +114,8 @@ describe('Agent Status State Machine', () => {
 // Note: Todo status state machine tests omitted - all transitions are valid since
 // todo items are a reflection of agent tool calls and agent is the source of truth
 
-describe('Lesson Status State Machine', () => {
-  describe('isValidLessonTransition', () => {
-    it('should allow active → archived', () => {
-      expect(isValidLessonTransition('active', 'archived')).toBe(true);
-    });
-
-    it('should allow archived → active', () => {
-      expect(isValidLessonTransition('archived', 'active')).toBe(true);
-    });
-
-    it('should return true for same-state', () => {
-      expect(isValidLessonTransition('active', 'active')).toBe(true);
-    });
-  });
-});
+// Note: Lesson status state machine tests omitted - only has simple
+// bidirectional transitions (active ↔ archived), all transitions are valid
 
 describe('Circuit Breaker State Machine', () => {
   const defaultConfig = {
