@@ -16,8 +16,10 @@ COPY package*.json ./
 COPY packages/agent-core/package*.json ./packages/agent-core/
 COPY packages/slack-bolt-app/package*.json ./packages/slack-bolt-app/
 RUN npm ci --omit=dev
+# Copy built artifacts from builder stage
+COPY --from=builder /build/packages/agent-core/dist ./packages/agent-core/dist
+COPY --from=builder /build/packages/slack-bolt-app/dist/. ./
 # Final validation: verify agent-core ESM imports work with production dependencies
 RUN cd packages/agent-core && npm run validate:esm
-COPY --from=builder /build/packages/slack-bolt-app/dist/. ./
 
 CMD ["lambda.handler"]
