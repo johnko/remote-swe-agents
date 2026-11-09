@@ -1,14 +1,16 @@
 import { z } from 'zod';
 import { inferenceModeSchema, ModelType, modelTypeSchema } from './model.js';
-import { agentStatusSchema, runtimeTypeSchema } from './state-machines.js';
+import {
+  agentStatusSchema,
+  runtimeTypeSchema,
+  type AgentStatus,
+  type RuntimeType,
+} from './state-machines.js';
 
 // Re-export from state-machines for backward compatibility
 export { agentStatusSchema, runtimeTypeSchema } from './state-machines.js';
 export type { AgentStatus, RuntimeType } from './state-machines.js';
 export const defaultRuntimeType: RuntimeType = 'agent-core';
-
-export type AgentStatus = z.infer<typeof agentStatusSchema>;
-export type RuntimeType = z.infer<typeof runtimeTypeSchema>;
 
 /**
  * Default agent configuration values.

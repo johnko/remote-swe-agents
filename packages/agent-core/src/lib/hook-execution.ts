@@ -331,7 +331,7 @@ export const executeHooksForEvent = async (context: HookExecutionContext): Promi
         // SECURITY: Use validated hook execution to prevent command injection
         const validatedCwd = validateHookCwd(context.workingDirectory);
         try {
-          output = await executeHookCommand(hook.command, hook.script, validatedCwd, hookEnv);
+          output = await executeHookCommand(hook.command, content, validatedCwd, hookEnv);
         } catch (e: any) {
           // Scripts/commands that error should still report the output
           if (e.message.includes('STDERR:')) {
@@ -457,7 +457,7 @@ export const executePermissionHooks = async (context: HookExecutionContext): Pro
         try {
           output = await executeHookCommand(
             hook.command,
-            hook.script,
+            content,
             validatedCwd,
             hookEnv,
             JSON.stringify(hookInput)
