@@ -18,12 +18,22 @@ type ImageViewerProps = {
   localImageUrls?: Record<string, string>;
 };
 
+/**
+ * State machine for individual image loading states.
+ * Eliminates impossible states (loading=true + error=true) and makes
+ * transitions explicit and type-safe.
+ * - 'loading': Fetching/initializing
+ * - 'success': Has valid URL (blob or pre-signed)
+ * - 'error': Failed to load
+ */
+type ImageLoadingState =
+  | { status: 'loading' }
+  | { status: 'success'; url: string }
+  | { status: 'error' };
+
 type ImageData = {
   key: string;
-  url: string;
-  loading: boolean;
-  error: boolean;
-};
+} & ImageLoadingState;
 
 /**
  * Preload the pre-signed URL fully before swapping it into the <img>, so the
@@ -46,7 +56,7 @@ export const ImageViewer = ({ imageKeys: inputKeys, localImageUrls }: ImageViewe
     if (!localImageUrls) return [];
     return Object.entries(localImageUrls)
       .filter(([, url]) => isUsable(url))
-      .map(([key, url]) => ({ key, url, loading: false, error: false }));
+      .map(([key, url]) => ({ key, status: 'success', url }));
   });
   const [images, setImages] = useState<ImageData[]>([]);
   const [imageCache, setImageCache] = useState<Map<string, ImageData>>(
@@ -62,7 +72,9 @@ export const ImageViewer = ({ imageKeys: inputKeys, localImageUrls }: ImageViewe
   // unmount lets the release revoke the blob so it cannot leak until the
   // tab closes.
   useEffect(() => {
-    const urls = seededEntries.map((entry) => entry.url);
+    const urls = seededEntries
+      .filter((entry): entry is { status: 'success'; url: string; key: string } => entry.status === 'success')
+      .map((entry) => entry.url);
     urls.forEach(claimForMessage);
     return () => {
       urls.forEach((url) => scheduleReleaseFromMessage(url));
@@ -92,10 +104,11 @@ export const ImageViewer = ({ imageKeys: inputKeys, localImageUrls }: ImageViewe
     // nor release a blob it may no longer own.
     let cancelled = false;
     const loadImages = async () => {
-      // Build display data immediately from existing cache (without showing loading state)
-      const currentImages = imageKeys.map((key) => {
+      // Initialize all images to loading state
+      const currentImages: ImageData[] = imageKeys.map((key) => {
         const cached = imageCache.get(key);
-        return cached ?? { key, url: '', loading: true, error: false };
+        // Return cached success state or start loading
+        return cached ?? { key, status: 'loading' };
       });
       setImages(currentImages);
 
@@ -109,7 +122,10 @@ export const ImageViewer = ({ imageKeys: inputKeys, localImageUrls }: ImageViewe
           // the pre-signed URL is preloaded first so the <img> never flashes
           // during the src change, then the blob is revoked. Everything else
           // updates immediately (existing behaviour).
-          const isBlobBacked = (key: string) => imageCache.get(key)?.url.startsWith('blob:') ?? false;
+          const isBlobBacked = (key: string) => {
+            const cached = imageCache.get(key);
+            return cached?.status === 'success' && cached.url.startsWith('blob:');
+          };
           const immediate = result.data.filter((item) => !isBlobBacked(item.key));
           const deferred = result.data.filter((item) => isBlobBacked(item.key));
 
@@ -118,9 +134,8 @@ export const ImageViewer = ({ imageKeys: inputKeys, localImageUrls }: ImageViewe
           immediate.forEach((item) => {
             newCache.set(item.key, {
               key: item.key,
+              status: 'success',
               url: item.url,
-              loading: false,
-              error: false,
             });
           });
           setImageCache(newCache);
@@ -130,12 +145,14 @@ export const ImageViewer = ({ imageKeys: inputKeys, localImageUrls }: ImageViewe
           setImages(
             imageKeys.map((key) => {
               const cached = newCache.get(key);
-              return cached || { key, url: '', loading: false, error: true };
+              return cached ?? { key, status: 'error' };
             })
           );
 
           deferred.forEach(({ key, url }) => {
-            const blobUrl = imageCache.get(key)!.url;
+            const cached = imageCache.get(key);
+            const blobUrl = cached?.status === 'success' ? cached.url : undefined;
+            if (!blobUrl) return;
             void preloadImage(url)
               .then(() => {
                 // Cancelled (rollback / remount): do not touch state, and do
@@ -144,7 +161,7 @@ export const ImageViewer = ({ imageKeys: inputKeys, localImageUrls }: ImageViewe
                 // displaying it. The unmount cleanup's deferred release (or
                 // the new owner) handles the blob's fate.
                 if (cancelled) return;
-                const entry: ImageData = { key, url, loading: false, error: false };
+                const entry: ImageData = { key, status: 'success', url };
                 setImageCache((prev) => new Map(prev).set(key, entry));
                 setImages((prev) => prev.map((img) => (img.key === key ? entry : img)));
                 // Swap complete: revoke IF this message still owns the blob
@@ -166,7 +183,7 @@ export const ImageViewer = ({ imageKeys: inputKeys, localImageUrls }: ImageViewe
         const newCache = new Map(imageCache);
         imageKeys.forEach((key) => {
           if (!newCache.has(key)) {
-            newCache.set(key, { key, url: '', loading: false, error: true });
+            newCache.set(key, { key, status: 'error' });
           }
         });
         setImageCache(newCache);
@@ -174,7 +191,7 @@ export const ImageViewer = ({ imageKeys: inputKeys, localImageUrls }: ImageViewe
         setImages(
           imageKeys.map((key) => {
             const cached = newCache.get(key);
-            return cached || { key, url: '', loading: false, error: true };
+            return cached ?? { key, status: 'error' };
           })
         );
       }
@@ -221,34 +238,44 @@ export const ImageViewer = ({ imageKeys: inputKeys, localImageUrls }: ImageViewe
     <>
       <div className="mt-2">
         <div className="flex flex-wrap gap-2">
-          {images.map((image) => (
-            <div key={image.key}>
-              {image.loading ? (
-                <div className="w-32 h-24 bg-gray-100 dark:bg-gray-800 rounded flex items-center justify-center">
-                  <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
-                </div>
-              ) : image.error ? (
-                <div className="w-32 h-24 bg-gray-100 dark:bg-gray-800 rounded flex items-center justify-center">
-                  <span className="text-xs text-gray-500">Error</span>
-                </div>
-              ) : (
-                <button onClick={() => setPreviewImage(image)} className="block">
-                  {/* eslint-disable-next-line @next/next/no-img-element -- src is a
-                      dynamic pre-signed S3 / blob URL; next/image's loader and
-                      domain allow-list do not apply. */}
-                  <img
-                    src={image.url}
-                    alt={`Image ${image.key}`}
-                    className="w-32 h-24 object-cover rounded cursor-pointer hover:opacity-80 transition-opacity"
-                  />
-                </button>
-              )}
-            </div>
-          ))}
+          {/* State machine-based rendering with exhaustiveness checking */}
+          {images.map((image) => {
+            switch (image.status) {
+              case 'loading':
+                return (
+                  <div key={image.key} className="w-32 h-24 bg-gray-100 dark:bg-gray-800 rounded flex items-center justify-center">
+                    <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+                  </div>
+                );
+              case 'error':
+                return (
+                  <div key={image.key} className="w-32 h-24 bg-gray-100 dark:bg-gray-800 rounded flex items-center justify-center">
+                    <span className="text-xs text-gray-500">Error</span>
+                  </div>
+                );
+              case 'success':
+                return (
+                  <button key={image.key} onClick={() => setPreviewImage(image)} className="block">
+                    {/* eslint-disable-next-line @next/next/no-img-element -- src is a
+                        dynamic pre-signed S3 / blob URL; next/image's loader and
+                        domain allow-list do not apply. */}
+                    <img
+                      src={image.url}
+                      alt={`Image ${image.key}`}
+                      className="w-32 h-24 object-cover rounded cursor-pointer hover:opacity-80 transition-opacity"
+                    />
+                  </button>
+                );
+              default:
+                // Exhaustiveness check: ensures all states are handled
+                const _exhaustiveCheck: never = image;
+                return _exhaustiveCheck;
+            }
+          })}
         </div>
       </div>
 
-      {previewImage && (
+      {previewImage?.status === 'success' && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm overscroll-contain touch-pinch-zoom"
           onClick={() => setPreviewImage(null)}
