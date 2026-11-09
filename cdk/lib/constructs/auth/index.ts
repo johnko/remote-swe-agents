@@ -6,9 +6,6 @@ import {
   Mfa,
   UserPool,
   UserPoolClient,
-  UserPoolDeviceTracking,
-  UserPoolMfa,
-  UserPoolOtp,
 } from 'aws-cdk-lib/aws-cognito';
 import { Code, Runtime, SingletonFunction } from 'aws-cdk-lib/aws-lambda';
 import { CnameRecord, IHostedZone } from 'aws-cdk-lib/aws-route53';
@@ -80,16 +77,10 @@ export class Auth extends Construct {
         sms: false, // SMS-based 2FA disabled due to SIM swap risks
         otp: true, // TOTP-based 2FA enabled (authenticator apps)
       },
-      // SECURITY: Track sign-ins to detect suspicious activity
-      signInAliasesCapture: {
-        deviceAttributes: true,
-        deviceIp: true,
-      },
-      deviceTrackingMode: UserPoolDeviceTracking.AUTO_OPT_IN,
-      otp: {
-        tokenValidityMinutes: 5,
-        tokenLength: 6,
-        format: UserPoolOtp.NUMBER,
+      // SECURITY: Track sign-ins with device tracking
+      deviceTracking: {
+        challengeRequiredOnNewDevice: true,
+        deviceOnlyRememberedOnUserPrompt: true,
       },
       userInvitation: {
         emailSubject: 'Account Invitation - Remote SWE Agents',
