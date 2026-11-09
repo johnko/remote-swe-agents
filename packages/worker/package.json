@@ -1,7 +1,7 @@
 {
   "name": "worker",
   "scripts": {
-    "build": "npx tsc",
+    "build": "tsc",
     "format": "npx prettier --write './**/*.ts'",
     "format:check": "npx prettier --check './**/*.ts'",
     "test": "vitest run --passWithNoTests",

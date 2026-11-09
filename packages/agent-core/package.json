@@ -43,9 +43,9 @@
     }
   },
   "scripts": {
-    "build": "npx tsc",
+    "build": "tsc",
     "build:validate": "npm run build && npm run validate:esm",
-    "watch": "npx tsc -w",
+    "watch": "tsc -w",
     "test": "vitest run",
     "format": "npx prettier --write \"src/**/*.ts\"",
     "format:check": "npx prettier --check \"src/**/*.ts\"",
