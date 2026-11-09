@@ -272,7 +272,8 @@ export const bedrockStrandsAgentLoop = async (ctx: TurnContext, sink: ToolEventS
     let content: unknown;
     try {
       content = JSON.parse(item.content);
-    } catch {
+    } catch (e) {
+      console.error('[bedrockStrandsAgentLoop] Failed to parse message content:', e);
       content = [{ text: item.content }];
     }
     const bedrockMsg: BedrockMessage = {

@@ -22,7 +22,8 @@ const renderContentBlocks = (item: MessageItem): string => {
   try {
     const parsed = JSON.parse(item.content);
     blocks = Array.isArray(parsed) ? parsed : [];
-  } catch {
+  } catch (e) {
+    console.error('[handover-history] Failed to parse message content:', e);
     return item.content || '';
   }
 

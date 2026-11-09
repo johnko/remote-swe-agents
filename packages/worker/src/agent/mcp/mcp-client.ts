@@ -43,7 +43,7 @@ export class MCPClient {
       console.log('Connected using Streamable HTTP transport');
       return client;
     } catch (error) {
-      console.log('Streamable HTTP connection failed, falling back to SSE transport');
+      console.error('[mcp-client] Streamable HTTP connection failed, falling back to SSE transport:', error);
       const client = new MCPClient();
       client.transport = new SSEClientTransport(baseUrl);
       await client.connectAndInitialize();

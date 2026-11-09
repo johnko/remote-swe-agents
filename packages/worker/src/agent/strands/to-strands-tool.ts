@@ -80,7 +80,8 @@ export function flattenToolResult(result: string | ToolResultContentBlock[]): st
     else if ('json' in block) {
       try {
         parts.push(JSON.stringify(block.json));
-      } catch {
+      } catch (e) {
+        console.error('[toStrandsTool] Failed to serialize json tool result:', e);
         parts.push('[unserialisable json tool result]');
       }
     } else if ('image' in block) {
