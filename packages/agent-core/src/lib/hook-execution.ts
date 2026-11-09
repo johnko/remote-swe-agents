@@ -455,13 +455,7 @@ export const executePermissionHooks = async (context: HookExecutionContext): Pro
         // SECURITY: Use validated hook execution to prevent command injection
         const validatedCwd = validateHookCwd(context.workingDirectory);
         try {
-          output = await executeHookCommand(
-            hook.command,
-            content,
-            validatedCwd,
-            hookEnv,
-            JSON.stringify(hookInput)
-          );
+          output = await executeHookCommand(hook.command, content, validatedCwd, hookEnv, JSON.stringify(hookInput));
         } catch (e: any) {
           // Permission hooks that error are treated as allowing (fail-open)
           console.error(`[hook-execution] Permission hook "${hook.name}" failed:`, e);

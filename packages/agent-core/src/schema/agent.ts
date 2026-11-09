@@ -1,11 +1,6 @@
 import { z } from 'zod';
 import { inferenceModeSchema, ModelType, modelTypeSchema } from './model.js';
-import {
-  agentStatusSchema,
-  runtimeTypeSchema,
-  type AgentStatus,
-  type RuntimeType,
-} from './state-machines.js';
+import { agentStatusSchema, runtimeTypeSchema, type AgentStatus, type RuntimeType } from './state-machines.js';
 
 // Re-export from state-machines for backward compatibility
 export { agentStatusSchema, runtimeTypeSchema } from './state-machines.js';
