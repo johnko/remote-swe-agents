@@ -126,6 +126,7 @@ export class AgentCoreRuntime extends Construct implements IGrantable {
           'ce:GetCostAndUsage',
           'ce:GetCostForecast',
           'ce:GetUsageForecast',
+          'cloudformation:ContinueUpdateRollback',
           'cloudformation:DescribeStackEvents',
           'cloudformation:DescribeStackResource',
           'ecr:DescribeImages',
