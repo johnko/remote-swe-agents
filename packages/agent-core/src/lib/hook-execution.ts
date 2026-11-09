@@ -1,7 +1,184 @@
-import { execSync } from 'child_process';
+import { spawn } from 'child_process';
 import { listHooksByEvent } from './hooks.js';
 import { HookEventType } from '../schema/hook.js';
 import { SessionItem } from '../schema/session.js';
+import { resolve, isAbsolute, posix } from 'path';
+import { homedir, tmpdir } from 'os';
+
+// Maximum allowed execution time for hooks in milliseconds
+const HOOK_EXECUTION_TIMEOUT = 30000;
+
+// Allowed base directories for hook commands
+const ALLOWED_CWD_PREFIXES = [
+  resolve(homedir()),
+  resolve(tmpdir()),
+  '/tmp',
+  '/var/tmp',
+];
+
+// Shell characters and patterns that could enable command injection
+const DANGEROUS_SHELL_CHARS = /[;&|`<>=&$\n\r\x00]/;
+const DANGEOUS_SHELL_OPERATORS = /(\|\||&&|\|\&|;|`|\$\()/;
+
+/**
+ * Validates a command to prevent shell injection attacks.
+ * @param command The command string to validate
+ * @throws Error if dangerous patterns are detected
+ */
+const validateHookCommand = (command: string): void => {
+  if (!command || typeof command !== 'string') {
+    throw new Error('Hook command must be a non-empty string');
+  }
+
+  // Check for null bytes
+  if (command.includes('\x00')) {
+    throw new Error('Hook command contains null bytes');
+  }
+
+  // Check for dangerous shell characters/operators
+  if (DANGEROUS_SHELL_CHARS.test(command) || DANGEOUS_SHELL_OPERATORS.test(command)) {
+    throw new Error('Hook command contains dangerous shell characters or operators');
+  }
+};
+
+/**
+ * Validates inline JavaScript to prevent code injection.
+ * @param script The script content to validate
+ * @throws Error if dangerous patterns are detected
+ */
+const validateHookScript = (script: string): void => {
+  if (!script || typeof script !== 'string') {
+    throw new Error('Hook script must be a non-empty string');
+  }
+
+  // Check for null bytes
+  if (script.includes('\x00')) {
+    throw new Error('Hook script contains null bytes');
+  }
+
+  // Check for eval, Function constructor, and other dangerous patterns
+  const dangerousPatterns = [
+    /eval\s*\(/i,
+    /Function\s*\(/,
+    /child_process/,
+    /require\s*\(\s*['"]`\s*(child_process|fs|path|os|crypto|http|https|net|dgram)/i,
+    /process\.exit/,
+    /process\.kill/,
+    /new\s+Function/,
+    /setTimeout\s*\(\s*['"`]/,
+    /setInterval\s*\(\s*['"`]/,
+  ];
+
+  for (const pattern of dangerousPatterns) {
+    if (pattern.test(script)) {
+      throw new Error(`Hook script contains dangerous pattern: ${pattern.source}`);
+    }
+  }
+};
+
+/**
+ * Validates working directory to prevent path traversal in hooks.
+ * @param cwd The working directory to validate
+ * @returns The sanitized absolute path
+ * @throws Error if path is outside allowed directories
+ */
+const validateHookCwd = (cwd?: string): string => {
+  if (!cwd) {
+    return process.cwd();
+  }
+
+  // Must be absolute
+  if (!isAbsolute(cwd)) {
+    throw new Error('Hook working directory must be an absolute path');
+  }
+
+  const resolvedCwd = resolve(cwd);
+
+  // Check against allowed prefixes
+  const isAllowed = ALLOWED_CWD_PREFIXES.some((prefix) => {
+    const normalizedPrefix = posix.normalize(prefix);
+    const normalizedCwd = posix.normalize(resolvedCwd);
+    return normalizedCwd === normalizedPrefix || normalizedCwd.startsWith(normalizedPrefix + '/');
+  });
+
+  if (!isAllowed) {
+    throw new Error(`Hook working directory "${cwd}" is outside allowed directories`);
+  }
+
+  return resolvedCwd;
+};
+
+/**
+ * Executes a hook using spawn (safer than execSync) with security validations.
+ * @param command The command to execute
+ * @param cwd The working directory
+ * @param env Environment variables
+ * @param input Optional JSON input to write to stdin
+ * @returns The command output
+ */
+const executeHookCommand = async (
+  command: string,
+  script: string | undefined,
+  cwd: string,
+  env: NodeJS.ProcessEnv,
+  input?: string
+): Promise<string> => {
+  const isScript = !!script;
+  const content = isScript ? script! : command;
+
+  if (!content) {
+    throw new Error('Hook has no command or script content');
+  }
+
+  // Validate the command/script before execution
+  if (isScript) {
+    validateHookScript(content);
+  } else {
+    validateHookCommand(content);
+  }
+
+  return new Promise((resolve, reject) => {
+    // Use exec -e to safely execute inline scripts with JSON escaping
+    // This prevents shell injection since the script is passed as a string argument
+    const args = isScript ? ['-e', content] : [];
+    const spawnCommand = isScript ? 'node' : content;
+
+    const childProcess = spawn(spawnCommand, args, {
+      cwd,
+      env,
+      timeout: HOOK_EXECUTION_TIMEOUT,
+    });
+
+    let stdout = '';
+    let stderr = '';
+
+    if (input && childProcess.stdin && isScript) {
+      childProcess.stdin.write(input);
+      childProcess.stdin.end();
+    }
+
+    childProcess.stdout.on('data', (data) => {
+      stdout += data.toString();
+    });
+
+    childProcess.stderr.on('data', (data) => {
+      stderr += data.toString();
+    });
+
+    childProcess.on('close', (code) => {
+      if (code !== 0 && code !== null) {
+        const errorMessage = stderr ? `\nSTDERR:\n${stderr}` : '';
+        reject(new Error(`Hook execution failed with code ${code}${errorMessage}`));
+      } else {
+        resolve(stdout.trim());
+      }
+    });
+
+    childProcess.on('error', (error) => {
+      reject(new Error(`Hook execution failed: ${error.message}`));
+    });
+  });
+};
 
 /**
  * Extracts user ID from a session's initiator field.
@@ -156,41 +333,22 @@ export const executeHooksForEvent = async (context: HookExecutionContext): Promi
 
         let output = '';
 
-        if (isScript) {
-          // Execute inline script via node -e
-          try {
-            output = execSync(`node -e ${JSON.stringify(content)}`, {
-              cwd: context.workingDirectory || process.cwd(),
-              encoding: 'utf-8',
-              stdio: ['pipe', 'pipe', 'pipe'],
-              timeout: 30000, // 30 second timeout for hook execution
-              env: hookEnv,
-            });
-          } catch (e: any) {
-            // Inline scripts that error should still report the output
-            output = e.stdout ? e.stdout.toString('utf-8') : '';
-            if (e.stderr) {
-              output += '\nSTDERR:\n' + e.stderr.toString('utf-8');
-            }
-            throw new Error(`Script execution failed: ${e.message}`);
+        // SECURITY: Use validated hook execution to prevent command injection
+        const validatedCwd = validateHookCwd(context.workingDirectory);
+        try {
+          output = await executeHookCommand(
+            hook.command,
+            hook.script,
+            validatedCwd,
+            hookEnv
+          );
+        } catch (e: any) {
+          // Scripts/commands that error should still report the output
+          if (e.message.includes('STDERR:')) {
+            const parts = e.message.split('STDERR:');
+            output = parts[1]?.trim() || '';
           }
-        } else {
-          // Execute shell command
-          try {
-            output = execSync(content, {
-              cwd: context.workingDirectory || process.cwd(),
-              encoding: 'utf-8',
-              stdio: ['pipe', 'pipe', 'pipe'],
-              timeout: 30000, // 30 second timeout for hook execution
-              env: hookEnv,
-            });
-          } catch (e: any) {
-            output = e.stdout ? e.stdout.toString('utf-8') : '';
-            if (e.stderr) {
-              output += '\nSTDERR:\n' + e.stderr.toString('utf-8');
-            }
-            throw new Error(`Command execution failed: ${e.message}`);
-          }
+          throw e;
         }
 
         result.hooksExecuted++;
@@ -308,38 +466,20 @@ export const executePermissionHooks = async (
 
         let output = '';
 
-        if (isScript) {
-          // Execute inline script via node -e with JSON input
-          try {
-            output = execSync(`node -e ${JSON.stringify(content)}`, {
-              cwd: context.workingDirectory || process.cwd(),
-              encoding: 'utf-8',
-              stdio: ['pipe', 'pipe', 'pipe'],
-              timeout: 30000,
-              env: hookEnv,
-              input: JSON.stringify(hookInput),
-            });
-          } catch (e: any) {
-            // Permission hooks that error are treated as allowing (fail-open)
-            console.error(`[hook-execution] Permission hook "${hook.name}" failed:`, e);
-            continue;
-          }
-        } else {
-          // Execute shell command with JSON input
-          try {
-            output = execSync(content, {
-              cwd: context.workingDirectory || process.cwd(),
-              encoding: 'utf-8',
-              stdio: ['pipe', 'pipe', 'pipe'],
-              timeout: 30000,
-              env: hookEnv,
-              input: JSON.stringify(hookInput),
-            });
-          } catch (e: any) {
-            // Permission hooks that error are treated as allowing (fail-open)
-            console.error(`[hook-execution] Permission hook "${hook.name}" failed:`, e);
-            continue;
-          }
+        // SECURITY: Use validated hook execution to prevent command injection
+        const validatedCwd = validateHookCwd(context.workingDirectory);
+        try {
+          output = await executeHookCommand(
+            hook.command,
+            hook.script,
+            validatedCwd,
+            hookEnv,
+            JSON.stringify(hookInput)
+          );
+        } catch (e: any) {
+          // Permission hooks that error are treated as allowing (fail-open)
+          console.error(`[hook-execution] Permission hook "${hook.name}" failed:`, e);
+          continue;
         }
 
         const permissionResult = parsePermissionResult(output);

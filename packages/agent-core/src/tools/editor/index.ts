@@ -3,6 +3,8 @@ import { existsSync, readFileSync, writeFileSync } from 'fs';
 import { ToolDefinition, zodToJsonSchemaBody } from '../../private/common/lib.js';
 import { getSession, executeHooksForEventWithSession } from '../../lib/index.js';
 import type { HookContextData } from '../../lib/hook-execution.js';
+import { resolve, isAbsolute, posix } from 'path';
+import { homedir, tmpdir } from 'os';
 
 const inputSchema = z.object({
   filePath: z.string().describe('The absolute path to the file to modify (must be absolute, not relative)'),
@@ -16,11 +18,62 @@ const inputSchema = z.object({
 
 const name = 'file_editor';
 
+// Allowed base directories for file operations
+const ALLOWED_BASE_DIRS = [
+  resolve(homedir()),
+  resolve(tmpdir()),
+  '/tmp',
+  '/var/tmp',
+];
+
+/**
+ * CRITICAL SECURITY: Validates that filePath is within allowed directories
+ * to prevent directory traversal attacks (e.g., ../../../etc/passwd).
+ * @param filePath The file path to validate
+ * @param operationDescription Description of the operation for error messages
+ * @returns The normalized absolute path
+ * @throws Error if path is outside allowed directories
+ */
+const validateFilePath = (filePath: string, operationDescription: string = 'file access'): string => {
+  // Check if path is absolute
+  if (!isAbsolute(filePath)) {
+    throw new Error(
+      `Path "${filePath}" is not absolute. ` +
+      `Only absolute paths are allowed for ${operationDescription}. ` +
+      `Use an absolute path starting with "/"`
+    );
+  }
+
+  // Resolve and normalize the path (removes .. and . segments)
+  const resolvedPath = resolve(filePath);
+
+  // Verify the path is within one of the allowed base directories
+  const isAllowed = ALLOWED_BASE_DIRS.some((allowedDir) => {
+    // Ensure the path starts with the allowed directory followed by a separator
+    // or is exactly the allowed directory
+    const normalizedAllowed = posix.normalize(allowedDir);
+    const normalizedPath = posix.normalize(resolvedPath);
+    return normalizedPath === normalizedAllowed || normalizedPath.startsWith(normalizedAllowed + '/');
+  });
+
+  if (!isAllowed) {
+    throw new Error(
+      `Path "${filePath}" is outside allowed directories for ${operationDescription}. ` +
+      `Access denied for security reasons.`
+    );
+  }
+
+  return resolvedPath;
+};
+
 const editFile = async (
   input: z.infer<typeof inputSchema>,
   context?: { workerId?: string; toolUseId?: string }
 ) => {
-  const { filePath, oldString, newString } = input;
+  // SECURITY: Validate filePath to prevent directory traversal attacks
+  const validatedFilePath = validateFilePath(input.filePath, 'file editing');
+  const { filePath: _, oldString, newString } = input;
+  const filePath = validatedFilePath;
   
   // Get session for hook execution if workerId available
   let session;
