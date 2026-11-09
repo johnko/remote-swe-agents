@@ -1,4 +1,4 @@
-FROM public.ecr.aws/lambda/nodejs:22 AS builder
+FROM public.ecr.aws/lambda/nodejs:24 AS builder
 WORKDIR /build
 COPY package*.json ./
 COPY packages/agent-core/package*.json ./packages/agent-core/
@@ -9,7 +9,7 @@ COPY ./ ./
 RUN cd packages/agent-core && npm run build:validate
 RUN cd packages/webapp && npx esbuild src/jobs/*.ts --bundle --outdir=dist --platform=node --format=esm --out-extension:.js=.mjs --charset=utf8 --packages=external
 
-FROM public.ecr.aws/lambda/nodejs:22 AS runner
+FROM public.ecr.aws/lambda/nodejs:24 AS runner
 
 COPY package*.json ./
 COPY packages/agent-core/package*.json ./packages/agent-core/

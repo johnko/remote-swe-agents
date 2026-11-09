@@ -1,4 +1,4 @@
-FROM public.ecr.aws/lambda/nodejs:22 AS builder
+FROM public.ecr.aws/lambda/nodejs:24 AS builder
 WORKDIR /build
 COPY package*.json ./
 COPY packages/agent-core/package*.json ./packages/agent-core/
@@ -10,7 +10,7 @@ RUN cd packages/agent-core && npm run build:validate
 # Bundle and validate slack-bolt-app
 RUN cd packages/slack-bolt-app && npm run bundle:validate
 
-FROM public.ecr.aws/lambda/nodejs:22 AS runner
+FROM public.ecr.aws/lambda/nodejs:24 AS runner
 
 COPY package*.json ./
 COPY packages/agent-core/package*.json ./packages/agent-core/
