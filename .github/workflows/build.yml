@@ -195,16 +195,13 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
-          node-version: '22.x'
-      - run: npm install -g typescript@5.7.3 vitest@4.1.10 next@16.1.6 prettier@3.5.1 esbuild@0.28.1 tsx@4.19.2
-        name: Install dev tools globally
+          node-version: '24.x'
       - run: |
           npm ci
           npm run format:check -w packages/agent-core
         name: Run static analyses
       - run: |
-          npm run test
-        working-directory: ./packages/agent-core
+          npm run test -w packages/agent-core
         name: Run unit tests
       - run: |
           npm run build
