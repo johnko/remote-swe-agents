@@ -12,6 +12,9 @@ import type {
   TunnelWsClose,
 } from './protocol.js';
 
+// Maximum message size to prevent memory exhaustion attacks (10MB)
+const MAX_TUNNEL_MESSAGE_SIZE = 10 * 1024 * 1024;
+
 export class TunnelClient {
   private ws: WebSocket | null = null;
   private localWsSockets = new Map<string, WebSocket>();
@@ -50,9 +53,6 @@ export class TunnelClient {
         this.flushQueue();
         resolve();
       });
-
-      // Maximum message size to prevent memory exhaustion attacks (10MB)
-      const MAX_TUNNEL_MESSAGE_SIZE = 10 * 1024 * 1024;
 
       this.ws.on('message', (data) => {
         try {
