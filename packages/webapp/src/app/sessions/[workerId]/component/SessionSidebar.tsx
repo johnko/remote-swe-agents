@@ -62,7 +62,7 @@ export default function SessionSidebar({
 
   // Resizable sidebar width (min: 200px, max: 500px)
   const MIN_SIDEBAR_WIDTH = 200;
-  const MAX_SIDEBAR_WIDTH = 500;
+  const MAX_SIDEBAR_WIDTH = 400;
   const [isHovered, setIsHovered] = useState(false);
   const sidebarRef = useRef<HTMLElement>(null);
 
