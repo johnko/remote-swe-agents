@@ -101,10 +101,11 @@ describe('deriveApiKeyId', () => {
     expect(a).toBe(b);
   });
 
-  test('uses the apikey- prefix and a 12-char fingerprint', () => {
+  test('uses the apikey- prefix and a 16-char fingerprint', () => {
     const k = 'a'.repeat(64);
     const id = deriveApiKeyId(k);
-    expect(id).toMatch(/^apikey-[0-9a-f]{12}$/);
+    // base64url encoding: alphanumeric plus - and _
+    expect(id).toMatch(/^apikey-[A-Za-z0-9_-]{16}$/);
   });
 
   test('NEVER leaks the raw secret in the derived id', () => {
@@ -152,7 +153,7 @@ describe('getApiKeySenderInfo', () => {
     expect(out).not.toBeNull();
     expect(out!.displayName).toBe('CI deploy bot');
     expect(out!.ownerId).toBe('owner-1');
-    expect(out!.id).toMatch(/^apikey-[0-9a-f]{12}$/);
+    expect(out!.id).toMatch(/^apikey-[A-Za-z0-9_-]{16}$/);
   });
 
   test('falls back to the derived id when description is empty/whitespace', async () => {
@@ -168,7 +169,7 @@ describe('getApiKeySenderInfo', () => {
     const out = await getApiKeySenderInfo('k2');
     expect(out).not.toBeNull();
     expect(out!.displayName).toBe(out!.id);
-    expect(out!.displayName).toMatch(/^apikey-[0-9a-f]{12}$/);
+    expect(out!.displayName).toMatch(/^apikey-[A-Za-z0-9_-]{16}$/);
   });
 
   test('falls back to the derived id when description is missing', async () => {

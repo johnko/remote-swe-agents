@@ -117,7 +117,9 @@ function verifyHandoffToken(token: string, secret: string): { workerId: string; 
 }
 
 function generateSessionId(): string {
-  return randomBytes(24).toString('hex');
+  // Generate 24 bytes (192 bits) of cryptographically secure randomness
+  // Use base64url encoding for shorter string representation
+  return randomBytes(24).toString('base64url');
 }
 
 function verifySessionCookie(

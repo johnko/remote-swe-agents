@@ -9,9 +9,19 @@ exports.handler = async function (event, context) {
     }
 
     const prefix = event.ResourceProperties.prefix ?? '';
-    const length = event.ResourceProperties.length ?? '8';
+    const rawLength = event.ResourceProperties.length ?? '8';
+
+    // Validate length parameter to ensure sufficient randomness
+    const length = parseInt(rawLength, 10);
+    if (isNaN(length) || length < 8 || length > 128) {
+      throw new Error(`Invalid length parameter: ${rawLength}. Must be an integer between 8 and 128.`);
+    }
+
     const generate = () => {
-      const random = crypto.randomBytes(parseInt(length)).toString('hex');
+      // Generate at least enough bytes to cover the requested length in hex
+      // Each hex character represents 4 bits, so 2 hex chars per byte
+      const byteLength = Math.ceil(length / 2);
+      const random = crypto.randomBytes(byteLength).toString('hex');
       return `${prefix}${random.slice(0, length)}`;
     };
 
