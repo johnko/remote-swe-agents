@@ -159,27 +159,24 @@ jobs:
         name: Run build
   Build-and-Test-Webapp:
     needs: changes
-    if: false # ${{ needs.changes.outputs.webapp == 'true' || (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'workflow_dispatch' }}
+    if: ${{ needs.changes.outputs.webapp == 'true' || (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Use Node.js
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
-          node-version: '22.x'
-      - run: |
+          node-version: '24.x'
+      - name: Install dependencies
+        run: |
           npm ci
           npm run build -w packages/agent-core
-        name: Install dependencies
-      - run: |
-          npm run format:check
-        working-directory: ./packages/webapp
-        name: Install dependencies and run static analysis
-      - run: |
+      - name: Run static analyses
+        run: npm run format:check -w packages/webapp
+      - name: Run build
+        run: |
           cp .env.local.example .env.local
-          npm run build
-        working-directory: ./packages/webapp
-        name: build
+          npm run build -w packages/webapp
   Build-and-Test-AgentCore:
     needs: changes
     if: ${{ needs.changes.outputs.agent_core == 'true' || (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'workflow_dispatch' }}
@@ -190,17 +187,14 @@ jobs:
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: '24.x'
-      - run: |
-          npm ci
-          npm run format:check -w packages/agent-core
-        name: Run static analyses
-      - run: |
-          npm run test -w packages/agent-core
-        name: Run unit tests
-      - run: |
-          npm run build
-        working-directory: ./packages/agent-core
-        name: Run build
+      - name: Install dependencies
+        run: npm ci
+      - name: Run static analyses
+        run: npm run format:check -w packages/agent-core
+      - name: Run unit tests
+        run: npm run test -w packages/agent-core
+      - name: Run build
+        run: npm run build -w packages/agent-core
   Build-and-Test-GitHubActions:
     needs: changes
     if: false # ${{ needs.changes.outputs.github_actions == 'true' || (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'workflow_dispatch' }}
@@ -210,42 +204,35 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
-          node-version: '22.x'
-      - run: |
+          node-version: '24.x'
+      - name: Install dependencies
+        run: |
           npm ci
           npm run build -w packages/agent-core
-        name: Install dependencies
-      - run: |
-          npm run format:check -w packages/github-actions
-        name: Run static analyses
-      - run: |
-          npm run build
-        working-directory: ./packages/github-actions
-        name: Run build
+      - name: Run static analyses
+        run: npm run format:check -w packages/github-actions
+      - name: Run build
+        run: npm run build -w packages/github-actions
   Build-and-Test-Dockerfiles:
     needs: changes
     if: false # ${{ needs.changes.outputs.dockerfiles == 'true' || needs.changes.outputs.slack_bolt_app == 'true' || needs.changes.outputs.agent_core == 'true' || (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - run: |
-          docker build -f docker/slack-bolt-app.Dockerfile -t slack-bolt-app .
-        name: Build slack-bolt-app docker image
-      - run: |
-          docker run --entrypoint node --env TESTING_BOOTSTRAP=true --env BOT_TOKEN=dummy --env SIGNING_SECRET=dummy slack-bolt-app local.js
-        name: Test if the image can boot successfully
+      - name: Build slack-bolt-app docker image
+        run: docker build -f docker/slack-bolt-app.Dockerfile -t slack-bolt-app .
+      - name: Test if the image can boot successfully
+        run: docker run --entrypoint node --env TESTING_BOOTSTRAP=true --env BOT_TOKEN=dummy --env SIGNING_SECRET=dummy slack-bolt-app local.js
   Build-and-Test-MicrovmPreviewProxy:
     needs: changes
     if: false # ${{ needs.changes.outputs.microvm_preview_proxy == 'true' || (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - run: |
-          docker build -f packages/microvm-preview-proxy/Dockerfile -t microvm-preview-proxy ./packages/microvm-preview-proxy
-        name: Build microvm-preview-proxy docker image
-      - run: |
-          docker run --entrypoint node microvm-preview-proxy -e "console.log('Docker image boot test passed')" || true
-        name: Test if the image can boot successfully
+      - name: Build microvm-preview-proxy docker image
+        run: docker build -f packages/microvm-preview-proxy/Dockerfile -t microvm-preview-proxy ./packages/microvm-preview-proxy
+      - name: Test if the image can boot successfully
+        run: docker run --entrypoint node microvm-preview-proxy -e "console.log('Docker image boot test passed')" || true
 permissions:
   id-token: write # This is required for requesting the JWT
   contents: read # This is required for actions/checkout
