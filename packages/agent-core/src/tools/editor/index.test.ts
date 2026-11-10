@@ -25,7 +25,7 @@ afterAll(async () => {
   rmSync(tempDirPath, { recursive: true, force: true });
 });
 
-test('success replace', () => {
+test('success replace', async () => {
   // GIVEN
   const tool = fileEditTool.handler;
   const file = `
@@ -47,7 +47,7 @@ function displayVehicleInfo(vehicle: Vehicle): void {
   writeFileSync(filePath, file, 'utf-8');
 
   // WHEN
-  tool(
+  await tool(
     {
       filePath,
       oldString: `

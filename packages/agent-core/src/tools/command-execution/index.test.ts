@@ -28,19 +28,25 @@ describe('executeCommand with cancellationToken', () => {
   test('includes partial stdout and PID in cancellation result', async () => {
     const cancellationToken = { isCancelled: false };
 
-    const resultPromise = executeCommand(
-      'echo hello && sleep 300',
-      undefined,
-      60000,
-      false,
-      undefined,
-      cancellationToken
-    );
+    // Use a script file approach to avoid shell operators
+    const scriptContent = `echo hello
+sleep 300`;
+    const scriptPath = `/tmp/test_script_${Date.now()}.sh`;
+    const fs = await import('fs');
+    fs.writeFileSync(scriptPath, scriptContent, 'utf-8');
+
+    const resultPromise = executeCommand(`sh ${scriptPath}`, undefined, 60000, false, undefined, cancellationToken);
 
     await new Promise((resolve) => setTimeout(resolve, 500));
     (cancellationToken as any).isCancelled = true;
 
     const result = await resultPromise;
+
+    // Cleanup
+    try {
+      fs.unlinkSync(scriptPath);
+    } catch {}
+
     expect(result.stdout).toContain('hello');
     expect(result.error).toContain('PID:');
     expect(result.error).toContain('still running in background');
@@ -49,25 +55,24 @@ describe('executeCommand with cancellationToken', () => {
   test('process continues running after cancellation', async () => {
     const cancellationToken = { isCancelled: false };
     const marker = `rswealive${Date.now()}`;
+    const fs = await import('fs');
 
-    const resultPromise = executeCommand(
-      `bash -c 'while true; do sleep 1; done' # ${marker}`,
-      undefined,
-      60000,
-      false,
-      undefined,
-      cancellationToken
-    );
+    // Create a script file that loops forever with a marker in its name
+    const scriptContent = `while true; do sleep 1; done`;
+    const scriptPath = `/tmp/test_${marker}.sh`;
+    fs.writeFileSync(scriptPath, scriptContent, 'utf-8');
+
+    const resultPromise = executeCommand(`sh ${scriptPath}`, undefined, 60000, false, undefined, cancellationToken);
 
     await new Promise((resolve) => setTimeout(resolve, 500));
     (cancellationToken as any).isCancelled = true;
 
     const result = await resultPromise;
 
-    // Process should still be running
-    const checkResult = await executeCommand(`ps aux | grep "${marker}" | grep -v grep | wc -l`, undefined, 5000);
-    const count = parseInt(checkResult.stdout.trim(), 10);
-    expect(count).toBeGreaterThan(0);
+    // Process should still be running (check by script file name)
+    const checkResult = await executeCommand(`ps aux`, undefined, 5000);
+    const isRunning = checkResult.stdout.includes(marker);
+    expect(isRunning).toBe(true);
 
     // Cleanup: kill the background process using PID from result
     const pidMatch = result.error?.match(/PID: (\d+)/);
@@ -78,8 +83,11 @@ describe('executeCommand with cancellationToken', () => {
         /* already exited */
       }
     }
-    // Also kill by marker just in case
-    await executeCommand(`pkill -f "${marker}" || true`, undefined, 5000);
+
+    // Cleanup script file
+    try {
+      fs.unlinkSync(scriptPath);
+    } catch {}
   }, 15000);
 
   test('completes normally when not cancelled', async () => {
@@ -112,10 +120,16 @@ describe('executeCommand with cancellationToken', () => {
   test('timeout after cancellation does not kill the process or remove PID file', async () => {
     const cancellationToken = { isCancelled: false };
     const marker = `rswetimeout${Date.now()}`;
+    const fs = await import('fs');
+
+    // Create a script file
+    const scriptContent = `while true; do sleep 1; done`;
+    const scriptPath = `/tmp/test_${marker}.sh`;
+    fs.writeFileSync(scriptPath, scriptContent, 'utf-8');
 
     // Use a very short timeout so it fires quickly after cancellation
     const resultPromise = executeCommand(
-      `bash -c 'while true; do sleep 1; done' # ${marker}`,
+      `sh ${scriptPath}`,
       undefined,
       1000, // 1 second timeout
       false,
@@ -134,12 +148,14 @@ describe('executeCommand with cancellationToken', () => {
     await new Promise((resolve) => setTimeout(resolve, 2000));
 
     // Process should STILL be running — timeout must not have killed it
-    const checkResult = await executeCommand(`ps aux | grep "${marker}" | grep -v grep | wc -l`, undefined, 5000);
-    const count = parseInt(checkResult.stdout.trim(), 10);
-    expect(count).toBeGreaterThan(0);
+    const checkResult = await executeCommand(`ps aux`, undefined, 5000);
+    const isRunning = checkResult.stdout.includes(marker);
+    expect(isRunning).toBe(true);
 
     // Cleanup
-    await executeCommand(`pkill -f "${marker}" || true`, undefined, 5000);
+    try {
+      fs.unlinkSync(scriptPath);
+    } catch {}
   }, 15000);
 });
 
@@ -156,8 +172,17 @@ describe('executeCommand max output buffer guard', () => {
   }, 30000);
 
   test('kills process and truncates when stderr exceeds MAX_OUTPUT_BUFFER_BYTES', async () => {
-    // Redirect yes to stderr
-    const result = await executeCommand('yes >&2', undefined, 30000);
+    // Create script that outputs to stderr
+    const fs = await import('fs');
+    const scriptPath = `/tmp/test_stderr_${Date.now()}.sh`;
+    fs.writeFileSync(scriptPath, 'exec yes >&2', 'utf-8');
+
+    const result = await executeCommand(`sh ${scriptPath}`, undefined, 30000);
+
+    // Cleanup
+    try {
+      fs.unlinkSync(scriptPath);
+    } catch {}
 
     expect(result.error).toContain('exceeded maximum buffer size');
     expect(result.stderr).toContain('[output truncated:');
@@ -172,10 +197,20 @@ describe('executeCommand max output buffer guard', () => {
   }, 10000);
 
   test('combined stdout+stderr triggers guard', async () => {
-    // Generate large output on both streams simultaneously
+    // Generate large output on both streams simultaneously using a script file
     // Each stream produces ~6MB, combined exceeds 10MB limit
-    const cmd = `bash -c 'dd if=/dev/zero bs=1024 count=6144 2>/dev/null | tr "\\0" "A" & dd if=/dev/zero bs=1024 count=6144 2>&1 | tr "\\0" "B" >&2; wait'`;
-    const result = await executeCommand(cmd, undefined, 30000);
+    const fs = await import('fs');
+    const scriptPath = `/tmp/test_combined_${Date.now()}.sh`;
+    const scriptContent = `dd if=/dev/zero bs=1024 count=6144 2>/dev/null | tr '\0' 'A' & dd if=/dev/zero bs=1024 count=6144 2>&1 | tr '\0' 'B' >&2
+wait`;
+    fs.writeFileSync(scriptPath, scriptContent, 'utf-8');
+
+    const result = await executeCommand(`sh ${scriptPath}`, undefined, 30000);
+
+    // Cleanup
+    try {
+      fs.unlinkSync(scriptPath);
+    } catch {}
 
     expect(result.error).toContain('exceeded maximum buffer size');
     // Marker should be appended to whichever stream is larger
