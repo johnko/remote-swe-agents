@@ -118,7 +118,7 @@ describe('buildRuntimeEnvironmentBlock', () => {
       setProcessRuntimeType('ec2');
       const block = buildRuntimeEnvironmentBlock({
         session: undefined,
-        customAgent: { ...baseCustomAgent, defaultModel: 'sonnet5', bedrockDefaultModel: undefined },
+        customAgent: { ...baseCustomAgent, defaultModel: undefined as unknown as typeof baseCustomAgent.defaultModel, bedrockDefaultModel: undefined },
         userPreferences: { bedrockDefaultModel: 'opus4.8' },
       });
       expect(block).toContain('- Model: opus4.8');
