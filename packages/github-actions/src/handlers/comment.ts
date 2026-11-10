@@ -5,8 +5,7 @@ import { isCollaborator } from '../lib/permission';
 import { startRemoteSweSession, sendMessageToSession } from '../lib/remote-swe-api';
 import { addEyesReactionToComment, getIssueComments, getIssueDescription, submitIssueComment } from '../lib/comments';
 import { shouldTriggerAction } from '../lib/trigger';
-import { ActionContext } from '../lib/context';
-import { WebhookPayload } from '@actions/github/lib/interfaces';
+import { ActionContext, WebhookPayload } from '../lib/context';
 
 export async function handleCommentEvent(context: ActionContext, payload: WebhookPayload): Promise<void> {
   const comment = payload.comment;
