@@ -9,8 +9,7 @@
     "format:check": "prettier --check './**/*.{ts,tsx,mjs,mts}'",
     "start": "next start",
     "lint": "next lint",
-    "test": "vitest run",
-    "postinstall": "patch-package"
+    "test": "vitest run"
   },
   "dependencies": {
     "@aws-amplify/adapter-nextjs": "1.7.3",
