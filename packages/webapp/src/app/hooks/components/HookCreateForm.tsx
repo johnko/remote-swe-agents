@@ -82,7 +82,7 @@ export default function HookCreateForm() {
           {eventTypes.map((evt) => {
             const runtimes = getHookRuntimes(evt);
             const runtimesLabel = runtimes
-              .map((r) => (r === 'agentcore' ? 'Agent Core' : r.charAt(0).toUpperCase() + r.slice(1)))
+              .map((r: string) => (r === 'agentcore' ? 'Agent Core' : r.charAt(0).toUpperCase() + r.slice(1)))
               .join(', ');
             return (
               <option key={evt} value={evt}>

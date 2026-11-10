@@ -1,5 +1,5 @@
 import { describe, expect, test, beforeEach, vi, afterEach } from 'vitest';
-import { checkRateLimit, recordFailedAttempt, clearRateLimit, getClientIP } from './rate-limiter.js';
+import { checkRateLimit, recordFailedAttempt, clearRateLimit, getClientIP } from './auth-brute-force-limiter.js';
 
 describe('Rate Limiter', () => {
   beforeEach(() => {
