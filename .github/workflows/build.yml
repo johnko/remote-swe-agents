@@ -206,8 +206,29 @@ jobs:
         run: npm run format:check -w packages/github-actions
       - name: Run build
         run: npm run build -w packages/github-actions
-  Build-and-Test-Dockerfiles:
+  Type-Check-Packages:
     needs: changes
+    if: ${{ needs.changes.outputs.agent_core == 'true' || needs.changes.outputs.worker == 'true' || needs.changes.outputs.webapp == 'true' || (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Use Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '24.x'
+      - name: Install dependencies
+        run: npm ci
+      # Type-check all packages that have TypeScript build scripts
+      # This catches type errors before Docker builds fail silently
+      - name: Type-check agent-core
+        if: ${{ needs.changes.outputs.agent_core == 'true' || github.event_name == 'push' || github.event_name == 'workflow_dispatch' }}
+        run: npm run build -w packages/agent-core
+      - name: Type-check worker
+        if: ${{ needs.changes.outputs.worker == 'true' || github.event_name == 'push' || github.event_name == 'workflow_dispatch' }}
+        run: npm run build -w packages/worker
+
+  Build-and-Test-Dockerfiles:
+    needs: [changes, Type-Check-Packages]
     if: ${{ needs.changes.outputs.dockerfiles == 'true' || needs.changes.outputs.slack_bolt_app == 'true' || needs.changes.outputs.agent_core == 'true' || (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
     steps:
