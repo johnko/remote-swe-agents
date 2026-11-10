@@ -344,7 +344,7 @@ export const executeHooksForEvent = async (context: HookExecutionContext): Promi
         result.hooksExecuted++;
         result.logs.push({
           hookName: hook.name,
-          output: output.trim(),
+          output: output?.trim() ?? '',
         });
 
         console.log(`[hook-execution] Hook "${hook.name}" executed successfully`);
@@ -368,7 +368,7 @@ export const executeHooksForEvent = async (context: HookExecutionContext): Promi
   // Build combined output from all hook logs
   if (result.logs.length > 0) {
     result.combinedOutput = result.logs
-      .filter((l) => l.output.trim())
+      .filter((l) => l.output?.trim())
       .map((l) => `[Hook: ${l.hookName}]\n${l.output}`)
       .join('\n\n');
   }
