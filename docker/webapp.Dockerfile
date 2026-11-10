@@ -1,4 +1,4 @@
-FROM public.ecr.aws/lambda/nodejs:22 AS builder
+FROM public.ecr.aws/lambda/nodejs:24 AS builder
 WORKDIR /build
 COPY package*.json ./
 COPY ./patches ./patches
@@ -20,7 +20,7 @@ ENV APP_ORIGIN="https://dummy.example.com"
 ENV COGNITO_DOMAIN="dummy.example.com"
 RUN --mount=type=cache,target=/build/packages/webapp/.next/cache cd packages/webapp && npm run build
 
-FROM public.ecr.aws/lambda/nodejs:22 AS runner
+FROM public.ecr.aws/lambda/nodejs:24 AS runner
 COPY --from=public.ecr.aws/awsguru/aws-lambda-adapter:0.9.0 /lambda-adapter /opt/extensions/lambda-adapter
 ENV AWS_LWA_PORT=3000
 ENV AWS_LWA_READINESS_CHECK_PATH="/api/health"
