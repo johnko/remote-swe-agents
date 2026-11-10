@@ -27,7 +27,7 @@ const createMockTurnContext = (hookContext?: string): TurnContext => {
   } as SessionItem;
 
   const mockCustomAgent: CustomAgent = {
-    PK: 'agents',
+    PK: 'custom-agent',
     SK: 'default-agent',
     name: 'Default Agent',
     description: 'Default agent',
@@ -36,6 +36,8 @@ const createMockTurnContext = (hookContext?: string): TurnContext => {
     createdAt: Date.now(),
     updatedAt: Date.now(),
     mcpConfig: '{}',
+    defaultModel: 'sonnet5',
+    runtimeType: 'agent-core',
   };
 
   return {

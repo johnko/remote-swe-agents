@@ -158,8 +158,6 @@ export async function resolveModelTypes(ctx: TurnContext): Promise<ModelType[]> 
     session: session
       ? {
           bedrockDefaultModel: session.bedrockDefaultModel,
-          kiroDefaultModel: session.kiroDefaultModel,
-          inferenceMode: session.inferenceMode,
         }
       : undefined,
     customAgent: {

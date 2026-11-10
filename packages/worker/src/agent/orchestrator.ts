@@ -121,17 +121,14 @@ export const buildRuntimeEnvironmentBlock = (opts: {
     overrides,
     session: session
       ? {
-          inferenceMode: session.inferenceMode,
           bedrockDefaultModel: session.bedrockDefaultModel,
         }
       : undefined,
     customAgent: {
-      inferenceMode: customAgent.inferenceMode,
       bedrockDefaultModel: customAgent.bedrockDefaultModel,
       defaultModel: customAgent.defaultModel,
     },
     userPreferences,
-    env: { inferenceMode: process.env.INFERENCE_MODE },
   });
 
   const lines: string[] = ['## Runtime Environment'];
@@ -266,9 +263,8 @@ const buildSystemPrompt = async (opts: {
 
   // Resolve inference mode once for both deploy gating and runtime env block.
   const inferenceMode = resolveModelConfig({
-    session: session ? { inferenceMode: session.inferenceMode } : undefined,
-    customAgent: { inferenceMode: customAgent.inferenceMode },
-    env: { inferenceMode: process.env.INFERENCE_MODE },
+    session: session ? { bedrockDefaultModel: session.bedrockDefaultModel } : undefined,
+    customAgent: { bedrockDefaultModel: customAgent.bedrockDefaultModel },
   }).inferenceMode;
 
   const runtimeEnvBlock = await (async () => {
