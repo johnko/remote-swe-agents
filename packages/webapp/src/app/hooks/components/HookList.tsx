@@ -15,7 +15,7 @@ import { deleteUserHook, updateUserHook, type ClientHook } from '@/actions/hook/
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import LocalDateTime from '@/components/LocalDateTime';
-import { getHookRuntimes, getRuntimeBadgeColor } from '@/lib/hook-runtime-map';
+import { getHookRuntimes, getRuntimeBadgeColor, type RuntimeType } from '@/lib/hook-runtime-map';
 
 type HookListProps = {
   initialHooks: ClientHook[];
@@ -49,7 +49,7 @@ export default function HookList({ initialHooks }: HookListProps) {
     setEditName(hook.name);
     setEditDescription(hook.description ?? '');
     setEditEvent(hook.event);
-    setEditCommand(hook.command);
+    setEditCommand(hook.command ?? '');
     setEditScript(hook.script ?? '');
     setEditIsActive(hook.isEnabled ?? false);
     setExpandedId(hook.SK);
@@ -159,10 +159,10 @@ export default function HookList({ initialHooks }: HookListProps) {
                     <span className="px-2 py-0.5 text-xs bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200 rounded">
                       {hook.event}
                     </span>
-                    {getHookRuntimes(hook.event).map((runtime) => (
+                    {getHookRuntimes(hook.event).map((runtime: string) => (
                       <span
                         key={runtime}
-                        className={`px-2 py-0.5 text-xs rounded ${getRuntimeBadgeColor(runtime)}`}
+                        className={`px-2 py-0.5 text-xs rounded ${getRuntimeBadgeColor(runtime as RuntimeType)}`}
                       >
                         {runtime === 'agentcore' ? 'Agent Core' : runtime.charAt(0).toUpperCase() + runtime.slice(1)}
                       </span>
@@ -249,7 +249,9 @@ export default function HookList({ initialHooks }: HookListProps) {
                         {eventTypes.map((evt) => {
                           const runtimes = getHookRuntimes(evt);
                           const runtimesLabel = runtimes
-                            .map((r) => (r === 'agentcore' ? 'Agent Core' : r.charAt(0).toUpperCase() + r.slice(1)))
+                            .map((r: string) =>
+                              r === 'agentcore' ? 'Agent Core' : r.charAt(0).toUpperCase() + r.slice(1)
+                            )
                             .join(', ');
                           return (
                             <option key={evt} value={evt}>

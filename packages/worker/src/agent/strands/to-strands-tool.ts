@@ -25,9 +25,15 @@
 import type { ToolResultContentBlock } from '@aws-sdk/client-bedrock-runtime';
 import { tool, type ToolContext } from '@strands-agents/sdk';
 import type { z, ZodType } from 'zod';
-import { renderToolResult, getSession, executeHooksForEventWithSession, executePermissionHooks, HookContextData } from '@remote-swe-agents/agent-core/lib';
+import {
+  renderToolResult,
+  getSession,
+  executeHooksForEventWithSession,
+  executePermissionHooks,
+  HookContextData,
+} from '@remote-swe-agents/agent-core/lib';
 import { reportProgressTool, sendToAgentTool, acknowledgeAgentTool } from '@remote-swe-agents/agent-core/tools';
-import { logToolExecution, logPermissionDenied, logToolBlocked } from '@remote-swe-agents/agent-core/lib/security-logger.js';
+import { logToolExecution, logPermissionDenied, logToolBlocked } from '@remote-swe-agents/agent-core/lib';
 
 /** Sanitize tool names: Strands ToolRegistry requires ^[a-zA-Z0-9_-]+$ */
 export const sanitizeToolName = (name: string): string => name.replace(/[^a-zA-Z0-9_-]/g, '_');
@@ -226,7 +232,7 @@ export async function toStrandsTool<Input>(def: RemoteSweToolLike<Input>, deps: 
     callback: async (input: unknown, ctx?: ToolContext) => {
       const toolUseId = ctx?.toolUse?.toolUseId ?? '';
       const workerId = deps.workerId;
-      
+
       // Get session for hook execution
       let session;
       try {

@@ -2,8 +2,7 @@ import * as core from '@actions/core';
 import { startRemoteSweSession, RemoteSweApiConfig } from '../lib/remote-swe-api';
 import { submitIssueComment } from '../lib/comments';
 import { shouldTriggerForAssignee } from '../lib/trigger';
-import { ActionContext } from '../lib/context';
-import { WebhookPayload } from '@actions/github/lib/interfaces';
+import { ActionContext, WebhookPayload } from '../lib/context';
 
 export async function handleIssueAssignmentEvent(context: ActionContext, payload: WebhookPayload): Promise<void> {
   const assignee = payload.assignee?.login;

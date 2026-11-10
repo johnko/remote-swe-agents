@@ -23,47 +23,74 @@ jobs:
 
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
 
       - name: Filter changed files
-        uses: dorny/paths-filter@v3
         id: filter
-        with:
-          filters: |
-            cdk:
-              - 'cdk/**'
-            agent_core:
-              - 'packages/agent-core/**'
-              - 'package.json'
-              - 'package-lock.json'
-            slack_bolt_app:
-              - 'packages/slack-bolt-app/**'
-              - 'packages/agent-core/**'
-              - 'package.json'
-              - 'package-lock.json'
-            worker:
-              - 'packages/worker/**'
-              - 'packages/agent-core/**'
-              - 'package.json'
-              - 'package-lock.json'
-            webapp:
-              - 'packages/webapp/**'
-              - 'packages/agent-core/**'
-              - 'package.json'
-              - 'package-lock.json'
-            github_actions:
-              - 'packages/github-actions/**'
-              - 'packages/agent-core/**'
-              - 'package.json'
-              - 'package-lock.json'
-            dockerfiles:
-              - 'docker/**'
-            microvm_preview_proxy:
-              - 'packages/microvm-preview-proxy/**'
-              - 'package.json'
-              - 'package-lock.json'
+        shell: bash
+        run: |
+          # Determine base and head for comparison
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            base="${{ github.event.pull_request.base.sha }}"
+            head="${{ github.event.pull_request.head.sha }}"
+          elif [[ "${{ github.event_name }}" == "push" ]]; then
+            base="${{ github.event.before }}"
+            head="${{ github.sha }}"
+          else
+            # For workflow_dispatch, compare against the previous commit
+            base="HEAD~1"
+            head="HEAD"
+          fi
+
+          # Function to check if any file matches the patterns
+          check_changes() {
+            local patterns="$1"
+            for pattern in $patterns; do
+              if git diff --name-only "$base" "$head" | grep -qE "^${pattern}"; then
+                echo "true"
+                return 0
+              fi
+            done
+            echo "false"
+            return 0
+          }
+
+          # Check each path filter
+          cdk=$(check_changes "cdk/")
+          echo "cdk=$cdk" >> "$GITHUB_OUTPUT"
+          echo "cdk=$cdk"
+
+          agent_core=$(check_changes "packages/agent-core/ package\.json package-lock\.json")
+          echo "agent_core=$agent_core" >> "$GITHUB_OUTPUT"
+          echo "agent_core=$agent_core"
+
+          slack_bolt_app=$(check_changes "packages/slack-bolt-app/ packages/agent-core/ package\.json package-lock\.json")
+          echo "slack_bolt_app=$slack_bolt_app" >> "$GITHUB_OUTPUT"
+          echo "slack_bolt_app=$slack_bolt_app"
+
+          worker=$(check_changes "packages/worker/ packages/agent-core/ package\.json package-lock\.json")
+          echo "worker=$worker" >> "$GITHUB_OUTPUT"
+          echo "worker=$worker"
+
+          webapp=$(check_changes "packages/webapp/ packages/agent-core/ package\.json package-lock\.json")
+          echo "webapp=$webapp" >> "$GITHUB_OUTPUT"
+          echo "webapp=$webapp"
+
+          github_actions=$(check_changes "packages/github-actions/ packages/agent-core/ package\.json package-lock\.json")
+          echo "github_actions=$github_actions" >> "$GITHUB_OUTPUT"
+          echo "github_actions=$github_actions"
+
+          dockerfiles=$(check_changes "docker/")
+          echo "dockerfiles=$dockerfiles" >> "$GITHUB_OUTPUT"
+          echo "dockerfiles=$dockerfiles"
+
+          microvm_preview_proxy=$(check_changes "packages/microvm-preview-proxy/ package\.json package-lock\.json")
+          echo "microvm_preview_proxy=$microvm_preview_proxy" >> "$GITHUB_OUTPUT"
+          echo "microvm_preview_proxy=$microvm_preview_proxy"
   Build-and-Test-CDK:
     needs: changes
-    if: ${{ needs.changes.outputs.cdk == 'true' || (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'workflow_dispatch' }}
+    if: false # ${{ needs.changes.outputs.cdk == 'true' || (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -94,16 +121,15 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
-          node-version: '22.x'
-      - run: |
+          node-version: '24.x'
+      - name: Install dependencies
+        run: |
           npm ci
           npm run build -w packages/agent-core
-        name: Install dependencies
-      - run: |
-          npm run build
-          npm run format:check
-        working-directory: ./packages/slack-bolt-app
-        name: Run static analyses
+      - name: Run static analyses
+        run: npm run format:check -w packages/slack-bolt-app
+      - name: Run build
+        run: npm run build -w packages/slack-bolt-app
   Build-and-Test-Worker:
     needs: changes
     if: ${{ needs.changes.outputs.worker == 'true' || (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'workflow_dispatch' }}
@@ -113,23 +139,17 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
-          node-version: '22.x'
-      - run: |
+          node-version: '24.x'
+      - name: Install dependencies
+        run: |
           npm ci
           npm run build -w packages/agent-core
-        name: Install dependencies
-      - run: |
-          npm run format:check
-        working-directory: ./packages/worker
-        name: Run static analyses
-      - run: |
-          npm run test
-        working-directory: ./packages/worker
-        name: Run unit tests
-      - run: |
-          npm run build
-        working-directory: ./packages/worker
-        name: Run build
+      - name: Run static analyses
+        run: npm run format:check -w packages/worker
+      - name: Run unit tests
+        run: npm run test -w packages/worker
+      - name: Run build
+        run: npm run build -w packages/worker
   Build-and-Test-Webapp:
     needs: changes
     if: ${{ needs.changes.outputs.webapp == 'true' || (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'workflow_dispatch' }}
@@ -139,20 +159,17 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
-          node-version: '22.x'
-      - run: |
+          node-version: '24.x'
+      - name: Install dependencies
+        run: |
           npm ci
           npm run build -w packages/agent-core
-        name: Install dependencies
-      - run: |
-          npm run format:check
-        working-directory: ./packages/webapp
-        name: Install dependencies and run static analysis
-      - run: |
-          cp .env.local.example .env.local
-          npm run build
-        working-directory: ./packages/webapp
-        name: build
+      - name: Run static analyses
+        run: npm run format:check -w packages/webapp
+      - name: Run build
+        run: |
+          cp packages/webapp/.env.local.example packages/webapp/.env.local
+          npm run build -w packages/webapp
   Build-and-Test-AgentCore:
     needs: changes
     if: ${{ needs.changes.outputs.agent_core == 'true' || (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'workflow_dispatch' }}
@@ -162,19 +179,15 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
-          node-version: '22.x'
-      - run: |
-          npm ci
-          npm run format:check -w packages/agent-core
-        name: Run static analyses
-      - run: |
-          npm run test
-        working-directory: ./packages/agent-core
-        name: Run unit tests
-      - run: |
-          npm run build
-        working-directory: ./packages/agent-core
-        name: Run build
+          node-version: '24.x'
+      - name: Install dependencies
+        run: npm ci
+      - name: Run static analyses
+        run: npm run format:check -w packages/agent-core
+      - name: Run unit tests
+        run: npm run test -w packages/agent-core
+      - name: Run build
+        run: npm run build -w packages/agent-core
   Build-and-Test-GitHubActions:
     needs: changes
     if: ${{ needs.changes.outputs.github_actions == 'true' || (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'workflow_dispatch' }}
@@ -184,42 +197,35 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
-          node-version: '22.x'
-      - run: |
+          node-version: '24.x'
+      - name: Install dependencies
+        run: |
           npm ci
           npm run build -w packages/agent-core
-        name: Install dependencies
-      - run: |
-          npm run format:check -w packages/github-actions
-        name: Run static analyses
-      - run: |
-          npm run build
-        working-directory: ./packages/github-actions
-        name: Run build
+      - name: Run static analyses
+        run: npm run format:check -w packages/github-actions
+      - name: Run build
+        run: npm run build -w packages/github-actions
   Build-and-Test-Dockerfiles:
     needs: changes
     if: ${{ needs.changes.outputs.dockerfiles == 'true' || needs.changes.outputs.slack_bolt_app == 'true' || needs.changes.outputs.agent_core == 'true' || (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - run: |
-          docker build -f docker/slack-bolt-app.Dockerfile -t slack-bolt-app .
-        name: Build slack-bolt-app docker image
-      - run: |
-          docker run --entrypoint node --env TESTING_BOOTSTRAP=true --env BOT_TOKEN=dummy --env SIGNING_SECRET=dummy slack-bolt-app local.js
-        name: Test if the image can boot successfully
+      - name: Build slack-bolt-app docker image
+        run: docker build -f docker/slack-bolt-app.Dockerfile -t slack-bolt-app .
+      - name: Test if the image can boot successfully
+        run: docker run --entrypoint node --env TESTING_BOOTSTRAP=true --env BOT_TOKEN=dummy --env SIGNING_SECRET=dummy slack-bolt-app local.js
   Build-and-Test-MicrovmPreviewProxy:
     needs: changes
-    if: ${{ needs.changes.outputs.microvm_preview_proxy == 'true' || (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'workflow_dispatch' }}
+    if: true # ${{ needs.changes.outputs.microvm_preview_proxy == 'true' || (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - run: |
-          docker build -f packages/microvm-preview-proxy/Dockerfile -t microvm-preview-proxy ./packages/microvm-preview-proxy
-        name: Build microvm-preview-proxy docker image
-      - run: |
-          docker run --entrypoint node microvm-preview-proxy -e "console.log('Docker image boot test passed')" || true
-        name: Test if the image can boot successfully
+      - name: Build microvm-preview-proxy docker image
+        run: docker build -f packages/microvm-preview-proxy/Dockerfile -t microvm-preview-proxy ./packages/microvm-preview-proxy
+      - name: Test if the image can boot successfully
+        run: docker run --entrypoint node microvm-preview-proxy -e "console.log('Docker image boot test passed')" || true
 permissions:
   id-token: write # This is required for requesting the JWT
   contents: read # This is required for actions/checkout

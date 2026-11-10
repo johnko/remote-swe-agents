@@ -1,4 +1,9 @@
-import { getConversationHistory, getSession, getCustomAgent, executeHooksForEventWithSession } from '@remote-swe-agents/agent-core/lib';
+import {
+  getConversationHistory,
+  getSession,
+  getCustomAgent,
+  executeHooksForEventWithSession,
+} from '@remote-swe-agents/agent-core/lib';
 import { resolveInferenceMode } from '@remote-swe-agents/agent-core/lib';
 import { resolveModelConfig } from '@remote-swe-agents/agent-core/lib';
 export { resolveInferenceMode };
@@ -84,9 +89,8 @@ const detectInferenceMode = async (workerId: string): Promise<{ mode: InferenceM
   const customAgent = await getCustomAgent(session?.customAgentId);
 
   const { inferenceMode: mode } = resolveModelConfig({
-    session: session ? { inferenceMode: session.inferenceMode } : undefined,
-    customAgent: customAgent ? { inferenceMode: customAgent.inferenceMode } : undefined,
-    env: { inferenceMode: process.env.INFERENCE_MODE },
+    session: session ? { bedrockDefaultModel: session.bedrockDefaultModel } : undefined,
+    customAgent: customAgent ? { bedrockDefaultModel: customAgent.bedrockDefaultModel } : undefined,
   });
 
   return { mode, senderUserId };

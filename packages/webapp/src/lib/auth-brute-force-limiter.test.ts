@@ -1,5 +1,5 @@
 import { describe, expect, test, beforeEach, vi, afterEach } from 'vitest';
-import { checkRateLimit, recordFailedAttempt, clearRateLimit, getClientIP } from './rate-limiter.js';
+import { checkRateLimit, recordFailedAttempt, clearRateLimit, getClientIP } from './auth-brute-force-limiter.js';
 
 describe('Rate Limiter', () => {
   beforeEach(() => {
@@ -36,7 +36,7 @@ describe('Rate Limiter', () => {
       recordFailedAttempt(key);
       recordFailedAttempt(key);
       recordFailedAttempt(key);
-      
+
       const result = checkRateLimit(key);
       expect(result.isLimited).toBe(true);
       expect(result.blocked).toBe(true);
@@ -61,7 +61,7 @@ describe('Rate Limiter', () => {
       recordFailedAttempt(key);
       recordFailedAttempt(key);
       const result = recordFailedAttempt(key);
-      
+
       expect(result.isBlocked).toBe(true);
       expect(result.blockExpiresAt).toBeGreaterThan(Date.now());
     });
@@ -72,9 +72,9 @@ describe('Rate Limiter', () => {
       const key = 'test-key-5';
       recordFailedAttempt(key);
       recordFailedAttempt(key);
-      
+
       clearRateLimit(key);
-      
+
       const result = checkRateLimit(key);
       expect(result.remainingAttempts).toBe(5);
     });
@@ -85,7 +85,7 @@ describe('Rate Limiter', () => {
       const request = {
         headers: new Map([['x-forwarded-for', '192.168.1.1, 10.0.0.1']]),
       } as unknown as Request;
-      
+
       expect(getClientIP(request)).toBe('192.168.1.1');
     });
 
@@ -93,7 +93,7 @@ describe('Rate Limiter', () => {
       const request = {
         headers: new Map([['x-real-ip', '192.168.1.1']]),
       } as unknown as Request;
-      
+
       expect(getClientIP(request)).toBe('192.168.1.1');
     });
 
@@ -104,7 +104,7 @@ describe('Rate Limiter', () => {
           ['x-real-ip', '192.168.1.1'],
         ]),
       } as unknown as Request;
-      
+
       expect(getClientIP(request)).toBe('10.0.0.1');
     });
 
@@ -112,7 +112,7 @@ describe('Rate Limiter', () => {
       const request = {
         headers: new Map(),
       } as unknown as Request;
-      
+
       expect(getClientIP(request)).toBeNull();
     });
   });

@@ -23,9 +23,9 @@ export async function POST(request: NextRequest) {
 
   if (!rateLimitResult.allowed) {
     return NextResponse.json(
-      { 
-        error: 'Too many requests. Please try again later.', 
-        retryAfter: Math.ceil((rateLimitResult.resetTime - Date.now()) / 1000) 
+      {
+        error: 'Too many requests. Please try again later.',
+        retryAfter: Math.ceil((rateLimitResult.resetTime - Date.now()) / 1000),
       },
       { status: 429 }
     );
@@ -49,11 +49,9 @@ export async function POST(request: NextRequest) {
 
   // SECURITY FIX: Validate message size to prevent resource exhaustion
   const messageSize = Buffer.byteLength(message, 'utf8');
-  if (messageSize > 100 * 1024) { // 100KB limit
-    return NextResponse.json(
-      { error: 'Message too large. Maximum message size is 100KB.' },
-      { status: 413 }
-    );
+  if (messageSize > 100 * 1024) {
+    // 100KB limit
+    return NextResponse.json({ error: 'Message too large. Maximum message size is 100KB.' }, { status: 413 });
   }
 
   const workerId = await createSession({

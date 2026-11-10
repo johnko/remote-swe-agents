@@ -27,7 +27,7 @@ const createMockTurnContext = (hookContext?: string): TurnContext => {
   } as SessionItem;
 
   const mockCustomAgent: CustomAgent = {
-    PK: 'agents',
+    PK: 'custom-agent',
     SK: 'default-agent',
     name: 'Default Agent',
     description: 'Default agent',
@@ -36,6 +36,8 @@ const createMockTurnContext = (hookContext?: string): TurnContext => {
     createdAt: Date.now(),
     updatedAt: Date.now(),
     mcpConfig: '{}',
+    defaultModel: 'sonnet5',
+    runtimeType: 'agent-core',
   };
 
   return {
@@ -65,9 +67,7 @@ describe('hook context injection in system prompt', () => {
     expect(ctx.hookContext).toBe(hookContext);
 
     // Simulate the logic in bedrockStrandsAgentLoop
-    const systemPrompt = ctx.hookContext
-      ? `${ctx.systemPrompt}\n\n${ctx.hookContext}`
-      : ctx.systemPrompt;
+    const systemPrompt = ctx.hookContext ? `${ctx.systemPrompt}\n\n${ctx.hookContext}` : ctx.systemPrompt;
 
     expect(systemPrompt).toContain('Base system prompt');
     expect(systemPrompt).toContain('[Hook: title-reminder]');
@@ -82,9 +82,7 @@ describe('hook context injection in system prompt', () => {
     expect(ctx.hookContext).toBeUndefined();
 
     // Simulate the logic in bedrockStrandsAgentLoop
-    const systemPrompt = ctx.hookContext
-      ? `${ctx.systemPrompt}\n\n${ctx.hookContext}`
-      : ctx.systemPrompt;
+    const systemPrompt = ctx.hookContext ? `${ctx.systemPrompt}\n\n${ctx.hookContext}` : ctx.systemPrompt;
 
     expect(systemPrompt).toBe('Base system prompt');
   });
@@ -93,9 +91,7 @@ describe('hook context injection in system prompt', () => {
     const ctx = createMockTurnContext('');
 
     // Empty string is falsy, so system prompt should remain unchanged
-    const systemPrompt = ctx.hookContext
-      ? `${ctx.systemPrompt}\n\n${ctx.hookContext}`
-      : ctx.systemPrompt;
+    const systemPrompt = ctx.hookContext ? `${ctx.systemPrompt}\n\n${ctx.hookContext}` : ctx.systemPrompt;
 
     expect(systemPrompt).toBe('Base system prompt');
   });
@@ -108,9 +104,7 @@ First reminder
 Second reminder`;
     const ctx = createMockTurnContext(hookContext);
 
-    const systemPrompt = ctx.hookContext
-      ? `${ctx.systemPrompt}\n\n${ctx.hookContext}`
-      : ctx.systemPrompt;
+    const systemPrompt = ctx.hookContext ? `${ctx.systemPrompt}\n\n${ctx.hookContext}` : ctx.systemPrompt;
 
     expect(systemPrompt).toContain('Base system prompt');
     expect(systemPrompt).toContain('[Hook: reminder-1]');

@@ -26,22 +26,22 @@ function addSecurityHeaders(request: CloudFrontRequest): void {
 function validateRequest(request: CloudFrontRequest): { valid: boolean; reason?: string } {
   // Check for suspicious patterns in the URI
   const uri = request.uri;
-  
+
   // Block path traversal attempts
   if (uri.includes('..') || uri.includes('\0')) {
     return { valid: false, reason: 'Invalid path' };
   }
-  
+
   // Block overly long URIs (potential DoS)
   if (uri.length > 4096) {
     return { valid: false, reason: 'URI too long' };
   }
-  
+
   // Validate query string length
   if (request.querystring && request.querystring.length > 4096) {
     return { valid: false, reason: 'Query string too long' };
   }
-  
+
   // Block requests with suspicious headers (basic header injection check)
   const suspiciousHeaders = ['x-http-method-override', 'x-http-method', 'x-method-override'];
   for (const headerName of suspiciousHeaders) {
@@ -51,13 +51,13 @@ function validateRequest(request: CloudFrontRequest): { valid: boolean; reason?:
       delete request.headers[headerName.toLowerCase()];
     }
   }
-  
+
   return { valid: true };
 }
 
 export const handler: CloudFrontRequestHandler = async (event: CloudFrontRequestEvent) => {
   const request = event.Records[0].cf.request;
-  
+
   // Validate request
   const validation = validateRequest(request);
   if (!validation.valid) {
@@ -69,10 +69,10 @@ export const handler: CloudFrontRequestHandler = async (event: CloudFrontRequest
       headers: {},
     };
   }
-  
+
   // Add security headers
   addSecurityHeaders(request);
-  
+
   const body = request.body?.data ?? '';
 
   const hashedBody = hashPayload(Buffer.from(body, 'base64'));

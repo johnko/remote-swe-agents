@@ -49,10 +49,7 @@ const agentFieldsSchema = z.object({
     .describe(
       "Inference mode for sessions using this agent. 'bedrock': use Bedrock direct inference. Omit to fall through to env / default."
     ),
-  iconKey: z
-    .string()
-    .optional()
-    .describe('The icon key for the agent. Use preset icons or upload a custom icon.'),
+  iconKey: z.string().optional().describe('The icon key for the agent. Use preset icons or upload a custom icon.'),
 });
 
 const listAgentsSchema = z.object({});

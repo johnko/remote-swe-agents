@@ -3,15 +3,55 @@ import { executeHooksForEvent, executeHooksForEventWithSession, extractUserIdFro
 import * as hooksModule from './hooks.js';
 import { Hook, HookEventType } from '../schema/hook.js';
 import { SessionItem } from '../schema/session.js';
-import { execSync } from 'child_process';
+import { spawn, ChildProcess } from 'child_process';
+import { EventEmitter } from 'events';
 
-vi.mock('child_process', () => ({
-  execSync: vi.fn(),
-}));
+// Mock spawn to return a process-like object with event emitters
+vi.mock('child_process', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('child_process')>();
+  return {
+    ...actual,
+    spawn: vi.fn(),
+  };
+});
 
 vi.mock('./hooks.js', () => ({
   listHooksByEvent: vi.fn(),
 }));
+
+// Helper to create a mock child process
+function createMockChildProcess(stdout: string = '', stderr: string = '', exitCode: number = 0): ChildProcess {
+  const mockProcess = new EventEmitter() as unknown as ChildProcess;
+
+  // Mock stdout/stderr EventEmitters
+  const stdoutEmitter = new EventEmitter();
+  const stderrEmitter = new EventEmitter();
+
+  Object.defineProperty(mockProcess, 'stdout', {
+    value: stdoutEmitter,
+    writable: true,
+    configurable: true,
+  });
+  Object.defineProperty(mockProcess, 'stderr', {
+    value: stderrEmitter,
+    writable: true,
+    configurable: true,
+  });
+  Object.defineProperty(mockProcess, 'stdin', {
+    value: { write: vi.fn(), end: vi.fn() },
+    writable: true,
+    configurable: true,
+  });
+
+  // Simulate the process completing
+  setImmediate(() => {
+    if (stdout) stdoutEmitter.emit('data', Buffer.from(stdout));
+    if (stderr) stderrEmitter.emit('data', Buffer.from(stderr));
+    mockProcess.emit('close', exitCode);
+  });
+
+  return mockProcess;
+}
 
 describe('extractUserIdFromSession', () => {
   test('extracts userId from slack#user123 format', () => {
@@ -35,7 +75,7 @@ describe('extractUserIdFromSession', () => {
 });
 
 describe('executeHooksForEvent', () => {
-  const mockExecSync = vi.mocked(execSync);
+  const mockSpawn = vi.mocked(spawn);
   const mockListHooksByEvent = vi.mocked(hooksModule.listHooksByEvent);
 
   beforeEach(() => {
@@ -79,7 +119,7 @@ describe('executeHooksForEvent', () => {
       },
     ];
     mockListHooksByEvent.mockResolvedValue(hooks);
-    mockExecSync.mockReturnValue('Remember to set session title\n');
+    mockSpawn.mockReturnValue(createMockChildProcess('Remember to set session title\n'));
 
     const result = await executeHooksForEvent({
       sessionId: 'test-session',
@@ -125,9 +165,9 @@ describe('executeHooksForEvent', () => {
       },
     ];
     mockListHooksByEvent.mockResolvedValue(hooks);
-    mockExecSync
-      .mockReturnValueOnce('First reminder\n')
-      .mockReturnValueOnce('Second reminder\n');
+    mockSpawn
+      .mockReturnValueOnce(createMockChildProcess('First reminder\n'))
+      .mockReturnValueOnce(createMockChildProcess('Second reminder\n'));
 
     const result = await executeHooksForEvent({
       sessionId: 'test-session',
@@ -168,9 +208,9 @@ describe('executeHooksForEvent', () => {
       },
     ];
     mockListHooksByEvent.mockResolvedValue(hooks);
-    mockExecSync
-      .mockReturnValueOnce('\n   \n') // whitespace-only output
-      .mockReturnValueOnce('Has content\n');
+    mockSpawn
+      .mockReturnValueOnce(createMockChildProcess('\n   \n')) // whitespace-only output
+      .mockReturnValueOnce(createMockChildProcess('Has content\n'));
 
     const result = await executeHooksForEvent({
       sessionId: 'test-session',
@@ -200,11 +240,34 @@ describe('executeHooksForEvent', () => {
       },
     ];
     mockListHooksByEvent.mockResolvedValue(hooks);
-    const error = new Error('Command failed: exit 1') as any;
-    error.stdout = Buffer.from('');
-    error.stderr = Buffer.from('Error message');
-    mockExecSync.mockImplementation(() => {
-      throw error;
+
+    // Create a mock process that will emit an error
+    const mockProcess = new EventEmitter() as unknown as ChildProcess;
+    const stdoutEmitter = new EventEmitter();
+    const stderrEmitter = new EventEmitter();
+
+    Object.defineProperty(mockProcess, 'stdout', {
+      value: stdoutEmitter,
+      writable: true,
+      configurable: true,
+    });
+    Object.defineProperty(mockProcess, 'stderr', {
+      value: stderrEmitter,
+      writable: true,
+      configurable: true,
+    });
+    Object.defineProperty(mockProcess, 'stdin', {
+      value: { write: vi.fn(), end: vi.fn() },
+      writable: true,
+      configurable: true,
+    });
+
+    mockSpawn.mockReturnValue(mockProcess);
+
+    // Simulate the process error
+    setImmediate(() => {
+      stderrEmitter.emit('data', Buffer.from('Error message'));
+      mockProcess.emit('close', 1);
     });
 
     const result = await executeHooksForEvent({
@@ -216,7 +279,7 @@ describe('executeHooksForEvent', () => {
     expect(result.hooksExecuted).toBe(0);
     expect(result.errors).toHaveLength(1);
     expect(result.errors[0].hookName).toBe('failing-hook');
-    expect(result.errors[0].error).toContain('Command execution failed');
+    expect(result.errors[0].error).toContain('Hook execution failed');
     // Empty output should not appear in combinedOutput
     expect(result.combinedOutput).toBeUndefined();
   });
@@ -262,7 +325,7 @@ describe('executeHooksForEvent', () => {
       },
     ];
     mockListHooksByEvent.mockResolvedValue(hooks);
-    mockExecSync.mockReturnValue('Script output\n');
+    mockSpawn.mockReturnValue(createMockChildProcess('Script output\n'));
 
     const result = await executeHooksForEvent({
       sessionId: 'test-session',
@@ -278,7 +341,7 @@ describe('executeHooksForEvent', () => {
 
 describe('executeHooksForEventWithSession', () => {
   const mockListHooksByEvent = vi.mocked(hooksModule.listHooksByEvent);
-  const mockExecSync = vi.mocked(execSync);
+  const mockSpawn = vi.mocked(spawn);
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -310,7 +373,7 @@ describe('executeHooksForEventWithSession', () => {
         updatedAt: Date.now(),
       },
     ]);
-    mockExecSync.mockReturnValue('test\n');
+    mockSpawn.mockReturnValue(createMockChildProcess('test\n'));
 
     const result = await executeHooksForEventWithSession(session, 'sessionStart' as HookEventType, '/tmp');
 
@@ -371,19 +434,17 @@ describe('executeHooksForEventWithSession', () => {
         updatedAt: Date.now(),
       },
     ]);
-    mockExecSync.mockReturnValue('echo hello\n');
+    mockSpawn.mockReturnValue(createMockChildProcess('echo hello\n'));
 
-    await executeHooksForEventWithSession(
-      session,
-      'beforeShellExecution' as HookEventType,
-      '/tmp',
-      { command: 'echo hello', sessionId: 'test-session' }
-    );
+    await executeHooksForEventWithSession(session, 'beforeShellExecution' as HookEventType, '/tmp', {
+      command: 'echo hello',
+      sessionId: 'test-session',
+    });
 
-    // Verify execSync was called with env containing HOOK_ variables
-    const call = mockExecSync.mock.calls[0];
+    // Verify spawn was called with env containing HOOK_ variables
+    const call = mockSpawn.mock.calls[0];
     expect(call).toBeDefined();
-    const options = call[1] as { env: Record<string, string> };
+    const options = call[2] as { env: Record<string, string> };
     expect(options.env.HOOK_COMMAND).toBe('echo hello');
     expect(options.env.HOOK_SESSION_ID).toBe('test-session');
   });

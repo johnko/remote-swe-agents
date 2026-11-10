@@ -1,7 +1,7 @@
 /**
  * Mapping of hook event types to their supported runtime environment.
  * Used to display runtime badges in the hooks UI.
- * 
+ *
  * All hooks currently work on the agentcore runtime only.
  */
 
@@ -13,13 +13,15 @@ export const hookRuntimeMap: Record<HookEventType, RuntimeType[]> = {
   // Session lifecycle
   sessionStart: ['agentcore'],
   sessionEnd: ['agentcore'],
-  subagentStart: ['agentcore'],
-  subagentStop: ['agentcore'],
 
   // Tool use hooks
   preToolUse: ['agentcore'],
   postToolUse: ['agentcore'],
   postToolUseFailure: ['agentcore'],
+
+  // Subagent lifecycle
+  subagentStart: ['agentcore'],
+  subagentStop: ['agentcore'],
 
   // Shell/command execution
   beforeShellExecution: ['agentcore'],
@@ -34,7 +36,7 @@ export const hookRuntimeMap: Record<HookEventType, RuntimeType[]> = {
 };
 
 export const getHookRuntimes = (eventType: HookEventType): RuntimeType[] => {
-  return hookRuntimeMap[eventType] || [];
+  return hookRuntimeMap[eventType] ?? ['agentcore'];
 };
 
 /**
@@ -46,4 +48,3 @@ export const getRuntimeBadgeColor = (runtime: RuntimeType): string => {
   };
   return colors[runtime];
 };
-

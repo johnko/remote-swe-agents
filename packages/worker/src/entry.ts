@@ -20,7 +20,7 @@ import {
   logSessionTerminated,
   logSessionError,
   logSecurityError,
-} from '@remote-swe-agents/agent-core/lib/security-logger.js';
+} from '@remote-swe-agents/agent-core/lib';
 
 Object.assign(global, { WebSocket: require('ws') });
 

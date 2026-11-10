@@ -64,7 +64,7 @@ function getRateLimitKey(request: NextRequest): string {
  * Authenticate a request via the `x-api-key` header and return the key's
  * sender attribution info on success. Returns a `NextResponse` to bubble up
  * to the caller on failure.
- * 
+ *
  * SECURITY: Implements rate limiting to prevent brute force attacks
  * SECURITY: Validates API key format before expensive DB lookup to prevent timing attacks
  */
@@ -138,7 +138,7 @@ export async function authenticateApiKey(request: NextRequest): Promise<ApiKeyAu
  * a yes/no auth check and do not record sender attribution. New routes
  * SHOULD prefer `authenticateApiKey` so they can populate sender info on
  * any messages they persist.
- * 
+ *
  * SECURITY: Implements rate limiting to prevent brute force attacks
  * SECURITY: Validates API key format before expensive DB lookup
  */

@@ -1,13 +1,6 @@
 import { describe, expect, test, vi, afterEach } from 'vitest';
-import {
-  REPORT_TIMER_RESET_TOOLS,
-  shouldResetReportTimer,
-} from './strands/to-strands-tool';
-import {
-  resolveInferenceMode,
-  normalizeMcpImageFormat,
-  emptyFinalMessageNotification,
-} from './index';
+import { REPORT_TIMER_RESET_TOOLS, shouldResetReportTimer } from './strands/to-strands-tool';
+import { resolveInferenceMode, normalizeMcpImageFormat, emptyFinalMessageNotification } from './index';
 
 describe('shouldResetReportTimer', () => {
   test('returns true for sendMessageToUser', () => {

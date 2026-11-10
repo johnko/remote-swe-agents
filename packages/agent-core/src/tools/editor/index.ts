@@ -19,12 +19,7 @@ const inputSchema = z.object({
 const name = 'file_editor';
 
 // Allowed base directories for file operations
-const ALLOWED_BASE_DIRS = [
-  resolve(homedir()),
-  resolve(tmpdir()),
-  '/tmp',
-  '/var/tmp',
-];
+const ALLOWED_BASE_DIRS = [resolve(homedir()), resolve(tmpdir()), '/tmp', '/var/tmp'];
 
 /**
  * CRITICAL SECURITY: Validates that filePath is within allowed directories
@@ -39,8 +34,8 @@ const validateFilePath = (filePath: string, operationDescription: string = 'file
   if (!isAbsolute(filePath)) {
     throw new Error(
       `Path "${filePath}" is not absolute. ` +
-      `Only absolute paths are allowed for ${operationDescription}. ` +
-      `Use an absolute path starting with "/"`
+        `Only absolute paths are allowed for ${operationDescription}. ` +
+        `Use an absolute path starting with "/"`
     );
   }
 
@@ -59,22 +54,19 @@ const validateFilePath = (filePath: string, operationDescription: string = 'file
   if (!isAllowed) {
     throw new Error(
       `Path "${filePath}" is outside allowed directories for ${operationDescription}. ` +
-      `Access denied for security reasons.`
+        `Access denied for security reasons.`
     );
   }
 
   return resolvedPath;
 };
 
-const editFile = async (
-  input: z.infer<typeof inputSchema>,
-  context?: { workerId?: string; toolUseId?: string }
-) => {
+const editFile = async (input: z.infer<typeof inputSchema>, context?: { workerId?: string; toolUseId?: string }) => {
   // SECURITY: Validate filePath to prevent directory traversal attacks
   const validatedFilePath = validateFilePath(input.filePath, 'file editing');
   const { filePath: _, oldString, newString } = input;
   const filePath = validatedFilePath;
-  
+
   // Get session for hook execution if workerId available
   let session;
   if (context?.workerId) {
@@ -90,7 +82,7 @@ const editFile = async (
       return `The file does not exist. Please check again.`;
     }
     writeFileSync(filePath, newString);
-    
+
     // Execute afterFileEdit hook on file creation
     if (session) {
       try {
@@ -101,7 +93,7 @@ const editFile = async (
         // Don't throw - hook errors don't affect file write
       }
     }
-    
+
     return 'successfully created the file.';
   }
 
@@ -132,7 +124,7 @@ const editFile = async (
 
   const updatedContents = fileContents.replace(oldString, newString);
   writeFileSync(filePath, updatedContents);
-  
+
   // Execute afterFileEdit hook after file modification
   if (session) {
     try {
@@ -143,7 +135,7 @@ const editFile = async (
       // Don't throw - hook errors don't affect file write result
     }
   }
-  
+
   return 'successfully edited the file.';
 };
 

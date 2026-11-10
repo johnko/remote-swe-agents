@@ -3,8 +3,7 @@ import { addIssueCommentTool } from '@remote-swe-agents/agent-core/tools';
 import { startRemoteSweSession, RemoteSweApiConfig } from '../lib/remote-swe-api';
 import { submitIssueComment } from '../lib/comments';
 import { shouldTriggerForAssignee } from '../lib/trigger';
-import { ActionContext } from '../lib/context';
-import { WebhookPayload } from '@actions/github/lib/interfaces';
+import { ActionContext, WebhookPayload } from '../lib/context';
 
 export async function handlePrAssignmentEvent(context: ActionContext, payload: WebhookPayload): Promise<void> {
   const assignee = payload.assignee?.login;

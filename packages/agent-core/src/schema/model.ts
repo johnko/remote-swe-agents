@@ -4,7 +4,6 @@ import { z } from 'zod';
 export const inferenceModeSchema = z.enum(['bedrock']);
 export type InferenceMode = 'bedrock';
 
-
 export const modelTypeList = [
   'opus5',
   'sonnet5',

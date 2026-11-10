@@ -331,7 +331,6 @@ describe(' native block support — SDK Message round-trip', () => {
       expect(Array.from(docSource.bytes)).toEqual([0x25, 0x50, 0x44, 0x46]);
     });
 
-
     it('passes through Uint8Array bytes unchanged (no double-decode)', () => {
       const originalBytes = new Uint8Array([0x89, 0x50, 0x4e, 0x47]);
       const block = { image: { format: 'png', source: { bytes: originalBytes } } };
@@ -398,7 +397,7 @@ describe(' native block support — SDK Message round-trip', () => {
     it('sanitizes invisible Unicode from tool names and IDs (Strands → Bedrock)', () => {
       // Both name and ID with invisible characters
       const block = {
-        toolUse: { toolUseId: 'call\u200B2', name: 'executes\u200C\u200Dcommand', input: {} }
+        toolUse: { toolUseId: 'call\u200B2', name: 'executes\u200C\u200Dcommand', input: {} },
       };
       const result = strandsBlockToBedrock(block as any, ctx);
       expect((result as any).toolUse.toolUseId).toBe('call2');
@@ -408,7 +407,7 @@ describe(' native block support — SDK Message round-trip', () => {
     it('sanitizes invalid characters from tool names and IDs (Strands → Bedrock)', () => {
       // Both name and ID with invalid characters
       const block = {
-        toolUse: { toolUseId: 'call-1}', name: 'create_file}', input: {} }
+        toolUse: { toolUseId: 'call-1}', name: 'create_file}', input: {} },
       };
       const result = strandsBlockToBedrock(block as any, ctx);
       expect((result as any).toolUse.toolUseId).toBe('call-1');

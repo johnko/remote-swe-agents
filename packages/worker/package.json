@@ -4,15 +4,14 @@
     "build": "tsc",
     "format": "prettier --write './**/*.ts'",
     "format:check": "prettier --check './**/*.ts'",
-    "test": "npm run testv -- run --silent",
-    "testv": "vitest --passWithNoTests",
+    "test": "vitest run --passWithNoTests",
     "setup:local": "docker compose up -d && npx tsx --env-file=.env.local scripts/setup-dynamodb-local.ts",
     "start:local": "tsx --env-file=.env.local src/local.ts"
   },
   "devDependencies": {
     "@types/node": "^22.13.1",
     "esbuild": "^0.25.1",
-    "prettier": "^3.5.1",
+    "prettier": "^3.5.3",
     "tsx": "^4.19.2",
     "typescript": "^5.7.3",
     "vitest": "^3.2.6"

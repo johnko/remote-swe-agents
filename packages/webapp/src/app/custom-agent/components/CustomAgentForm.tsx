@@ -189,8 +189,6 @@ export default function CustomAgentForm({
   const selectedInferenceMode = watch('inferenceMode');
   const currentIconKey = watch('iconKey');
 
-
-
   const { executeAsync: deleteAgent, isPending: isDeleting } = useAction(deleteCustomAgentAction);
 
   const handleToolToggle = (toolName: string, checked: boolean) => {

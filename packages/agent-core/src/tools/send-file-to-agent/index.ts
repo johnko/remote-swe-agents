@@ -11,12 +11,7 @@ import { buildAttachmentSentinel, getAttachedFileKey } from '../../lib/index.js'
 import { sendFileToSlack } from '../../lib/slack.js';
 
 // Allowed base directories for file operations
-const ALLOWED_BASE_DIRS = [
-  resolve(homedir()),
-  resolve(tmpdir()),
-  '/tmp',
-  '/var/tmp',
-];
+const ALLOWED_BASE_DIRS = [resolve(homedir()), resolve(tmpdir()), '/tmp', '/var/tmp'];
 
 /**
  * CRITICAL SECURITY: Validates that filePath is within allowed directories
@@ -36,8 +31,8 @@ const validateLocalFilePath = (filePath: string, operationDescription: string = 
   if (!isAbsolute(filePath)) {
     throw new Error(
       `Path "${filePath}" is not absolute. ` +
-      `Only absolute paths are allowed for ${operationDescription}. ` +
-      `Use an absolute path starting with "/"`
+        `Only absolute paths are allowed for ${operationDescription}. ` +
+        `Use an absolute path starting with "/"`
     );
   }
 
@@ -56,7 +51,7 @@ const validateLocalFilePath = (filePath: string, operationDescription: string = 
   if (!isAllowed) {
     throw new Error(
       `Path "${filePath}" is outside allowed directories for ${operationDescription}. ` +
-      `Access denied for security reasons.`
+        `Access denied for security reasons.`
     );
   }
 

@@ -50,10 +50,7 @@ export class AsyncJob extends Construct {
 
     handler.addToRolePolicy(
       new PolicyStatement({
-        actions: [
-          'comprehend:DetectDominantLanguage',
-          'translate:TranslateText',
-        ],
+        actions: ['comprehend:DetectDominantLanguage', 'translate:TranslateText'],
         resources: ['*'],
       })
     );

@@ -7,12 +7,12 @@ export interface CorsUpdaterProps {
    * The CloudFront domain to add to CORS
    */
   cloudFrontDomain: string;
-  
+
   /**
    * Bucket name (can be a token/Fn::GetAtt)
    */
   imageBucketName: string;
-  
+
   /**
    * Bucket name (can be a token/Fn::GetAtt)
    */
@@ -29,7 +29,7 @@ export class CorsUpdater extends Construct {
     super(scope, id);
 
     const allowedOrigins = [props.cloudFrontDomain];
-    
+
     // CORS configuration for both buckets
     const corsRules = [
       {

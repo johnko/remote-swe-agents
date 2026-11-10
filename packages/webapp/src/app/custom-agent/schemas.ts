@@ -1,9 +1,5 @@
 import { z } from 'zod';
-import {
-  inferenceModeSchema,
-  mcpConfigSchema,
-  modelTypeSchema,
-} from '@remote-swe-agents/agent-core/schema';
+import { inferenceModeSchema, mcpConfigSchema, modelTypeSchema } from '@remote-swe-agents/agent-core/schema';
 
 export const upsertCustomAgentSchema = z.object({
   id: z.string().optional(),

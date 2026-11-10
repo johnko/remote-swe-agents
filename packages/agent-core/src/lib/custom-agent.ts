@@ -1,4 +1,11 @@
-import { QueryCommand, PutCommand, UpdateCommand, GetCommand, DeleteCommand, paginateQuery } from '@aws-sdk/lib-dynamodb';
+import {
+  QueryCommand,
+  PutCommand,
+  UpdateCommand,
+  GetCommand,
+  DeleteCommand,
+  paginateQuery,
+} from '@aws-sdk/lib-dynamodb';
 import { CustomAgent, EmptyMcpConfig, mcpConfigSchema } from '../schema/index.js';
 import { ddb, TableName } from './aws/index.js';
 import { randomBytes } from 'crypto';

@@ -24,8 +24,7 @@ interface RateLimitConfig {
  */
 function getRateLimitKey(request: NextRequest): string {
   // Try to get from session header or cookie first
-  const sessionId = request.headers.get('x-session-id') || 
-                   request.cookies.get('session')?.value;
+  const sessionId = request.headers.get('x-session-id') || request.cookies.get('session')?.value;
   if (sessionId) {
     return `ratelimit:session:${sessionId}`;
   }
@@ -38,9 +37,7 @@ function getRateLimitKey(request: NextRequest): string {
 
   // Last resort: IP address (may not work behind proxies)
   const forwardedFor = request.headers.get('x-forwarded-for');
-  const ip = forwardedFor?.split(',')[0] || 
-            request.headers.get('x-real-ip') || 
-            'unknown';
+  const ip = forwardedFor?.split(',')[0] || request.headers.get('x-real-ip') || 'unknown';
   return `ratelimit:ip:${ip}`;
 }
 
@@ -54,7 +51,7 @@ export async function checkRateLimit(
   const windowMs = config?.windowMs ?? RATE_LIMIT_WINDOW_MS;
   const maxRequests = config?.maxRequests ?? RATE_LIMIT_MAX_REQUESTS;
   const key = config?.keyPrefix ? `${config.keyPrefix}:${getRateLimitKey(request)}` : getRateLimitKey(request);
-  
+
   const now = Date.now();
   const windowStart = Math.floor(now / windowMs) * windowMs;
   const windowEnd = windowStart + windowMs;
@@ -137,7 +134,6 @@ export async function checkRateLimit(
     );
 
     return { allowed: true, resetTime: windowEnd, remaining: maxRequests - currentCount - 1 };
-
   } catch (error) {
     console.error('[rate-limit] DDB error:', error);
     // Fail open on errors but log
@@ -159,12 +155,12 @@ export async function rateLimitMiddleware(
       { error: 'Too many requests. Please try again later.', retryAfter: Math.ceil((resetTime - Date.now()) / 1000) },
       { status: 429 }
     );
-    
+
     response.headers.set('X-RateLimit-Limit', String(config?.maxRequests ?? RATE_LIMIT_MAX_REQUESTS));
     response.headers.set('X-RateLimit-Remaining', '0');
     response.headers.set('X-RateLimit-Reset', String(Math.floor(resetTime / 1000)));
     response.headers.set('Retry-After', String(Math.ceil((resetTime - Date.now()) / 1000)));
-    
+
     return response;
   }
 

@@ -87,26 +87,26 @@ export default function GlobalPreferencesForm({ preference }: GlobalPreferencesF
       </div>
 
       {/* Default Model */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('defaultModel')}</label>
-          <Select
-            defaultValue={optimisticState.modelOverride}
-            onValueChange={(value: ModelType) => execute({ modelOverride: value })}
-            disabled={isPending}
-          >
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Select a model" />
-            </SelectTrigger>
-            <SelectContent>
-              {getAvailableModelTypes().map((type) => (
-                <SelectItem key={type} value={type}>
-                  {modelConfigs[type].name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{t('defaultModelDescription')}</p>
-        </div>
+      <div>
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('defaultModel')}</label>
+        <Select
+          defaultValue={optimisticState.modelOverride}
+          onValueChange={(value: ModelType) => execute({ modelOverride: value })}
+          disabled={isPending}
+        >
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder="Select a model" />
+          </SelectTrigger>
+          <SelectContent>
+            {getAvailableModelTypes().map((type) => (
+              <SelectItem key={type} value={type}>
+                {modelConfigs[type].name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{t('defaultModelDescription')}</p>
+      </div>
 
       <div>
         <div className="flex items-center space-x-3">

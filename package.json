@@ -12,7 +12,7 @@
     "postinstall": "patch-package"
   },
   "devDependencies": {
-    "prettier": "^3.5.1",
+    "prettier": "^3.5.3",
     "typescript": "^5.7.3"
   },
   "dependencies": {

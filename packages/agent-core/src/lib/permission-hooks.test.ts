@@ -1,10 +1,5 @@
 import { describe, expect, test, vi, beforeEach, afterEach } from 'vitest';
-import {
-  PermissionHookResult,
-  defaultAllowResult,
-  parsePermissionResult,
-  buildHookInput,
-} from './hook-execution.js';
+import { PermissionHookResult, defaultAllowResult, parsePermissionResult, buildHookInput } from './hook-execution.js';
 import type { HookExecutionContext, HookContextData } from './hook-execution.js';
 import { HookEventType } from '../schema/hook.js';
 

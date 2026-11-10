@@ -4,10 +4,16 @@ import { savePushSubscription } from '@remote-swe-agents/agent-core/lib';
 import { z } from 'zod';
 
 const subscriptionSchema = z.object({
-  endpoint: z.string().url().max(2048),  // Limit URL length
+  endpoint: z.string().url().max(2048), // Limit URL length
   keys: z.object({
-    p256dh: z.string().regex(/^[A-Za-z0-9_-]+$/).max(256),  // Base64url validation
-    auth: z.string().regex(/^[A-Za-z0-9_-]+$/).max(256),  // Base64url validation
+    p256dh: z
+      .string()
+      .regex(/^[A-Za-z0-9_-]+$/)
+      .max(256), // Base64url validation
+    auth: z
+      .string()
+      .regex(/^[A-Za-z0-9_-]+$/)
+      .max(256), // Base64url validation
   }),
 });
 

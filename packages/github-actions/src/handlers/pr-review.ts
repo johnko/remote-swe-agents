@@ -1,8 +1,7 @@
 import * as core from '@actions/core';
 import * as github from '@actions/github';
 import { extractWorkerIdFromText } from '@remote-swe-agents/agent-core/lib';
-import { ActionContext } from '../lib/context';
-import { WebhookPayload } from '@actions/github/lib/interfaces';
+import { ActionContext, WebhookPayload } from '../lib/context';
 import { getIssueComments, getIssueDescription, submitIssueComment } from '../lib/comments';
 import { sendMessageToSession, startRemoteSweSession } from '../lib/remote-swe-api';
 import { isCollaborator } from '../lib/permission';

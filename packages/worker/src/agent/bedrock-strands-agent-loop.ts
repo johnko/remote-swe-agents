@@ -158,8 +158,6 @@ export async function resolveModelTypes(ctx: TurnContext): Promise<ModelType[]> 
     session: session
       ? {
           bedrockDefaultModel: session.bedrockDefaultModel,
-          kiroDefaultModel: session.kiroDefaultModel,
-          inferenceMode: session.inferenceMode,
         }
       : undefined,
     customAgent: {
@@ -183,9 +181,7 @@ export const bedrockStrandsAgentLoop = async (ctx: TurnContext, sink: ToolEventS
   const s3: ConverterS3Context = { bucket: process.env.BUCKET_NAME };
 
   // Combine hook context with base system prompt if present (append to end)
-  const systemPrompt = ctx.hookContext
-    ? `${baseSystemPrompt}\n\n${ctx.hookContext}`
-    : baseSystemPrompt;
+  const systemPrompt = ctx.hookContext ? `${baseSystemPrompt}\n\n${ctx.hookContext}` : baseSystemPrompt;
 
   const resolvedTypes = await resolveModelTypes(ctx);
   const model = new RemoteSweBedrockModel({

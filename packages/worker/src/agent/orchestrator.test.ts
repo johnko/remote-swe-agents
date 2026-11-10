@@ -1248,8 +1248,7 @@ describe('runTurnWithBackend retrigger', () => {
     await runTurnWithBackend('w1', cancellable as any, backend, undefined);
 
     const retriggerCall = mocks.saveConversationHistory.mock.calls.find((c: any[]) => c[3] === 'systemRetrigger') as
-      | any[]
-      | undefined;
+      any[] | undefined;
     expect(retriggerCall).toBeDefined();
     const retriggerContent = retriggerCall![1].content[0].text;
     expect(retriggerContent).toContain('<command>');

@@ -333,7 +333,13 @@ export function strandsBlockToBedrock(block: ContentBlockData, ctx?: ConverterS3
   if ('toolUse' in block && block.toolUse) {
     const tu = block.toolUse;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return { toolUse: { toolUseId: normalizeToolUseId(sanitizeIdentifier(tu.toolUseId)), name: sanitizeIdentifier(tu.name), input: tu.input as any } };
+    return {
+      toolUse: {
+        toolUseId: normalizeToolUseId(sanitizeIdentifier(tu.toolUseId)),
+        name: sanitizeIdentifier(tu.name),
+        input: tu.input as any,
+      },
+    };
   }
   if ('toolResult' in block && block.toolResult) {
     const tr = block.toolResult;

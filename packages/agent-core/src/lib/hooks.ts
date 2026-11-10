@@ -1,10 +1,6 @@
 import { QueryCommand, PutCommand, DeleteCommand, GetCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb';
 import { ddb, TableName } from './aws/index.js';
-import {
-  Hook,
-  HookCreatedBy,
-  MAX_HOOKS_PER_USER,
-} from '../schema/hook.js';
+import { Hook, HookCreatedBy, MAX_HOOKS_PER_USER } from '../schema/hook.js';
 import { randomBytes } from 'crypto';
 
 /**

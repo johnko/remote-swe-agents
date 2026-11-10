@@ -306,9 +306,7 @@ describe('createAgentTool (parentAgentId validation)', () => {
     expect(result).toMatch(/cannot reference itself/);
     expect(mockDeleteCustomAgent).toHaveBeenCalledWith('collision-sk');
   });
-
 });
-
 
 describe('listAgentsTool - Integration with getAllCustomAgents', () => {
   beforeEach(() => {
@@ -493,10 +491,7 @@ describe('iconKey feature', () => {
         parentAgentId: 'parent-sk',
       });
 
-      await createAgentTool.handler(
-        { ...baseInput, parentAgentId: 'parent-sk' } as any,
-        context
-      );
+      await createAgentTool.handler({ ...baseInput, parentAgentId: 'parent-sk' } as any, context);
 
       const [payload] = mockCreateCustomAgent.mock.calls[0];
       expect(payload.iconKey).toBeUndefined();
@@ -512,10 +507,7 @@ describe('iconKey feature', () => {
         parentAgentId: 'parent-sk',
       });
 
-      await createAgentTool.handler(
-        { ...baseInput, iconKey: s3Key, parentAgentId: 'parent-sk' } as any,
-        context
-      );
+      await createAgentTool.handler({ ...baseInput, iconKey: s3Key, parentAgentId: 'parent-sk' } as any, context);
 
       const [payload] = mockCreateCustomAgent.mock.calls[0];
       expect(payload.iconKey).toBe(s3Key);
@@ -523,10 +515,7 @@ describe('iconKey feature', () => {
 
     test('C-4: top-level creation with iconKey still requires confirmation', async () => {
       // WHEN
-      await createAgentTool.handler(
-        { ...baseInput, iconKey: 'my-icon-key' } as any,
-        context
-      );
+      await createAgentTool.handler({ ...baseInput, iconKey: 'my-icon-key' } as any, context);
 
       // THEN
       expect(mockSavePendingCreateAgent).toHaveBeenCalledWith(
@@ -552,10 +541,7 @@ describe('iconKey feature', () => {
     });
 
     test('U-1: updates iconKey on existing agent', async () => {
-      await updateAgentTool.handler(
-        { agentId: 'agent-1', iconKey: 'new-icon-key' } as any,
-        context
-      );
+      await updateAgentTool.handler({ agentId: 'agent-1', iconKey: 'new-icon-key' } as any, context);
 
       const [, data] = mockUpdateCustomAgent.mock.calls[0];
       expect(data).toEqual({ iconKey: 'new-icon-key' });
@@ -567,10 +553,7 @@ describe('iconKey feature', () => {
         iconKey: 'old-icon-key',
       });
 
-      await updateAgentTool.handler(
-        { agentId: 'agent-1', iconKey: 'new-icon-key' } as any,
-        context
-      );
+      await updateAgentTool.handler({ agentId: 'agent-1', iconKey: 'new-icon-key' } as any, context);
 
       const [, data] = mockUpdateCustomAgent.mock.calls[0];
       expect(data.iconKey).toBe('new-icon-key');
@@ -582,10 +565,7 @@ describe('iconKey feature', () => {
         iconKey: 'existing-icon',
       });
 
-      await updateAgentTool.handler(
-        { agentId: 'agent-1', iconKey: '' } as any,
-        context
-      );
+      await updateAgentTool.handler({ agentId: 'agent-1', iconKey: '' } as any, context);
 
       const [, data] = mockUpdateCustomAgent.mock.calls[0];
       expect(data).toEqual({ iconKey: '' });
@@ -597,10 +577,7 @@ describe('iconKey feature', () => {
         iconKey: 'existing-icon',
       });
 
-      await updateAgentTool.handler(
-        { agentId: 'agent-1', name: 'Renamed Agent' } as any,
-        context
-      );
+      await updateAgentTool.handler({ agentId: 'agent-1', name: 'Renamed Agent' } as any, context);
 
       const [, data] = mockUpdateCustomAgent.mock.calls[0];
       expect(data).not.toHaveProperty('iconKey');
@@ -628,10 +605,7 @@ describe('iconKey feature', () => {
     test('U-6: validates that agent exists before updating iconKey', async () => {
       mockGetCustomAgent.mockResolvedValueOnce(undefined);
 
-      const result = await updateAgentTool.handler(
-        { agentId: 'missing-agent', iconKey: 'new-icon' } as any,
-        context
-      );
+      const result = await updateAgentTool.handler({ agentId: 'missing-agent', iconKey: 'new-icon' } as any, context);
 
       expect(result).toContain('not found');
       expect(mockUpdateCustomAgent).not.toHaveBeenCalled();
@@ -767,10 +741,7 @@ describe('iconKey feature', () => {
         parentAgentId: 'parent-sk',
       });
 
-      await createAgentTool.handler(
-        { ...baseInput, iconKey, parentAgentId: 'parent-sk' } as any,
-        context
-      );
+      await createAgentTool.handler({ ...baseInput, iconKey, parentAgentId: 'parent-sk' } as any, context);
 
       // Now get the agent and verify iconKey is there
       mockGetCustomAgent.mockResolvedValue({
@@ -815,10 +786,7 @@ describe('iconKey feature', () => {
         iconKey: updatedIcon,
       });
 
-      await updateAgentTool.handler(
-        { agentId: 'lifecycle-agent', iconKey: updatedIcon } as any,
-        context
-      );
+      await updateAgentTool.handler({ agentId: 'lifecycle-agent', iconKey: updatedIcon } as any, context);
 
       // Get and verify
       mockGetCustomAgent.mockResolvedValue({
@@ -862,10 +830,7 @@ describe('iconKey feature', () => {
         iconKey: '',
       });
 
-      await updateAgentTool.handler(
-        { agentId: 'agent-1', iconKey: '' } as any,
-        context
-      );
+      await updateAgentTool.handler({ agentId: 'agent-1', iconKey: '' } as any, context);
 
       const [, data] = mockUpdateCustomAgent.mock.calls[0];
       expect(data.iconKey).toBe('');
@@ -881,10 +846,7 @@ describe('iconKey feature', () => {
         parentAgentId: 'parent-sk',
       });
 
-      await createAgentTool.handler(
-        { ...baseInput, iconKey: longIconKey, parentAgentId: 'parent-sk' } as any,
-        context
-      );
+      await createAgentTool.handler({ ...baseInput, iconKey: longIconKey, parentAgentId: 'parent-sk' } as any, context);
 
       const [payload] = mockCreateCustomAgent.mock.calls[0];
       expect(payload.iconKey).toBe(longIconKey);
@@ -898,10 +860,7 @@ describe('iconKey feature', () => {
         iconKey: specialCharIconKey,
       });
 
-      await updateAgentTool.handler(
-        { agentId: 'agent-1', iconKey: specialCharIconKey } as any,
-        context
-      );
+      await updateAgentTool.handler({ agentId: 'agent-1', iconKey: specialCharIconKey } as any, context);
 
       const [, data] = mockUpdateCustomAgent.mock.calls[0];
       expect(data.iconKey).toBe(specialCharIconKey);
@@ -920,10 +879,7 @@ describe('iconKey feature', () => {
         iconKey: 'important-icon', // Should remain unchanged
       });
 
-      await updateAgentTool.handler(
-        { agentId: 'agent-1', name: 'Updated Name' } as any,
-        context
-      );
+      await updateAgentTool.handler({ agentId: 'agent-1', name: 'Updated Name' } as any, context);
 
       const [, data] = mockUpdateCustomAgent.mock.calls[0];
       expect(data).not.toHaveProperty('iconKey'); // Not explicitly updated
@@ -939,10 +895,7 @@ describe('iconKey feature', () => {
         parentAgentId: 'parent-sk',
       });
 
-      await createAgentTool.handler(
-        { ...baseInput, iconKey: s3PathIcon, parentAgentId: 'parent-sk' } as any,
-        context
-      );
+      await createAgentTool.handler({ ...baseInput, iconKey: s3PathIcon, parentAgentId: 'parent-sk' } as any, context);
 
       const [payload] = mockCreateCustomAgent.mock.calls[0];
       expect(payload.iconKey).toBe(s3PathIcon);
