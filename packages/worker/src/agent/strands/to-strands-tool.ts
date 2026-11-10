@@ -33,11 +33,7 @@ import {
   HookContextData,
 } from '@remote-swe-agents/agent-core/lib';
 import { reportProgressTool, sendToAgentTool, acknowledgeAgentTool } from '@remote-swe-agents/agent-core/tools';
-import {
-  logToolExecution,
-  logPermissionDenied,
-  logToolBlocked,
-} from '@remote-swe-agents/agent-core/lib/security-logger.js';
+import { logToolExecution, logPermissionDenied, logToolBlocked } from '@remote-swe-agents/agent-core/lib';
 
 /** Sanitize tool names: Strands ToolRegistry requires ^[a-zA-Z0-9_-]+$ */
 export const sanitizeToolName = (name: string): string => name.replace(/[^a-zA-Z0-9_-]/g, '_');
