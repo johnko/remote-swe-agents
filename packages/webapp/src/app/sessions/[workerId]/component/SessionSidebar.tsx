@@ -435,44 +435,52 @@ export default function SessionSidebar({
 
         {/* Bottom link to full sessions list */}
         <div className="border-t border-gray-200 dark:border-gray-700 p-2">
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button
-                  onClick={handleHideCompletedToggle}
-                  className={`p-1.5 rounded-md transition-colors cursor-pointer ${
-                    hideCompleted
-                      ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
-                      : 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300'
-                  }`}
-                  title={hideCompleted ? t('showCompleted') : t('hideCompleted')}
-                >
-                  <EyeOffIcon className="w-4 h-4" />
-                </button>
-              </TooltipTrigger>
-              <TooltipContent>{hideCompleted ? t('showCompleted') : t('hideCompleted')}</TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Link
-                  href="/sessions/new"
-                  className="p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 transition-colors"
-                >
-                  <Plus className="w-4 h-4" />
-                </Link>
-              </TooltipTrigger>
-              <TooltipContent>{t('newSession')}</TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-          <Link
-            href="/sessions"
-            className="flex items-center gap-2 px-3 py-2 rounded-md text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-          >
-            <List className="w-4 h-4" />
-            {t('goToSessionList')}
-          </Link>
+          <div className="flex items-center gap-2">
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={handleHideCompletedToggle}
+                    className={`p-1.5 rounded-md transition-colors cursor-pointer ${
+                      hideCompleted
+                        ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
+                        : 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300'
+                    }`}
+                    title={hideCompleted ? t('showCompleted') : t('hideCompleted')}
+                  >
+                    <EyeOffIcon className="w-4 h-4" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent>{hideCompleted ? t('showCompleted') : t('hideCompleted')}</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Link
+                    href="/sessions/new"
+                    className="p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 transition-colors"
+                  >
+                    <Plus className="w-4 h-4" />
+                  </Link>
+                </TooltipTrigger>
+                <TooltipContent>{t('newSession')}</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Link
+                    href="/sessions"
+                    className="p-1.5 rounded-md text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                  >
+                    <List className="w-4 h-4" />
+                  </Link>
+                </TooltipTrigger>
+                <TooltipContent>{t('goToSessionList')}</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
         </div>
       </aside>
     </>
