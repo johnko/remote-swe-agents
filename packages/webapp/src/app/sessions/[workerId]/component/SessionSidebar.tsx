@@ -349,10 +349,10 @@ export default function SessionSidebar({
         ref={sidebarRef}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
-        style={{ width: currentWidth }}
-        className={`fixed top-0 left-0 h-full z-50 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col transition-all duration-300 ease-in-out
-          lg:sticky lg:top-0 lg:h-screen lg:translate-x-0
+        className={`fixed lg:sticky top-0 left-0 h-full z-50 lg:z-auto bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col transition-all duration-300 ease-in-out
+          lg:translate-x-0
           ${isOpen ? 'translate-x-0' : '-translate-x-full'}
+          ${isHovered ? 'w-[400px]' : 'w-[200px]'}
         `}
       >
         {/* Sidebar header */}
@@ -375,37 +375,6 @@ export default function SessionSidebar({
                 </Tooltip>
               </TooltipProvider>
             )}
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <button
-                    onClick={handleHideCompletedToggle}
-                    className={`p-1.5 rounded-md transition-colors cursor-pointer ${
-                      hideCompleted
-                        ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
-                        : 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300'
-                    }`}
-                    title={hideCompleted ? t('showCompleted') : t('hideCompleted')}
-                  >
-                    <EyeOffIcon className="w-4 h-4" />
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent>{hideCompleted ? t('showCompleted') : t('hideCompleted')}</TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Link
-                    href="/sessions/new"
-                    className="p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 transition-colors"
-                  >
-                    <Plus className="w-4 h-4" />
-                  </Link>
-                </TooltipTrigger>
-                <TooltipContent>{t('newSession')}</TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
             <button
               onClick={onClose}
               className="p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 transition-colors lg:hidden cursor-pointer"
@@ -466,6 +435,37 @@ export default function SessionSidebar({
 
         {/* Bottom link to full sessions list */}
         <div className="border-t border-gray-200 dark:border-gray-700 p-2">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={handleHideCompletedToggle}
+                  className={`p-1.5 rounded-md transition-colors cursor-pointer ${
+                    hideCompleted
+                      ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
+                      : 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300'
+                  }`}
+                  title={hideCompleted ? t('showCompleted') : t('hideCompleted')}
+                >
+                  <EyeOffIcon className="w-4 h-4" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent>{hideCompleted ? t('showCompleted') : t('hideCompleted')}</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Link
+                  href="/sessions/new"
+                  className="p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 transition-colors"
+                >
+                  <Plus className="w-4 h-4" />
+                </Link>
+              </TooltipTrigger>
+              <TooltipContent>{t('newSession')}</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
           <Link
             href="/sessions"
             className="flex items-center gap-2 px-3 py-2 rounded-md text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
