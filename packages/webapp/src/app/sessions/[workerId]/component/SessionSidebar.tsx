@@ -349,10 +349,10 @@ export default function SessionSidebar({
         ref={sidebarRef}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
-        className={`fixed lg:sticky top-0 left-0 h-full z-50 lg:z-auto bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col transition-all duration-300 ease-in-out
-          lg:translate-x-0
+        style={{ width: currentWidth }}
+        className={`fixed top-0 left-0 h-full z-50 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col transition-all duration-300 ease-in-out
+          lg:sticky lg:top-0 lg:h-screen lg:translate-x-0
           ${isOpen ? 'translate-x-0' : '-translate-x-full'}
-          ${isHovered ? 'w-[400px]' : 'w-[200px]'}
         `}
       >
         {/* Sidebar header */}
