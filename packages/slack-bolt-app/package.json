@@ -13,27 +13,27 @@
     "test": "echo \\\"Error: no test specified\\\" && exit 1"
   },
   "dependencies": {
-    "@aws-crypto/sha256-js": "^5.2.0",
-    "@aws-lambda-powertools/idempotency": "^2.14.0",
-    "@aws-sdk/client-bedrock-runtime": "^3.751.0",
-    "@aws-sdk/client-dynamodb": "^3.744.0",
-    "@aws-sdk/client-ec2": "^3.743.0",
-    "@aws-sdk/client-lambda": "^3.744.0",
-    "@aws-sdk/client-s3": "^3.758.0",
-    "@aws-sdk/client-ssm": "^3.787.0",
-    "@aws-sdk/credential-provider-node": "^3.750.0",
-    "@aws-sdk/lib-dynamodb": "^3.751.0",
+    "@aws-crypto/sha256-js": "5.2.0",
+    "@aws-lambda-powertools/idempotency": "2.36.0",
+    "@aws-sdk/client-bedrock-runtime": "3.1165.0",
+    "@aws-sdk/client-dynamodb": "3.1165.0",
+    "@aws-sdk/client-ec2": "3.1165.0",
+    "@aws-sdk/client-lambda": "3.1165.0",
+    "@aws-sdk/client-s3": "3.1165.0",
+    "@aws-sdk/client-ssm": "3.1165.0",
+    "@aws-sdk/credential-provider-node": "3.972.95",
+    "@aws-sdk/lib-dynamodb": "3.1165.0",
     "@remote-swe-agents/agent-core": "file:../agent-core",
-    "@slack/bolt": "^4.0.0",
-    "@slack/web-api": "^7.8.0",
-    "zod": "^4.6.6"
+    "@slack/bolt": "4.7.3",
+    "@slack/web-api": "7.19.0",
+    "zod": "4.6.7"
   },
   "devDependencies": {
-    "@types/aws-lambda": "^8.10.147",
-    "@types/node": "^22.8.6",
-    "esbuild": "^0.28.1",
-    "prettier": "^3.5.3",
-    "tsx": "^4.19.2",
-    "typescript": "^5.6.3"
+    "@types/aws-lambda": "8.10.164",
+    "@types/node": "22.20.5",
+    "esbuild": "0.28.2",
+    "prettier": "3.9.10",
+    "tsx": "4.23.15",
+    "typescript": "5.9.3"
   }
 }
