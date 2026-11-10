@@ -9,12 +9,12 @@
     "start:local": "tsx --env-file=.env.local src/local.ts"
   },
   "devDependencies": {
-    "@types/node": "^22.13.1",
-    "esbuild": "^0.25.1",
-    "prettier": "^3.5.3",
-    "tsx": "^4.19.2",
-    "typescript": "^5.7.3",
-    "vitest": "^3.2.6"
+    "@types/node": "22.20.5",
+    "esbuild": "0.25.12",
+    "prettier": "3.9.10",
+    "tsx": "4.23.15",
+    "typescript": "5.9.3",
+    "vitest": "3.2.7"
   },
   "dependencies": {
     "@agentclientprotocol/sdk": "1.3.0",
