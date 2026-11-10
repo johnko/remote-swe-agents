@@ -90,7 +90,7 @@ jobs:
           echo "microvm_preview_proxy=$microvm_preview_proxy"
   Build-and-Test-CDK:
     needs: changes
-    if: false # ${{ needs.changes.outputs.cdk == 'true' || (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'workflow_dispatch' }}
+    if: ${{ needs.changes.outputs.cdk == 'true' || (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -218,7 +218,7 @@ jobs:
         run: docker run --entrypoint node --env TESTING_BOOTSTRAP=true --env BOT_TOKEN=dummy --env SIGNING_SECRET=dummy slack-bolt-app local.js
   Build-and-Test-MicrovmPreviewProxy:
     needs: changes
-    if: true # ${{ needs.changes.outputs.microvm_preview_proxy == 'true' || (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'workflow_dispatch' }}
+    if: ${{ needs.changes.outputs.microvm_preview_proxy == 'true' || (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
