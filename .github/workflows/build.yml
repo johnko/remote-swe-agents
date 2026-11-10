@@ -191,6 +191,7 @@ jobs:
         with:
           node-version: '24.x'
       - run: |
+          npm install -g patch-package@8.0.1
           npm ci
           npm ls
           npm run format:check -w packages/agent-core
