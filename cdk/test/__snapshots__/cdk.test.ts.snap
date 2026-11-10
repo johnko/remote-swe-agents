@@ -475,7 +475,6 @@ exports[`Snapshot test: MainStack 1`] = `
         },
         "MemorySize": 256,
         "PackageType": "Image",
-        "ReservedConcurrentExecutions": 3,
         "Role": {
           "Fn::GetAtt": [
             "AsyncJobHandlerServiceRoleFE9F530F",
@@ -716,7 +715,7 @@ exports[`Snapshot test: MainStack 1`] = `
           "Input": "{"jobType":"SampleJob"}",
           "RetryPolicy": {
             "MaximumEventAgeInSeconds": 86400,
-            "MaximumRetryAttempts": 5,
+            "MaximumRetryAttempts": 1,
           },
           "RoleArn": {
             "Fn::GetAtt": [
@@ -863,7 +862,7 @@ exports[`Snapshot test: MainStack 1`] = `
                   "DomainName",
                 ],
               },
-              "/api/auth/sign-out-callback","http://localhost:3011/api/auth/sign-out-callback"],"SupportedIdentityProviders":["COGNITO"],"TokenValidityUnits":{"IdToken":"minutes"},"IdTokenValidity":1440},"physicalResourceId":{"id":"",
+              "/api/auth/sign-out-callback","http://localhost:3011/api/auth/sign-out-callback"],"SupportedIdentityProviders":["COGNITO"],"TokenValidityUnits":{"IdToken":"minutes","AccessToken":"minutes","RefreshToken":"days"},"IdTokenValidity":60,"AccessTokenValidity":60,"RefreshTokenValidity":7},"physicalResourceId":{"id":"",
               {
                 "Ref": "AuthUserPool8115E87F",
               },
@@ -904,7 +903,7 @@ exports[`Snapshot test: MainStack 1`] = `
                   "DomainName",
                 ],
               },
-              "/api/auth/sign-out-callback","http://localhost:3011/api/auth/sign-out-callback"],"SupportedIdentityProviders":["COGNITO"],"TokenValidityUnits":{"IdToken":"minutes"},"IdTokenValidity":1440},"physicalResourceId":{"id":"",
+              "/api/auth/sign-out-callback","http://localhost:3011/api/auth/sign-out-callback"],"SupportedIdentityProviders":["COGNITO"],"TokenValidityUnits":{"IdToken":"minutes","AccessToken":"minutes","RefreshToken":"days"},"IdTokenValidity":60,"AccessTokenValidity":60,"RefreshTokenValidity":7},"physicalResourceId":{"id":"",
               {
                 "Ref": "AuthUserPool8115E87F",
               },
@@ -975,14 +974,24 @@ Remote SWE Agents Team",
         "AutoVerifiedAttributes": [
           "email",
         ],
+        "DeviceConfiguration": {
+          "ChallengeRequiredOnNewDevice": true,
+          "DeviceOnlyRememberedOnUserPrompt": true,
+        },
         "EmailVerificationMessage": "The verification code to your new account is {####}",
         "EmailVerificationSubject": "Verify your new account",
+        "EnabledMfas": [
+          "SOFTWARE_TOKEN_MFA",
+        ],
+        "MfaConfiguration": "OPTIONAL",
         "Policies": {
           "PasswordPolicy": {
-            "MinimumLength": 8,
+            "MinimumLength": 10,
+            "RequireLowercase": true,
             "RequireNumbers": true,
             "RequireSymbols": true,
             "RequireUppercase": true,
+            "TemporaryPasswordValidityDays": 1,
           },
         },
         "SmsVerificationMessage": "The verification code to your new account is {####}",
@@ -1001,6 +1010,7 @@ Remote SWE Agents Team",
     },
     "AuthUserPoolClientC635291F": {
       "Properties": {
+        "AccessTokenValidity": 60,
         "AllowedOAuthFlows": [
           "code",
         ],
@@ -1015,20 +1025,24 @@ Remote SWE Agents Team",
         "CallbackURLs": [
           "http://localhost/dummy",
         ],
+        "EnableTokenRevocation": true,
         "ExplicitAuthFlows": [
           "ALLOW_USER_PASSWORD_AUTH",
           "ALLOW_USER_SRP_AUTH",
           "ALLOW_REFRESH_TOKEN_AUTH",
         ],
-        "IdTokenValidity": 1440,
+        "IdTokenValidity": 60,
         "LogoutURLs": [
           "http://localhost/dummy",
         ],
+        "RefreshTokenValidity": 10080,
         "SupportedIdentityProviders": [
           "COGNITO",
         ],
         "TokenValidityUnits": {
+          "AccessToken": "minutes",
           "IdToken": "minutes",
+          "RefreshToken": "minutes",
         },
         "UserPoolId": {
           "Ref": "AuthUserPool8115E87F",
@@ -1398,6 +1412,9 @@ Remote SWE Agents Team",
         "CustomCDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756CServiceRole89A01265",
       ],
       "Properties": {
+        "Architectures": [
+          "arm64",
+        ],
         "Code": {
           "S3Bucket": "cdk-hnb659fds-assets-123456789012-us-east-1",
           "S3Key": "REDACTED",
@@ -1413,6 +1430,7 @@ Remote SWE Agents Team",
             "Ref": "WorkerSourceDeploymentAwsCliLayer8B16D5B0",
           },
         ],
+        "MemorySize": 1024,
         "Role": {
           "Fn::GetAtt": [
             "CustomCDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756CServiceRole89A01265",
@@ -2050,6 +2068,14 @@ Remote SWE Agents Team",
           "Statement": [
             {
               "Action": "sts:AssumeRole",
+              "Condition": {
+                "ArnLike": {
+                  "aws:SourceArn": "arn:aws:states:us-east-1:123456789012:stateMachine:*",
+                },
+                "StringEquals": {
+                  "aws:SourceAccount": "123456789012",
+                },
+              },
               "Effect": "Allow",
               "Principal": {
                 "Service": "states.amazonaws.com",
@@ -2115,17 +2141,72 @@ Remote SWE Agents Team",
       ],
       "Properties": {
         "Code": {
-          "ZipFile": "const response = require('cfn-response');
+          "ZipFile": "/**
+ * Inline bundled cfn-response module
+ * Original: https://www.npmjs.com/package/cfn-response
+ * License: AWS Customer Agreement
+ */
+const cfnResponse = {
+  SUCCESS: "SUCCESS",
+  FAILED: "FAILED",
+
+  send: function(event, context, responseStatus, responseData, physicalResourceId) {
+    const responseBody = JSON.stringify({
+      Status: responseStatus,
+      Reason: "See the details in CloudWatch Log Stream: " + context.logStreamName,
+      PhysicalResourceId: physicalResourceId || context.logStreamName,
+      StackId: event.StackId,
+      RequestId: event.RequestId,
+      LogicalResourceId: event.LogicalResourceId,
+      Data: responseData
+    });
+
+    console.log("Response body:\\n", responseBody);
+
+    const https = require("https");
+    const url = require("url");
+
+    const parsedUrl = url.parse(event.ResponseURL);
+    const options = {
+      hostname: parsedUrl.hostname,
+      port: 443,
+      path: parsedUrl.path,
+      method: "PUT",
+      headers: {
+        "content-type": "",
+        "content-length": responseBody.length
+      }
+    };
+
+    return new Promise((resolve, reject) => {
+      const request = https.request(options, function(response) {
+        console.log("Status code: " + response.statusCode);
+        console.log("Status message: " + response.statusMessage);
+        resolve();
+      });
+
+      request.on("error", function(error) {
+        console.log("send(..) failed executing https.request(..): " + error);
+        reject(error);
+      });
+
+      request.write(responseBody);
+      request.end();
+    });
+  }
+};
 
 exports.handler = async function (event, context) {
   try {
     console.log(event);
     if (event.RequestType == 'Delete') {
-      return await response.send(event, context, response.SUCCESS);
+      await cfnResponse.send(event, context, cfnResponse.SUCCESS);
+      return;
     }
     const initialVersion = event.ResourceProperties.initialVersion;
     if (event.RequestType == 'Create') {
-      return await response.send(event, context, response.SUCCESS, { version: initialVersion }, initialVersion);
+      await cfnResponse.send(event, context, cfnResponse.SUCCESS, { version: initialVersion }, initialVersion);
+      return;
     }
     if (event.RequestType == 'Update') {
       const currentVersion = event.PhysicalResourceId; // e.g. 1.0.0
@@ -2136,11 +2217,12 @@ exports.handler = async function (event, context) {
       if (oMajor > major || (oMajor == major && oMinor > minor)) {
         newVersion = initialVersion;
       }
-      await response.send(event, context, response.SUCCESS, { version: newVersion }, newVersion);
+      await cfnResponse.send(event, context, cfnResponse.SUCCESS, { version: newVersion }, newVersion);
     }
   } catch (e) {
     console.log(e);
-    await response.send(event, context, response.FAILED);
+    await cfnResponse.send(event, context, cfnResponse.FAILED);
+    throw e;
   }
 };
 ",
@@ -2152,7 +2234,7 @@ exports.handler = async function (event, context) {
             "Arn",
           ],
         },
-        "Runtime": "nodejs22.x",
+        "Runtime": "nodejs24.x",
         "Timeout": 5,
       },
       "Type": "AWS::Lambda::Function",
@@ -2266,38 +2348,106 @@ exports.handler = async function (event, context) {
       ],
       "Properties": {
         "Code": {
-          "ZipFile": "const response = require('cfn-response');
-const crypto = require('crypto');
+          "ZipFile": "const crypto = require('crypto');
+
+/**
+ * Inline bundled cfn-response module
+ * Original: https://www.npmjs.com/package/cfn-response
+ * License: AWS Customer Agreement
+ */
+const cfnResponse = {
+  SUCCESS: "SUCCESS",
+  FAILED: "FAILED",
+
+  send: function(event, context, responseStatus, responseData, physicalResourceId) {
+    const responseBody = JSON.stringify({
+      Status: responseStatus,
+      Reason: "See the details in CloudWatch Log Stream: " + context.logStreamName,
+      PhysicalResourceId: physicalResourceId || context.logStreamName,
+      StackId: event.StackId,
+      RequestId: event.RequestId,
+      LogicalResourceId: event.LogicalResourceId,
+      Data: responseData
+    });
+
+    console.log("Response body:\\n", responseBody);
+
+    const https = require("https");
+    const url = require("url");
+
+    const parsedUrl = url.parse(event.ResponseURL);
+    const options = {
+      hostname: parsedUrl.hostname,
+      port: 443,
+      path: parsedUrl.path,
+      method: "PUT",
+      headers: {
+        "content-type": "",
+        "content-length": responseBody.length
+      }
+    };
+
+    return new Promise((resolve, reject) => {
+      const request = https.request(options, function(response) {
+        console.log("Status code: " + response.statusCode);
+        console.log("Status message: " + response.statusMessage);
+        resolve();
+      });
+
+      request.on("error", function(error) {
+        console.log("send(..) failed executing https.request(..): " + error);
+        reject(error);
+      });
+
+      request.write(responseBody);
+      request.end();
+    });
+  }
+};
 
 exports.handler = async function (event, context) {
   try {
     console.log(event);
     if (event.RequestType == 'Delete') {
-      return await response.send(event, context, response.SUCCESS);
+      await cfnResponse.send(event, context, cfnResponse.SUCCESS);
+      return;
     }
 
     const prefix = event.ResourceProperties.prefix ?? '';
-    const length = event.ResourceProperties.length ?? '8';
+    const rawLength = event.ResourceProperties.length ?? '8';
+
+    // Validate length parameter to ensure sufficient randomness
+    const length = parseInt(rawLength, 10);
+    if (isNaN(length) || length < 8 || length > 128) {
+      throw new Error(\`Invalid length parameter: \${rawLength}. Must be an integer between 8 and 128.\`);
+    }
+
     const generate = () => {
-      const random = crypto.randomBytes(parseInt(length)).toString('hex');
+      // Generate at least enough bytes to cover the requested length in hex
+      // Each hex character represents 4 bits, so 2 hex chars per byte
+      const byteLength = Math.ceil(length / 2);
+      const random = crypto.randomBytes(byteLength).toString('hex');
       return \`\${prefix}\${random.slice(0, length)}\`;
     };
 
     if (event.RequestType == 'Create') {
       const generated = generate();
-      return await response.send(event, context, response.SUCCESS, { generated }, generated);
+      await cfnResponse.send(event, context, cfnResponse.SUCCESS, { generated }, generated);
+      return;
     }
     if (event.RequestType == 'Update') {
       const current = event.PhysicalResourceId;
       if (current.startsWith(prefix)) {
-        return await response.send(event, context, response.SUCCESS, { generated: current }, current);
+        await cfnResponse.send(event, context, cfnResponse.SUCCESS, { generated: current }, current);
+        return;
       }
       const generated = generate();
-      return await response.send(event, context, response.SUCCESS, { generated }, generated);
+      await cfnResponse.send(event, context, cfnResponse.SUCCESS, { generated }, generated);
     }
   } catch (e) {
     console.log(e);
-    await response.send(event, context, response.FAILED);
+    await cfnResponse.send(event, context, cfnResponse.FAILED);
+    throw e;
   }
 };
 ",
@@ -2309,7 +2459,7 @@ exports.handler = async function (event, context) {
             "Arn",
           ],
         },
-        "Runtime": "nodejs22.x",
+        "Runtime": "nodejs24.x",
         "Timeout": 5,
       },
       "Type": "AWS::Lambda::Function",
@@ -2410,141 +2560,6 @@ exports.handler = async function (event, context) {
       },
       "Type": "AWS::IAM::Policy",
     },
-    "SingletonLambdauserparamscleanersingleton2877582C": {
-      "DependsOn": [
-        "SingletonLambdauserparamscleanersingletonServiceRoleDefaultPolicy3C002D1B",
-        "SingletonLambdauserparamscleanersingletonServiceRole4DDAEC8D",
-      ],
-      "Properties": {
-        "Code": {
-          "ZipFile": "
-const { SSMClient, GetParametersByPathCommand, DeleteParametersCommand } = require('@aws-sdk/client-ssm');
-
-exports.handler = async (event) => {
-  const physicalResourceId = event.PhysicalResourceId || 'user-params-cleaner';
-
-  // Create and Update are no-ops. Cleanup runs only on stack deletion.
-  if (event.RequestType !== 'Delete') {
-    return { PhysicalResourceId: physicalResourceId };
-  }
-
-  const pathPrefix = event.ResourceProperties.PathPrefix;
-  const ssm = new SSMClient({});
-
-  console.log('Starting cleanup under path: ' + pathPrefix);
-
-  const names = [];
-  let nextToken;
-  try {
-    do {
-      const resp = await ssm.send(new GetParametersByPathCommand({
-        Path: pathPrefix,
-        Recursive: true,
-        MaxResults: 10,
-        NextToken: nextToken,
-      }));
-      for (const p of resp.Parameters || []) {
-        if (p.Name) names.push(p.Name);
-      }
-      nextToken = resp.NextToken;
-    } while (nextToken);
-  } catch (err) {
-    // Best-effort cleanup: never block stack deletion.
-    console.error('Failed to list parameters. Skipping cleanup.', err);
-    return { PhysicalResourceId: physicalResourceId };
-  }
-
-  console.log('Found ' + names.length + ' parameter(s) to delete');
-
-  // DeleteParameters accepts at most 10 names per request.
-  for (let i = 0; i < names.length; i += 10) {
-    const batch = names.slice(i, i + 10);
-    try {
-      const resp = await ssm.send(new DeleteParametersCommand({ Names: batch }));
-      if (resp.DeletedParameters && resp.DeletedParameters.length > 0) {
-        console.log('Deleted: ' + resp.DeletedParameters.join(', '));
-      }
-      if (resp.InvalidParameters && resp.InvalidParameters.length > 0) {
-        // Already gone or inaccessible. Treated as expected.
-        console.warn('Skipped (not found or invalid): ' + resp.InvalidParameters.join(', '));
-      }
-    } catch (err) {
-      // Continue with remaining batches even if one fails.
-      console.error('Failed to delete batch: ' + batch.join(', '), err);
-    }
-  }
-
-  return { PhysicalResourceId: physicalResourceId };
-};
-      ",
-        },
-        "Handler": "index.handler",
-        "Role": {
-          "Fn::GetAtt": [
-            "SingletonLambdauserparamscleanersingletonServiceRole4DDAEC8D",
-            "Arn",
-          ],
-        },
-        "Runtime": "nodejs22.x",
-        "Timeout": 300,
-      },
-      "Type": "AWS::Lambda::Function",
-    },
-    "SingletonLambdauserparamscleanersingletonServiceRole4DDAEC8D": {
-      "Properties": {
-        "AssumeRolePolicyDocument": {
-          "Statement": [
-            {
-              "Action": "sts:AssumeRole",
-              "Effect": "Allow",
-              "Principal": {
-                "Service": "lambda.amazonaws.com",
-              },
-            },
-          ],
-          "Version": "2012-10-17",
-        },
-        "ManagedPolicyArns": [
-          {
-            "Fn::Join": [
-              "",
-              [
-                "arn:",
-                {
-                  "Ref": "AWS::Partition",
-                },
-                ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
-              ],
-            ],
-          },
-        ],
-      },
-      "Type": "AWS::IAM::Role",
-    },
-    "SingletonLambdauserparamscleanersingletonServiceRoleDefaultPolicy3C002D1B": {
-      "Properties": {
-        "PolicyDocument": {
-          "Statement": [
-            {
-              "Action": [
-                "ssm:DeleteParameters",
-                "ssm:GetParametersByPath",
-              ],
-              "Effect": "Allow",
-              "Resource": "arn:aws:ssm:us-east-1:123456789012:parameter/TestMainStack/users/*",
-            },
-          ],
-          "Version": "2012-10-17",
-        },
-        "PolicyName": "SingletonLambdauserparamscleanersingletonServiceRoleDefaultPolicy3C002D1B",
-        "Roles": [
-          {
-            "Ref": "SingletonLambdauserparamscleanersingletonServiceRole4DDAEC8D",
-          },
-        ],
-      },
-      "Type": "AWS::IAM::Policy",
-    },
     "SingletonLambdavapidkeygeneratorsingleton2607D629": {
       "DependsOn": [
         "SingletonLambdavapidkeygeneratorsingletonServiceRoleDefaultPolicy61E91644",
@@ -2617,7 +2632,7 @@ exports.handler = async (event) => {
             "Arn",
           ],
         },
-        "Runtime": "nodejs22.x",
+        "Runtime": "nodejs24.x",
         "Timeout": 60,
       },
       "Type": "AWS::Lambda::Function",
@@ -3547,6 +3562,158 @@ exports.handler = async (event) => {
       "Type": "AWS::ECR::Repository",
       "UpdateReplacePolicy": "Delete",
     },
+    "StorageCorsUpdaterUpdateImageBucketCorsAA00097E": {
+      "DeletionPolicy": "Delete",
+      "DependsOn": [
+        "StorageCorsUpdaterUpdateImageBucketCorsCustomResourcePolicy44515031",
+      ],
+      "Properties": {
+        "Create": {
+          "Fn::Join": [
+            "",
+            [
+              "{"service":"S3","action":"putBucketCors","parameters":{"Bucket":"",
+              {
+                "Ref": "StorageImageBucket99BA9550",
+              },
+              "","CORSConfiguration":{"CORSRules":[{"AllowedOrigins":["https://",
+              {
+                "Fn::GetAtt": [
+                  "Webapp107041BD",
+                  "DomainName",
+                ],
+              },
+              ""],"AllowedMethods":["GET","HEAD"],"AllowedHeaders":["authorization","content-type","x-amz-content-sha256","x-amz-date","x-requested-with"],"MaxAgeSeconds":3000}]}},"physicalResourceId":{"id":"StorageCorsUpdater-image-cors"}}",
+            ],
+          ],
+        },
+        "InstallLatestAwsSdk": false,
+        "ServiceToken": {
+          "Fn::GetAtt": [
+            "AWS679f53fac002430cb0da5b7982bd22872D164C4C",
+            "Arn",
+          ],
+        },
+        "Update": {
+          "Fn::Join": [
+            "",
+            [
+              "{"service":"S3","action":"putBucketCors","parameters":{"Bucket":"",
+              {
+                "Ref": "StorageImageBucket99BA9550",
+              },
+              "","CORSConfiguration":{"CORSRules":[{"AllowedOrigins":["https://",
+              {
+                "Fn::GetAtt": [
+                  "Webapp107041BD",
+                  "DomainName",
+                ],
+              },
+              ""],"AllowedMethods":["GET","HEAD"],"AllowedHeaders":["authorization","content-type","x-amz-content-sha256","x-amz-date","x-requested-with"],"MaxAgeSeconds":3000}]}},"physicalResourceId":{"id":"StorageCorsUpdater-image-cors"}}",
+            ],
+          ],
+        },
+      },
+      "Type": "Custom::AWS",
+      "UpdateReplacePolicy": "Delete",
+    },
+    "StorageCorsUpdaterUpdateImageBucketCorsCustomResourcePolicy44515031": {
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": "s3:PutBucketCors",
+              "Effect": "Allow",
+              "Resource": "*",
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "StorageCorsUpdaterUpdateImageBucketCorsCustomResourcePolicy44515031",
+        "Roles": [
+          {
+            "Ref": "AWS679f53fac002430cb0da5b7982bd2287ServiceRoleC1EA0FF2",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+    "StorageCorsUpdaterUpdateSkillBucketCors1BFEAB82": {
+      "DeletionPolicy": "Delete",
+      "DependsOn": [
+        "StorageCorsUpdaterUpdateSkillBucketCorsCustomResourcePolicy6AB7EF65",
+      ],
+      "Properties": {
+        "Create": {
+          "Fn::Join": [
+            "",
+            [
+              "{"service":"S3","action":"putBucketCors","parameters":{"Bucket":"",
+              {
+                "Ref": "StorageSkillBucket76CA6B72",
+              },
+              "","CORSConfiguration":{"CORSRules":[{"AllowedOrigins":["https://",
+              {
+                "Fn::GetAtt": [
+                  "Webapp107041BD",
+                  "DomainName",
+                ],
+              },
+              ""],"AllowedMethods":["GET","HEAD"],"AllowedHeaders":["authorization","content-type","x-amz-content-sha256","x-amz-date","x-requested-with"],"MaxAgeSeconds":3000}]}},"physicalResourceId":{"id":"StorageCorsUpdater-skill-cors"}}",
+            ],
+          ],
+        },
+        "InstallLatestAwsSdk": false,
+        "ServiceToken": {
+          "Fn::GetAtt": [
+            "AWS679f53fac002430cb0da5b7982bd22872D164C4C",
+            "Arn",
+          ],
+        },
+        "Update": {
+          "Fn::Join": [
+            "",
+            [
+              "{"service":"S3","action":"putBucketCors","parameters":{"Bucket":"",
+              {
+                "Ref": "StorageSkillBucket76CA6B72",
+              },
+              "","CORSConfiguration":{"CORSRules":[{"AllowedOrigins":["https://",
+              {
+                "Fn::GetAtt": [
+                  "Webapp107041BD",
+                  "DomainName",
+                ],
+              },
+              ""],"AllowedMethods":["GET","HEAD"],"AllowedHeaders":["authorization","content-type","x-amz-content-sha256","x-amz-date","x-requested-with"],"MaxAgeSeconds":3000}]}},"physicalResourceId":{"id":"StorageCorsUpdater-skill-cors"}}",
+            ],
+          ],
+        },
+      },
+      "Type": "Custom::AWS",
+      "UpdateReplacePolicy": "Delete",
+    },
+    "StorageCorsUpdaterUpdateSkillBucketCorsCustomResourcePolicy6AB7EF65": {
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": "s3:PutBucketCors",
+              "Effect": "Allow",
+              "Resource": "*",
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "StorageCorsUpdaterUpdateSkillBucketCorsCustomResourcePolicy6AB7EF65",
+        "Roles": [
+          {
+            "Ref": "AWS679f53fac002430cb0da5b7982bd2287ServiceRoleC1EA0FF2",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
     "StorageHistory251A3AE8": {
       "DeletionPolicy": "Delete",
       "Properties": {
@@ -3632,25 +3799,6 @@ exports.handler = async (event) => {
     "StorageImageBucket99BA9550": {
       "DeletionPolicy": "Delete",
       "Properties": {
-        "CorsConfiguration": {
-          "CorsRules": [
-            {
-              "AllowedHeaders": [
-                "*",
-              ],
-              "AllowedMethods": [
-                "GET",
-                "HEAD",
-                "PUT",
-                "POST",
-              ],
-              "AllowedOrigins": [
-                "*",
-              ],
-              "MaxAge": 3000,
-            },
-          ],
-        },
         "LoggingConfiguration": {
           "DestinationBucketName": {
             "Ref": "AccessLogD598EBE9",
@@ -3781,25 +3929,6 @@ exports.handler = async (event) => {
     "StorageSkillBucket76CA6B72": {
       "DeletionPolicy": "Delete",
       "Properties": {
-        "CorsConfiguration": {
-          "CorsRules": [
-            {
-              "AllowedHeaders": [
-                "*",
-              ],
-              "AllowedMethods": [
-                "GET",
-                "HEAD",
-                "PUT",
-                "POST",
-              ],
-              "AllowedOrigins": [
-                "*",
-              ],
-              "MaxAge": 3000,
-            },
-          ],
-        },
         "LifecycleConfiguration": {
           "Rules": [
             {
@@ -3939,140 +4068,6 @@ exports.handler = async (event) => {
         },
       },
       "Type": "AWS::S3::BucketPolicy",
-    },
-    "UserParamsCleaner47C9605B": {
-      "DeletionPolicy": "Delete",
-      "Properties": {
-        "PathPrefix": "/TestMainStack/users/",
-        "ServiceToken": {
-          "Fn::GetAtt": [
-            "UserParamsCleanerProviderframeworkonEvent690A113C",
-            "Arn",
-          ],
-        },
-      },
-      "Type": "AWS::CloudFormation::CustomResource",
-      "UpdateReplacePolicy": "Delete",
-    },
-    "UserParamsCleanerProviderframeworkonEvent690A113C": {
-      "DependsOn": [
-        "UserParamsCleanerProviderframeworkonEventServiceRoleDefaultPolicy41FBD0E0",
-        "UserParamsCleanerProviderframeworkonEventServiceRole761092D2",
-      ],
-      "Properties": {
-        "Code": {
-          "S3Bucket": "cdk-hnb659fds-assets-123456789012-us-east-1",
-          "S3Key": "REDACTED",
-        },
-        "Description": "AWS CDK resource provider framework - onEvent (TestMainStack/UserParamsCleaner/Provider)",
-        "Environment": {
-          "Variables": {
-            "USER_ON_EVENT_FUNCTION_ARN": {
-              "Fn::GetAtt": [
-                "SingletonLambdauserparamscleanersingleton2877582C",
-                "Arn",
-              ],
-            },
-          },
-        },
-        "Handler": "framework.onEvent",
-        "LoggingConfig": {
-          "ApplicationLogLevel": "FATAL",
-          "LogFormat": "JSON",
-        },
-        "Role": {
-          "Fn::GetAtt": [
-            "UserParamsCleanerProviderframeworkonEventServiceRole761092D2",
-            "Arn",
-          ],
-        },
-        "Runtime": "nodejs24.x",
-        "Timeout": 900,
-      },
-      "Type": "AWS::Lambda::Function",
-    },
-    "UserParamsCleanerProviderframeworkonEventServiceRole761092D2": {
-      "Properties": {
-        "AssumeRolePolicyDocument": {
-          "Statement": [
-            {
-              "Action": "sts:AssumeRole",
-              "Effect": "Allow",
-              "Principal": {
-                "Service": "lambda.amazonaws.com",
-              },
-            },
-          ],
-          "Version": "2012-10-17",
-        },
-        "ManagedPolicyArns": [
-          {
-            "Fn::Join": [
-              "",
-              [
-                "arn:",
-                {
-                  "Ref": "AWS::Partition",
-                },
-                ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
-              ],
-            ],
-          },
-        ],
-      },
-      "Type": "AWS::IAM::Role",
-    },
-    "UserParamsCleanerProviderframeworkonEventServiceRoleDefaultPolicy41FBD0E0": {
-      "Properties": {
-        "PolicyDocument": {
-          "Statement": [
-            {
-              "Action": "lambda:InvokeFunction",
-              "Effect": "Allow",
-              "Resource": [
-                {
-                  "Fn::GetAtt": [
-                    "SingletonLambdauserparamscleanersingleton2877582C",
-                    "Arn",
-                  ],
-                },
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      {
-                        "Fn::GetAtt": [
-                          "SingletonLambdauserparamscleanersingleton2877582C",
-                          "Arn",
-                        ],
-                      },
-                      ":*",
-                    ],
-                  ],
-                },
-              ],
-            },
-            {
-              "Action": "lambda:GetFunction",
-              "Effect": "Allow",
-              "Resource": {
-                "Fn::GetAtt": [
-                  "SingletonLambdauserparamscleanersingleton2877582C",
-                  "Arn",
-                ],
-              },
-            },
-          ],
-          "Version": "2012-10-17",
-        },
-        "PolicyName": "UserParamsCleanerProviderframeworkonEventServiceRoleDefaultPolicy41FBD0E0",
-        "Roles": [
-          {
-            "Ref": "UserParamsCleanerProviderframeworkonEventServiceRole761092D2",
-          },
-        ],
-      },
-      "Type": "AWS::IAM::Policy",
     },
     "VapidKeysD8C7EC6E": {
       "DeletionPolicy": "Delete",
@@ -5055,6 +5050,7 @@ exports.handler = async (event) => {
                 "ec2:RunInstances",
                 "ec2:StartInstances",
                 "ec2:StopInstances",
+                "sts:GetCallerIdentity",
               ],
               "Effect": "Allow",
               "Resource": "*",
@@ -5068,15 +5064,6 @@ exports.handler = async (event) => {
                   "Arn",
                 ],
               },
-            },
-            {
-              "Action": [
-                "ssm:DeleteParameter",
-                "ssm:GetParameter",
-                "ssm:PutParameter",
-              ],
-              "Effect": "Allow",
-              "Resource": "arn:aws:ssm:us-east-1:123456789012:parameter/TestMainStack/users/*/kiro-api-key",
             },
             {
               "Action": "lambda:InvokeFunction",
@@ -5303,6 +5290,39 @@ exports.handler = async (event) => {
       },
       "Type": "AWS::Lambda::Permission",
     },
+    "WebappOrigin1InvokeFunctionFromCloudFrontForTestMainStackWebappOrigin144EF7B3CEC6C6B30": {
+      "Properties": {
+        "Action": "lambda:InvokeFunction",
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "WebappHandlerFunctionUrl7AEF8DEE",
+            "FunctionArn",
+          ],
+        },
+        "InvokedViaFunctionUrl": true,
+        "Principal": "cloudfront.amazonaws.com",
+        "SourceArn": {
+          "Fn::Join": [
+            "",
+            [
+              "arn:",
+              {
+                "Ref": "AWS::Partition",
+              },
+              ":cloudfront::",
+              {
+                "Ref": "AWS::AccountId",
+              },
+              ":distribution/",
+              {
+                "Ref": "Webapp107041BD",
+              },
+            ],
+          ],
+        },
+      },
+      "Type": "AWS::Lambda::Permission",
+    },
     "WebappOriginNameParameterBBAD7F85": {
       "Properties": {
         "Type": "String",
@@ -5457,6 +5477,18 @@ exports.handler = async (event) => {
                 {
                   "Ref": "AWS::Partition",
                 },
+                ":iam::aws:policy/job-function/ViewOnlyAccess",
+              ],
+            ],
+          },
+          {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition",
+                },
                 ":iam::aws:policy/AmazonS3ReadOnlyAccess",
               ],
             ],
@@ -5504,18 +5536,36 @@ exports.handler = async (event) => {
                 "bedrock-agentcore:GetWorkloadAccessTokenForUserId",
                 "bedrock-agentcore:StopRuntimeSession",
                 "bedrock:InvokeModel",
+                "bedrock:ListFoundationModels",
+                "ce:GetCostAndUsage",
+                "ce:GetCostForecast",
+                "ce:GetUsageForecast",
+                "cloudformation:ContinueUpdateRollback",
+                "cloudformation:DescribeStackEvents",
+                "cloudformation:DescribeStackResource",
                 "cloudwatch:PutMetricData",
                 "ec2:CreateTags",
                 "ec2:DescribeInstances",
                 "ec2:RunInstances",
                 "ec2:StartInstances",
                 "ec2:StopInstances",
+                "ecr:DescribeImages",
+                "ecr:DescribeRepositories",
                 "ecr:GetAuthorizationToken",
+                "lambda:GetFunction",
+                "lambda:GetFunctionCode",
                 "logs:CreateLogGroup",
                 "logs:CreateLogStream",
                 "logs:DescribeLogGroups",
                 "logs:DescribeLogStreams",
+                "logs:FilterLogEvents",
+                "logs:GetLogEvents",
                 "logs:PutLogEvents",
+                "s3:GetBucketLocation",
+                "s3:GetBucketVersioning",
+                "s3:ListBucket",
+                "ssm:DescribeParameters",
+                "sts:GetCallerIdentity",
                 "xray:GetSamplingRules",
                 "xray:GetSamplingTargets",
                 "xray:PutTelemetryRecords",
@@ -5716,11 +5766,6 @@ exports.handler = async (event) => {
                   ],
                 ],
               },
-            },
-            {
-              "Action": "ssm:GetParameter",
-              "Effect": "Allow",
-              "Resource": "arn:aws:ssm:us-east-1:123456789012:parameter/TestMainStack/users/*/kiro-api-key",
             },
             {
               "Action": [
@@ -6183,7 +6228,7 @@ exports.handler = async (event) => {
       "Properties": {
         "DefinitionS3Location": {
           "Bucket": "cdk-hnb659fds-assets-123456789012-us-east-1",
-          "Key": "b06f979a3a1567d588e5dc037a777be716bcc0c029e9bfc33ce97e5d927939d1.json",
+          "Key": "39d7699d727f293632789a41453a3d764d623b85c3809065918375dfa8dae8fd.json",
         },
         "DefinitionSubstitutions": {
           "connectionArn": {
@@ -6226,6 +6271,14 @@ exports.handler = async (event) => {
           "Statement": [
             {
               "Action": "sts:AssumeRole",
+              "Condition": {
+                "ArnLike": {
+                  "aws:SourceArn": "arn:aws:states:us-east-1:123456789012:stateMachine:*",
+                },
+                "StringEquals": {
+                  "aws:SourceAccount": "123456789012",
+                },
+              },
               "Effect": "Allow",
               "Principal": {
                 "Service": "states.amazonaws.com",
@@ -6425,7 +6478,7 @@ exports.handler = async (event) => {
       "Properties": {
         "DefinitionS3Location": {
           "Bucket": "cdk-hnb659fds-assets-123456789012-us-east-1",
-          "Key": "f46f76fd1dbac5f74ef8bae6752276a1ceccdc79f0ca290884caae6b6c9a6444.json",
+          "Key": "0ec2ad5db8483cf2d60828870102e18579d2f721ef7229bdd13f812ecca3b461.json",
         },
         "DefinitionSubstitutions": {
           "connectionArn": {
@@ -6468,6 +6521,14 @@ exports.handler = async (event) => {
           "Statement": [
             {
               "Action": "sts:AssumeRole",
+              "Condition": {
+                "ArnLike": {
+                  "aws:SourceArn": "arn:aws:states:us-east-1:123456789012:stateMachine:*",
+                },
+                "StringEquals": {
+                  "aws:SourceAccount": "123456789012",
+                },
+              },
               "Effect": "Allow",
               "Principal": {
                 "Service": "states.amazonaws.com",
@@ -6717,8 +6778,7 @@ exports.handler = async (event) => {
         },
         "InstanceTypes": [
           "t3.medium",
-          "m5.large",
-          "m5.xlarge",
+          "t3.large",
         ],
         "Name": "TestMainStackWorkerImageBuilderImagePipelineV2B9301B6DInfraConfig",
         "SecurityGroupIds": [
@@ -6838,7 +6898,7 @@ exports.handler = async (event) => {
             "Arn",
           ],
         },
-        "Runtime": "python3.10",
+        "Runtime": "python3.13",
       },
       "Type": "AWS::Lambda::Function",
     },
@@ -6973,9 +7033,9 @@ phases:
               apt-get -o DPkg::Lock::Timeout=-1 upgrade -y
 
 
-              # Install python3
+              # Install python3 and jq
 
-              apt-get -o DPkg::Lock::Timeout=-1 install -y python3-pip unzip
+              apt-get -o DPkg::Lock::Timeout=-1 install -y python3-pip unzip jq
 
               ln -s -f /usr/bin/pip3 /usr/bin/pip
 
@@ -7371,10 +7431,6 @@ phases:
 
               Environment=EVENT_TRIGGER_RESOURCE_PREFIX=tesger3a47e907
 
-              Environment=STACK_NAME=TestMainStack
-
-              Environment=INFERENCE_MODE=
-
 
               [Install]
 
@@ -7501,11 +7557,6 @@ phases:
 
               systemctl enable myapp
 
-
-              # Install kiro-cli
-
-              sudo -u ubuntu bash -c 'curl -fsSL https://cli.kiro.dev/install | bash'
-
               \\      "
   - name: validate
     steps:
@@ -7582,7 +7633,7 @@ phases:
               {
                 "Ref": "WorkerAmiId428C377C",
               },
-              "","amiIdSsmAccountId":"123456789012","amiIdSsmRegion":"us-east-1","ebsVolumeConfigurations":[{"deviceName":"/dev/sda1","ebs":{"encrypted":true,"volumeSize":30,"volumeType":"gp3"}}],"componentsVersion":"",
+              "","amiIdSsmAccountId":"123456789012","amiIdSsmRegion":"us-east-1","instanceTypes":["t3.medium","t3.large"],"ebsVolumeConfigurations":[{"deviceName":"/dev/sda1","ebs":{"encrypted":true,"volumeSize":30,"volumeType":"gp3"}}],"componentsVersion":"",
               {
                 "Fn::GetAtt": [
                   "WorkerImageBuilderWorkerDependenciesVersion4BF2F39E",
@@ -7811,9 +7862,9 @@ phases:
               apt-get -o DPkg::Lock::Timeout=-1 upgrade -y
 
 
-              # Install python3
+              # Install python3 and jq
 
-              apt-get -o DPkg::Lock::Timeout=-1 install -y python3-pip unzip
+              apt-get -o DPkg::Lock::Timeout=-1 install -y python3-pip unzip jq
 
               ln -s -f /usr/bin/pip3 /usr/bin/pip
 
@@ -8209,10 +8260,6 @@ phases:
 
               Environment=EVENT_TRIGGER_RESOURCE_PREFIX=tesger3a47e907
 
-              Environment=STACK_NAME=TestMainStack
-
-              Environment=INFERENCE_MODE=
-
 
               [Install]
 
@@ -8339,11 +8386,6 @@ phases:
 
               systemctl enable myapp
 
-
-              # Install kiro-cli
-
-              sudo -u ubuntu bash -c 'curl -fsSL https://cli.kiro.dev/install | bash'
-
               \\      "
   - name: validate
     steps:
@@ -8453,8 +8495,8 @@ phases:
 apt-get -o DPkg::Lock::Timeout=-1 update
 apt-get -o DPkg::Lock::Timeout=-1 upgrade -y
 
-# Install python3
-apt-get -o DPkg::Lock::Timeout=-1 install -y python3-pip unzip
+# Install python3 and jq
+apt-get -o DPkg::Lock::Timeout=-1 install -y python3-pip unzip jq
 ln -s -f /usr/bin/pip3 /usr/bin/pip
 ln -s -f /usr/bin/python3 /usr/bin/python
 
@@ -8694,8 +8736,6 @@ Environment=EVENT_TRIGGER_TTL_SFN_ROLE_ARN=",
                   },
                   "
 Environment=EVENT_TRIGGER_RESOURCE_PREFIX=tesger3a47e907
-Environment=STACK_NAME=TestMainStack
-Environment=INFERENCE_MODE=
 
 [Install]
 WantedBy=multi-user.target
@@ -8768,9 +8808,6 @@ EOF
 systemctl daemon-reload
 systemctl enable fluent-bit
 systemctl enable myapp
-
-# Install kiro-cli
-sudo -u ubuntu bash -c 'curl -fsSL https://cli.kiro.dev/install | bash'
       
 systemctl start fluent-bit
 systemctl start myapp",
@@ -8835,6 +8872,18 @@ systemctl start myapp",
                   "Ref": "AWS::Partition",
                 },
                 ":iam::aws:policy/AmazonSSMManagedInstanceCore",
+              ],
+            ],
+          },
+          {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition",
+                },
+                ":iam::aws:policy/job-function/ViewOnlyAccess",
               ],
             ],
           },
@@ -8919,7 +8968,29 @@ systemctl start myapp",
               ],
             },
             {
-              "Action": "bedrock:InvokeModel",
+              "Action": [
+                "bedrock:InvokeModel",
+                "bedrock:ListFoundationModels",
+                "ce:GetCostAndUsage",
+                "ce:GetCostForecast",
+                "ce:GetUsageForecast",
+                "cloudformation:ContinueUpdateRollback",
+                "cloudformation:DescribeStackEvents",
+                "cloudformation:DescribeStackResource",
+                "ecr:DescribeImages",
+                "ecr:DescribeRepositories",
+                "lambda:GetFunction",
+                "lambda:GetFunctionCode",
+                "logs:DescribeLogGroups",
+                "logs:DescribeLogStreams",
+                "logs:FilterLogEvents",
+                "logs:GetLogEvents",
+                "s3:GetBucketLocation",
+                "s3:GetBucketVersioning",
+                "s3:ListBucket",
+                "ssm:DescribeParameters",
+                "sts:GetCallerIdentity",
+              ],
               "Effect": "Allow",
               "Resource": "*",
             },
@@ -9429,11 +9500,11 @@ exports[`Snapshot test: UsEast1Stack 1`] = `
             "Arn",
           ],
         },
-        "Runtime": "nodejs22.x",
+        "Runtime": "nodejs24.x",
       },
       "Type": "AWS::Lambda::Function",
     },
-    "PreviewOriginRequestHandlerCurrentVersionC07F9B9Cd8ea558aa69bb62394a584cb5af5d585": {
+    "PreviewOriginRequestHandlerCurrentVersionC07F9B9C91d5c4af190174d2f4dca6f5e7ef27e5": {
       "Metadata": {
         "aws:cdk:do-not-refactor": true,
       },
@@ -9448,7 +9519,7 @@ exports[`Snapshot test: UsEast1Stack 1`] = `
       "Properties": {
         "Type": "String",
         "Value": {
-          "Ref": "PreviewOriginRequestHandlerCurrentVersionC07F9B9Cd8ea558aa69bb62394a584cb5af5d585",
+          "Ref": "PreviewOriginRequestHandlerCurrentVersionC07F9B9C91d5c4af190174d2f4dca6f5e7ef27e5",
         },
       },
       "Type": "AWS::SSM::Parameter",
@@ -9503,11 +9574,11 @@ exports[`Snapshot test: UsEast1Stack 1`] = `
             "Arn",
           ],
         },
-        "Runtime": "nodejs22.x",
+        "Runtime": "nodejs24.x",
       },
       "Type": "AWS::Lambda::Function",
     },
-    "SignPayloadHandlerCurrentVersionF9D1B5C2b714756b2226025fe03626397b33cde4": {
+    "SignPayloadHandlerCurrentVersionF9D1B5C2a083275bbf67d45b9aca68da53603228": {
       "Metadata": {
         "aws:cdk:do-not-refactor": true,
       },
@@ -9522,7 +9593,7 @@ exports[`Snapshot test: UsEast1Stack 1`] = `
       "Properties": {
         "Type": "String",
         "Value": {
-          "Ref": "SignPayloadHandlerCurrentVersionF9D1B5C2b714756b2226025fe03626397b33cde4",
+          "Ref": "SignPayloadHandlerCurrentVersionF9D1B5C2a083275bbf67d45b9aca68da53603228",
         },
       },
       "Type": "AWS::SSM::Parameter",
@@ -9567,6 +9638,25 @@ exports[`Snapshot test: UsEast1Stack 1`] = `
           "Block": {},
         },
         "Rules": [
+          {
+            "Action": {
+              "Block": {},
+            },
+            "Name": "RateLimitRule",
+            "Priority": 0,
+            "Statement": {
+              "RateBasedStatement": {
+                "AggregateKeyType": "IP",
+                "EvaluationWindowSec": 300,
+                "Limit": 1000,
+              },
+            },
+            "VisibilityConfig": {
+              "CloudWatchMetricsEnabled": true,
+              "MetricName": "RateLimitRule",
+              "SampledRequestsEnabled": true,
+            },
+          },
           {
             "Action": {
               "Allow": {},
