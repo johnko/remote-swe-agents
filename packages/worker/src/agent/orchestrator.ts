@@ -22,7 +22,6 @@ import {
   listSkills,
   buildSkillCatalogue,
   downloadSkillFiles,
-  deployKiroWorkspaceFiles,
   retrieveRelevantLessons,
   buildLessonsBlock,
   incrementUnread,
@@ -34,7 +33,6 @@ import {
   validateMermaidInText,
   buildMermaidFeedback,
   updateMessageType,
-  toUserFacingTurnError,
   shouldSuppressUserDelivery,
   recordUserDelivery,
   shouldSuppressRehashOrSelfNarration,
@@ -723,12 +721,7 @@ export const handleTurnError = async (
   const message = error instanceof Error ? error.message : String(error);
   // Always log the RAW error to CloudWatch for internal observability.
   console.error(`[orchestrator] Turn failed: ${message}`);
-  // ...but never leak a recognised Kiro infrastructure error (wedged
-  // subprocess / idle / wall-clock watchdog / -32603 "Internal error" /
-  // "Kiro failed to generate a response" / "process died") verbatim to the
-  // UX. Collapse it to the canonical phrase; genuinely actionable errors
-  // pass through unchanged.
-  const userFacing = toUserFacingTurnError(message);
+  const userFacing = message;
   const errorText = slackUserId
     ? `<@${slackUserId}> An error occurred: ${userFacing}`
     : `An error occurred: ${userFacing}`;
