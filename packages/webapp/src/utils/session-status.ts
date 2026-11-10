@@ -21,7 +21,7 @@ export function getUnifiedStatus(
     return { i18nKey: 'sessionStatus.starting', color: 'bg-blue-500' };
   }
   if (agentStatus === 'completed') {
-    return { i18nKey: 'agentStatus.completed', color: 'bg-gray-500' };
+    return { i18nKey: 'agentStatus.completed', color: '' };
   }
   if (instanceStatus === 'stopped' || instanceStatus === 'terminated') {
     return { i18nKey: 'sessionStatus.stopped', color: 'bg-purple-500' };
