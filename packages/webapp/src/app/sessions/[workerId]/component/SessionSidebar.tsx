@@ -359,28 +359,6 @@ export default function SessionSidebar({
         <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700">
           <h2 className="text-sm font-semibold text-gray-900 dark:text-white truncate">{t('title')}</h2>
           <div className="flex items-center gap-1">
-            {Object.values(unreadMap).some((v) => v.unreadCount > 0) && onMarkAllRead && (
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <button
-                      onClick={onMarkAllRead}
-                      disabled={isMarkingAllRead}
-                      className="p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 transition-colors cursor-pointer disabled:opacity-50"
-                    >
-                      <CheckCheck className="w-4 h-4" />
-                    </button>
-                  </TooltipTrigger>
-                  <TooltipContent>{t('markAllRead')}</TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            )}
-            <button
-              onClick={onClose}
-              className="p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 transition-colors lg:hidden cursor-pointer"
-            >
-              <X className="w-4 h-4" />
-            </button>
           </div>
         </div>
 
@@ -439,6 +417,35 @@ export default function SessionSidebar({
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
+                  <Link
+                    href="/sessions/new"
+                    className="p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 transition-colors"
+                  >
+                    <Plus className="w-4 h-4" />
+                  </Link>
+                </TooltipTrigger>
+                <TooltipContent>{t('newSession')}</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+            {Object.values(unreadMap).some((v) => v.unreadCount > 0) && onMarkAllRead && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={onMarkAllRead}
+                      disabled={isMarkingAllRead}
+                      className="p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 transition-colors cursor-pointer disabled:opacity-50"
+                    >
+                      <CheckCheck className="w-4 h-4" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent>{t('markAllRead')}</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
                   <button
                     onClick={handleHideCompletedToggle}
                     className={`p-1.5 rounded-md transition-colors cursor-pointer ${
@@ -458,19 +465,6 @@ export default function SessionSidebar({
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Link
-                    href="/sessions/new"
-                    className="p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 transition-colors"
-                  >
-                    <Plus className="w-4 h-4" />
-                  </Link>
-                </TooltipTrigger>
-                <TooltipContent>{t('newSession')}</TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Link
                     href="/sessions"
                     className="p-1.5 rounded-md text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                   >
@@ -480,6 +474,12 @@ export default function SessionSidebar({
                 <TooltipContent>{t('goToSessionList')}</TooltipContent>
               </Tooltip>
             </TooltipProvider>
+            <button
+              onClick={onClose}
+              className="p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 transition-colors lg:hidden cursor-pointer"
+            >
+              <X className="w-4 h-4" />
+            </button>
           </div>
         </div>
       </aside>
