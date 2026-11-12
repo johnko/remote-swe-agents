@@ -89,7 +89,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     const secret = await getHandoffSecret();
     const exp = Math.floor(Date.now() / 1000) + HANDOFF_TOKEN_EXPIRY_SEC;
     const payload = Buffer.from(JSON.stringify({ workerId, exp })).toString('base64url');
-    const sig = createHmac('sha256', secret).update(payload).digest('hex');
+    const sig = createHmac('sha256', secret).update(payload).digest('base64url');
     const token = `${payload}.${sig}`;
 
     const rawPathname = request.nextUrl.pathname;
