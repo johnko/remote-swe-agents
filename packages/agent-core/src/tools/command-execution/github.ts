@@ -11,7 +11,8 @@ const cache = {
 const VALID_GH_TOKEN_REGEX = /^(ghp_[a-zA-Z0-9._-]{36,}|ghs_[a-zA-Z0-9._-]{36,}|[a-f0-9]{40,})$/;
 
 // Maximum token length (sanity check)
-const MAX_TOKEN_LENGTH = 256;
+// GitHub App tokens are JWT format (ghs_*) and can be 500+ characters
+const MAX_TOKEN_LENGTH = 1024;
 
 // Safely parse JSON with validation
 function safeParseGitHubToken(stdout: string): string | null {
