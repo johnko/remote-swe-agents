@@ -120,7 +120,8 @@ describe('listSessionsTool handler', () => {
   });
 
   describe('scope=all', () => {
-    test('lists all sessions without permission check', async () => {
+    test('lists all sessions when caller is top-level', async () => {
+      mockGetSession.mockResolvedValueOnce({ workerId: 'session-caller-001', parentSessionId: undefined });
       const all = [
         makeSession('session-1', 'working'),
         makeSession('session-2', 'completed'),
@@ -136,6 +137,7 @@ describe('listSessionsTool handler', () => {
     });
 
     test('applies statusFilter to all sessions', async () => {
+      mockGetSession.mockResolvedValueOnce({ workerId: 'session-caller-001', parentSessionId: undefined });
       const all = [makeSession('session-1', 'working'), makeSession('session-2', 'completed')];
       mockGetSessions.mockResolvedValue(all);
 
@@ -144,6 +146,15 @@ describe('listSessionsTool handler', () => {
       expect(result).not.toContain('session-1');
       expect(result).toContain('session-2');
       expect(result).toContain('1 total');
+    });
+
+    test('denies when caller is not top-level', async () => {
+      mockGetSession.mockResolvedValueOnce({ workerId: 'session-caller-001', parentSessionId: 'some-parent' });
+
+      const result = await listSessionsTool.handler({ scope: 'all', statusFilter: 'all' }, context);
+
+      expect(result).toContain("Permission denied: scope='all'");
+      expect(mockGetSessions).not.toHaveBeenCalled();
     });
   });
 
@@ -226,7 +237,12 @@ describe('listSessionsTool handler', () => {
       expect(result).toContain('Error: Could not retrieve current session information');
     });
 
-    test('no permission check for scope=all even with sessionId', async () => {
+    test('requires top-level status for scope=all even with sessionId', async () => {
+      // First call: getSession for caller session (top-level)
+      // Second call: getSession for target session (other-session)
+      mockGetSession
+        .mockResolvedValueOnce({ workerId: 'session-caller-001', parentSessionId: undefined })
+        .mockResolvedValueOnce({ workerId: 'other-session', parentSessionId: undefined });
       const all = [makeSession('s1', 'working')];
       mockGetSessions.mockResolvedValue(all);
 
@@ -235,7 +251,7 @@ describe('listSessionsTool handler', () => {
         context
       );
 
-      expect(mockGetSession).not.toHaveBeenCalled();
+      expect(mockGetSession).toHaveBeenCalled();
       expect(result).toContain('All sessions');
     });
   });
