@@ -30,6 +30,7 @@ export * from './auto-handover.js';
 export * from './handover-context.js';
 export * from './user-preferences.js';
 export * from './session-participants.js';
+export * from './slack-identity-claims.js';
 export * from './skills.js';
 export * from './embeddings.js';
 export * from './lessons.js';
