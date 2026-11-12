@@ -9,7 +9,7 @@ import { getWebappSessionUrl, sendWebappEvent, updateSessionLastMessage } from '
 import { saveSessionInfo } from '../util/session';
 import { getSessionIdFromSlack } from '../util/session-map';
 import { resolveSlackDisplayName } from '../util/slack-user-cache';
-import { notifyOtherParticipants, getSession } from '@remote-swe-agents/agent-core/lib';
+import { notifyOtherParticipants, getSession, createSlackIdentityClaim } from '@remote-swe-agents/agent-core/lib';
 
 const BotToken = process.env.BOT_TOKEN!;
 const lambda = new LambdaClient();
@@ -107,6 +107,29 @@ export async function handleMessage(
   // Save session info only when starting a new thread
   if (event.thread_ts === undefined) {
     promises.push(saveSessionInfo(workerId, message, userId, event.channel, event.ts));
+
+    // Create identity claim for the Slack user who initiated this session
+    // This allows them to claim access in the webapp with "Yes, it's me"
+    if (userId) {
+      promises.push(
+        createSlackIdentityClaim({
+          slackUserId: userId,
+          sessionId: workerId,
+          evidence: {
+            slackChannelId: event.channel,
+            slackThreadTs: event.ts,
+            firstMessageTs: event.ts,
+          },
+        })
+          .then(() => {
+            // Claim created successfully - void return to match Promise<void>
+          })
+          .catch((e) => {
+            console.error('[slack-identity] Failed to create claim:', e);
+            // Don't block session creation on claim failure
+          })
+      );
+    }
   }
 
   await Promise.all([

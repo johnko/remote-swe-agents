@@ -71,3 +71,13 @@ export const updateSessionModelSchema = z.object({
   workerId: z.string(),
   bedrockDefaultModel: modelTypeSchema.optional(),
 });
+
+export const approveSlackIdentityClaimSchema = z.object({
+  slackUserId: z.string(),
+  sessionId: z.string(),
+});
+
+export const rejectSlackIdentityClaimSchema = z.object({
+  slackUserId: z.string(),
+  sessionId: z.string(),
+});

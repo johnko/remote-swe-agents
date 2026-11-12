@@ -18,6 +18,8 @@ import {
   applyRewindFilter,
   countRewoundMessages,
   MSG_TOOLS,
+  getPendingClaimsForSession,
+  getClaimCounts,
 } from '@remote-swe-agents/agent-core/lib';
 import { toolNameInSet } from '@remote-swe-agents/agent-core/tool-name-utils';
 import SessionPageClient from './component/SessionPageClient';
@@ -365,6 +367,12 @@ export default async function SessionPage({ params }: { params: Promise<{ worker
   // initialMessage bodies, and shipping them bloats the RSC payload)
   const allSessions = toSessionListItems(await getAllSessionsIncludingChildren());
 
+  // Get Slack identity claims for this session
+  const [slackClaims, slackClaimCounts] = await Promise.all([
+    getPendingClaimsForSession(workerId),
+    getClaimCounts(workerId),
+  ]);
+
   // Get unread data
   const { userId, displayName: currentUserDisplayName } = await getAuthSession();
   const [unreadMap, lastReadAt] = await Promise.all([getUnreadMap(userId), getLastReadAt(userId, workerId)]);
@@ -445,6 +453,8 @@ export default async function SessionPage({ params }: { params: Promise<{ worker
         sessionBedrockDefaultModel={session.bedrockDefaultModel}
         initialPortMapping={initialPortMapping}
         initialRewindHiddenCount={rewindedCount}
+        slackClaims={slackClaims}
+        slackClaimCounts={slackClaimCounts}
       />
       <RefreshOnFocus />
     </>
