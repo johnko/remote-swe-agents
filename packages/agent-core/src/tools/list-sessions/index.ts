@@ -34,23 +34,32 @@ export const listSessionsTool: ToolDefinition<z.infer<typeof inputSchema>> = {
     const statusFilter = input.statusFilter ?? 'all';
     const targetSessionId = input.sessionId ?? context.workerId;
 
-    if (scope !== 'all' && targetSessionId !== context.workerId) {
+    // Check permissions for non-trivial access
+    if (scope === 'all' || targetSessionId !== context.workerId) {
       const callerSession = await getSession(context.workerId);
       if (!callerSession) {
         return 'Error: Could not retrieve current session information.';
       }
 
-      const targetSession = await getSession(targetSessionId);
-      if (!targetSession) {
-        return `Error: Session ${targetSessionId} not found.`;
+      const callerIsTopLevel = !callerSession.parentSessionId;
+
+      // scope="all" requires top-level session status
+      if (scope === 'all' && !callerIsTopLevel) {
+        return "Permission denied: scope='all' can only be used by top-level sessions (no parent). Use 'children' or 'descendants' to query your own session tree.";
       }
 
-      const callerIsTopLevel = !callerSession.parentSessionId;
-      const callerIsTargetParent = targetSession.parentSessionId === context.workerId;
-      // Self-case (callerIsTarget) is already bypassed by the outer guard (targetSessionId !== context.workerId).
+      // For non-self targets, verify caller is parent, target, or top-level
+      if (targetSessionId !== context.workerId) {
+        const targetSession = await getSession(targetSessionId);
+        if (!targetSession) {
+          return `Error: Session ${targetSessionId} not found.`;
+        }
 
-      if (!callerIsTopLevel && !callerIsTargetParent) {
-        return "Permission denied: only the target's current parent, the target itself, or a top-level session can list another session's children/descendants.";
+        const callerIsTargetParent = targetSession.parentSessionId === context.workerId;
+
+        if (!callerIsTopLevel && !callerIsTargetParent) {
+          return "Permission denied: only the target's current parent, the target itself, or a top-level session can list another session's children/descendants.";
+        }
       }
     }
 

@@ -8,8 +8,7 @@ export interface AccessCheckResult {
 
 /**
  * Check if a user or API key owner has access to a session.
- * - If session has participants, check if userId is in the participant list
- * - If no participants (legacy/Slack/API-initiated sessions), anyone with a valid key can access
+ * Users must be explicit participants to access a session.
  * @param sessionId - The session ID to check
  * @param userId - The Cognito user ID or API key owner ID attempting access
  * @returns AccessCheckResult indicating if access is allowed
@@ -32,25 +31,6 @@ export async function checkSessionAccess(sessionId: string, userId: string | und
 
   if (!sessionResult.Item) {
     return { allowed: false, reason: 'Session not found' };
-  }
-
-  // Check if ANY participants exist for this session
-  const participantCheck = await ddb.send(
-    new QueryCommand({
-      TableName,
-      KeyConditionExpression: 'PK = :pk',
-      ExpressionAttributeValues: {
-        ':pk': `session-participants-${sessionId}`,
-      },
-      Limit: 1,
-    })
-  );
-
-  const participantCount = participantCheck.Items?.length ?? 0;
-
-  // If session has no participants (legacy/API/Slack-initiated), allow access
-  if (participantCount === 0) {
-    return { allowed: true };
   }
 
   // Check if user is a participant
