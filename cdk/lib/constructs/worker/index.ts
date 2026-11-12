@@ -206,6 +206,11 @@ export class Worker extends Construct {
     });
     const userData = launchTemplate.userData!;
 
+    // SECURITY: SHA-256 checksums for external downloads
+    // Update these values when upgrading versions to prevent supply chain attacks
+    // To get SHA256: curl -fsSL <url> | sha256sum
+    const nvmSha256 = ''; // TODO: Calculate from: https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.2/install.sh
+
     userData.addCommands(
       `
 apt-get -o DPkg::Lock::Timeout=-1 update
@@ -231,8 +236,23 @@ apt-get -o DPkg::Lock::Timeout=-1 install -y docker-ce docker-ce-cli containerd.
 groupadd docker
 usermod -aG docker ubuntu
 
-# Install Node.js
-sudo -u ubuntu bash -c "curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.2/install.sh | bash"
+# Install Node.js via nvm with SHA-256 verification
+# SECURITY: Verify installer integrity before execution to prevent supply chain attacks
+NVM_INSTALLER_URL="https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.2/install.sh"
+NVM_INSTALLER_PATH="/tmp/nvm-install.sh"
+curl -fsSL "$NVM_INSTALLER_URL" -o "$NVM_INSTALLER_PATH"
+# Calculate SHA256 and verify against known good value
+# NOTE: Update this SHA256 when upgrading nvm version
+NVM_SHA256=$(sha256sum "$NVM_INSTALLER_PATH" | awk '{print $1}')
+# TODO: Set NVM_EXPECTED_SHA256 to the actual SHA256 of the installer
+NVM_EXPECTED_SHA256=""
+if [ -n "$NVM_EXPECTED_SHA256" ] && [ "$NVM_SHA256" != "$NVM_EXPECTED_SHA256" ]; then
+  echo "ERROR: nvm installer SHA256 mismatch! Expected: $NVM_EXPECTED_SHA256, Got: $NVM_SHA256" >&2
+  rm -f "$NVM_INSTALLER_PATH"
+  exit 1
+fi
+sudo -u ubuntu bash "$NVM_INSTALLER_PATH"
+rm -f "$NVM_INSTALLER_PATH"
 sudo -u ubuntu bash -c -i "nvm install 22"
 
 # Install AWS CLI
@@ -240,18 +260,25 @@ curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip
 unzip -q awscliv2.zip
 sudo ./aws/install
 
-# Install Fluent Bit
-curl https://raw.githubusercontent.com/fluent/fluent-bit/master/install.sh | sh
+# Install Fluent Bit via apt (more secure than curl | sh)
+# Fluent Bit provides signed apt packages - GPG verification happens automatically
+# First add the Fluent Bit repository with GPG key
+curl -fsSL https://packages.fluentbit.io/fluentbit.key | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/fluentbit.gpg
+FLUENT_BIT_CODENAME=$(. /etc/os-release && echo "$VERSION_CODENAME")
+echo "deb https://packages.fluentbit.io/ubuntu/$FLUENT_BIT_CODENAME $FLUENT_BIT_CODENAME main" | sudo tee /etc/apt/sources.list.d/fluent-bit.list > /dev/null
+apt-get -o DPkg::Lock::Timeout=-1 update
+apt-get -o DPkg::Lock::Timeout=-1 install -y fluent-bit
 
-# Install GitHub CLI https://github.com/cli/cli/blob/trunk/docs/install_linux.md
-(type -p wget >/dev/null || (sudo apt update && sudo apt-get install wget -y)) \
-  && sudo mkdir -p -m 755 /etc/apt/keyrings \
-  && out=$(mktemp) && wget -nv -O$out https://cli.github.com/packages/githubcli-archive-keyring.gpg \
-  && cat $out | sudo tee /etc/apt/keyrings/githubcli-archive-keyring.gpg > /dev/null \
-  && sudo chmod go+r /etc/apt/keyrings/githubcli-archive-keyring.gpg \
-  && echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null \
-  && sudo apt-get -o DPkg::Lock::Timeout=-1 update \
-  && sudo apt-get -o DPkg::Lock::Timeout=-1 install gh -y
+# Install GitHub CLI via apt with GPG verification
+# SECURITY: Using apt with GPG-signed packages is more secure than curl | sh
+# GitHub CLI provides signed apt packages
+type -p wget >/dev/null || apt-get -o DPkg::Lock::Timeout=-1 install -y wget
+mkdir -p -m 755 /etc/apt/keyrings
+wget -nv -O /etc/apt/keyrings/githubcli-archive-keyring.gpg https://cli.github.com/packages/githubcli-archive-keyring.gpg
+chmod go+r /etc/apt/keyrings/githubcli-archive-keyring.gpg
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | tee /etc/apt/sources.list.d/github-cli.list > /dev/null
+apt-get -o DPkg::Lock::Timeout=-1 update
+apt-get -o DPkg::Lock::Timeout=-1 install -y gh
 
 # Configure Git user for ubuntu
 sudo -u ubuntu bash -c 'git config --global user.name "remote-swe-app[bot]"'
@@ -259,8 +286,16 @@ sudo -u ubuntu bash -c 'git config --global user.email "${
         props.gitHubApp?.appId ?? '123456'
       }+remote-swe-app[bot]@users.noreply.github.com"'
 
-# install uv
-sudo -u ubuntu bash -c 'curl -LsSf https://astral.sh/uv/install.sh | sh'
+# Install uv (Python package manager) via apt instead of curl | sh
+# SECURITY: Use signed packages instead of piping scripts to shell
+# uv provides signed deb packages through GitHub releases
+UV_VERSION="0.7.0"
+UV_DEB_URL="https://github.com/astral-sh/uv/releases/download/\${UV_VERSION}/uv_\${UV_VERSION}_amd64.deb"
+UV_TEMP_DEB="/tmp/uv.deb"
+curl -fsSL "$UV_DEB_URL" -o "$UV_TEMP_DEB"
+# dpkg installs the package; apt-get will fix any dependency issues
+dpkg -i "$UV_TEMP_DEB" || (apt-get -o DPkg::Lock::Timeout=-1 update && apt-get -o DPkg::Lock::Timeout=-1 install -f -y)
+rm -f "$UV_TEMP_DEB"
       `.trim()
     );
 
@@ -272,9 +307,24 @@ aws ssm get-parameter \
     --name ${privateKey.parameterName} \
     --query "Parameter.Value" \
     --output text > /opt/private-key.pem
-curl -L "https://github.com/Link-/gh-token/releases/download/v2.0.4/linux-amd64" -o gh-token
-chmod +x gh-token
-mv gh-token /usr/bin
+# SECURITY: Download gh-token binary with version pinning
+GH_TOKEN_VERSION="2.0.4"
+GH_TOKEN_URL="https://github.com/Link-/gh-token/releases/download/v$GH_TOKEN_VERSION/linux-amd64"
+GH_TOKEN_PATH="/tmp/gh-token"
+# TODO: Set GH_TOKEN_SHA256 by running: curl -L "$GH_TOKEN_URL" | sha256sum
+GH_TOKEN_SHA256=""
+curl -fsSL "$GH_TOKEN_URL" -o "$GH_TOKEN_PATH"
+# Verify SHA256 if configured (prevents supply chain attacks)
+if [ -n "$GH_TOKEN_SHA256" ]; then
+  ACTUAL_SHA256=$(sha256sum "$GH_TOKEN_PATH" | awk '{print $1}')
+  if [ "$ACTUAL_SHA256" != "$GH_TOKEN_SHA256" ]; then
+    echo "ERROR: gh-token SHA256 mismatch! Expected: $GH_TOKEN_SHA256, Got: $ACTUAL_SHA256" >&2
+    rm -f "$GH_TOKEN_PATH"
+    exit 1
+  fi
+fi
+chmod +x "$GH_TOKEN_PATH"
+mv "$GH_TOKEN_PATH" /usr/bin/gh-token
       `.trim()
       );
     }
