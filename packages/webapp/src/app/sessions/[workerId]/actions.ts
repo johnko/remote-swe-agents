@@ -12,6 +12,8 @@ import {
   undoRewindSchema,
   searchSessionContentSchema,
   updateSessionModelSchema,
+  approveSlackIdentityClaimSchema,
+  rejectSlackIdentityClaimSchema,
 } from './schemas';
 import { authActionClient, MyCustomError } from '@/lib/safe-action';
 import { PutCommand } from '@aws-sdk/lib-dynamodb';
@@ -489,4 +491,32 @@ export const updateSessionModel = authActionClient
     if (Object.keys(updates).length === 0) return { success: true };
     await updateSession(workerId, updates);
     return { success: true };
+  });
+
+import {
+  approveSlackIdentityClaim as approveSlackIdentityClaimFn,
+  rejectSlackIdentityClaim as rejectSlackIdentityClaimFn,
+} from '@remote-swe-agents/agent-core/lib';
+
+export const approveSlackIdentityClaim = authActionClient
+  .inputSchema(approveSlackIdentityClaimSchema)
+  .action(async ({ parsedInput, ctx }) => {
+    const { slackUserId, sessionId } = parsedInput;
+    const result = await approveSlackIdentityClaimFn({
+      slackUserId,
+      sessionId,
+      cognitoUserId: ctx.userId,
+    });
+    return result;
+  });
+
+export const rejectSlackIdentityClaim = authActionClient
+  .inputSchema(rejectSlackIdentityClaimSchema)
+  .action(async ({ parsedInput }) => {
+    const { slackUserId, sessionId } = parsedInput;
+    const result = await rejectSlackIdentityClaimFn({
+      slackUserId,
+      sessionId,
+    });
+    return result;
   });

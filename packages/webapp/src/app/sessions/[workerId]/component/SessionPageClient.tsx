@@ -54,6 +54,8 @@ import { PortMappingProvider, usePortMappingSetter } from './PortMappingContext'
 import type { PortMapping } from '@/lib/port-url-transform';
 import { isPreviewRendered } from './message-consistency';
 import { raiseMissedEvents, clearMissedEvents } from '@/lib/missed-events-signal';
+import SlackIdentityClaims from '@/components/SlackIdentityClaims';
+import { SlackIdentityClaim } from '@remote-swe-agents/agent-core/schema';
 
 /**
  * Grace window after a `lastMessageUpdate` whose preview has no matching
@@ -124,6 +126,8 @@ interface SessionPageClientProps {
    */
   initialPortMapping?: PortMapping | null;
   initialRewindHiddenCount?: number;
+  slackClaims?: SlackIdentityClaim[];
+  slackClaimCounts?: { pending: number; approved: number; rejected: number };
 }
 
 export default function SessionPageClient({
@@ -146,6 +150,8 @@ export default function SessionPageClient({
   sessionBedrockDefaultModel,
   initialPortMapping,
   initialRewindHiddenCount,
+  slackClaims,
+  slackClaimCounts,
 }: SessionPageClientProps) {
   return (
     <PortMappingProvider initialMapping={initialPortMapping ?? null}>
@@ -168,6 +174,8 @@ export default function SessionPageClient({
         bedrockModel={bedrockModel}
         sessionBedrockDefaultModel={sessionBedrockDefaultModel}
         initialRewindHiddenCount={initialRewindHiddenCount}
+        slackClaims={slackClaims}
+        slackClaimCounts={slackClaimCounts}
       />
     </PortMappingProvider>
   );
@@ -192,6 +200,8 @@ function SessionPageClientInner({
   bedrockModel,
   sessionBedrockDefaultModel,
   initialRewindHiddenCount,
+  slackClaims = [],
+  slackClaimCounts,
 }: Omit<SessionPageClientProps, 'initialPortMapping'>) {
   const setPortMapping = usePortMappingSetter();
   const t = useTranslations('sessions');
@@ -251,6 +261,7 @@ function SessionPageClientInner({
   const [showHandoverModal, setShowHandoverModal] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [currentUnreadMap, setCurrentUnreadMap] = useState(unreadMap ?? {});
+  const [currentClaims, setCurrentClaims] = useState<SlackIdentityClaim[]>(slackClaims);
   const { isBottom } = useScrollPosition();
   const { isDisplaced: hideScrollButtons } = useViewportState();
 
@@ -344,6 +355,7 @@ function SessionPageClientInner({
 
   // Rewind state: tracks how many messages are hidden
   const [rewindHiddenCount, setRewindHiddenCount] = useState(initialRewindHiddenCount ?? 0);
+  const [locale] = useState(() => typeof navigator !== 'undefined' ? navigator.language : 'en-US');
 
   const { execute: executeRewind } = useAction(rewindSessionAction, {
     onSuccess: () => {
@@ -1072,6 +1084,30 @@ function SessionPageClientInner({
                   {t('undoRewind')}
                 </button>
               </div>
+            </div>
+          )}
+
+          {/* Slack Identity Claims */}
+          {currentClaims.length > 0 && (
+            <div className="max-w-4xl mx-auto px-4 py-2">
+              <SlackIdentityClaims
+                sessionId={workerId}
+                claims={currentClaims}
+                onClaimsUpdated={() => {
+                  // Refresh to get updated claims from server
+                  router.refresh();
+                  // Fetch fresh claims from API
+                  fetch(`/api/slack-claims/${workerId}`)
+                    .then((res) => res.json())
+                    .then((data) => {
+                      if (data.claims) {
+                        setCurrentClaims(data.claims);
+                      }
+                    })
+                    .catch((err) => console.error('Failed to refresh claims:', err));
+                }}
+                locale={locale}
+              />
             </div>
           )}
 
