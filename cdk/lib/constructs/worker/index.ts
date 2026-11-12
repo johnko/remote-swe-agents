@@ -209,7 +209,7 @@ export class Worker extends Construct {
     // SECURITY: SHA-256 checksums for external downloads
     // Update these values when upgrading versions to prevent supply chain attacks
     // To get SHA256: curl -fsSL <url> | sha256sum
-    const nvmSha256 = ''; // TODO: Calculate from: https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.2/install.sh
+    const nvmSha256 = 'a909fdd01765379ebc5983674adafb8bc9de6d928bfa188761309d4a0c36be0f';
 
     userData.addCommands(
       `
@@ -244,8 +244,7 @@ curl -fsSL "$NVM_INSTALLER_URL" -o "$NVM_INSTALLER_PATH"
 # Calculate SHA256 and verify against known good value
 # NOTE: Update this SHA256 when upgrading nvm version
 NVM_SHA256=$(sha256sum "$NVM_INSTALLER_PATH" | awk '{print $1}')
-# TODO: Set NVM_EXPECTED_SHA256 to the actual SHA256 of the installer
-NVM_EXPECTED_SHA256=""
+NVM_EXPECTED_SHA256="${nvmSha256}"
 if [ -n "$NVM_EXPECTED_SHA256" ] && [ "$NVM_SHA256" != "$NVM_EXPECTED_SHA256" ]; then
   echo "ERROR: nvm installer SHA256 mismatch! Expected: $NVM_EXPECTED_SHA256, Got: $NVM_SHA256" >&2
   rm -f "$NVM_INSTALLER_PATH"
@@ -311,8 +310,7 @@ aws ssm get-parameter \
 GH_TOKEN_VERSION="2.0.4"
 GH_TOKEN_URL="https://github.com/Link-/gh-token/releases/download/v$GH_TOKEN_VERSION/linux-amd64"
 GH_TOKEN_PATH="/tmp/gh-token"
-# TODO: Set GH_TOKEN_SHA256 by running: curl -L "$GH_TOKEN_URL" | sha256sum
-GH_TOKEN_SHA256=""
+GH_TOKEN_SHA256="e9a674f5cd7666f2e45966a78cfa4992f505f04700620a718ca0afcd160b1a60"
 curl -fsSL "$GH_TOKEN_URL" -o "$GH_TOKEN_PATH"
 # Verify SHA256 if configured (prevents supply chain attacks)
 if [ -n "$GH_TOKEN_SHA256" ]; then
