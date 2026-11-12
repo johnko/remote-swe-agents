@@ -84,7 +84,7 @@
     "@types/yauzl-promise": "4.0.1",
     "prettier": "3.9.10",
     "typescript": "5.9.3",
-    "vitest": "3.2.7",
+    "vitest": "5.1.0",
     "zod": "4.6.7"
   },
   "peerDependencies": {
