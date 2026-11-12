@@ -8,7 +8,7 @@ const cache = {
 };
 
 // GitHub token validation regex - tokens must be 40 hex chars or start with ghp_/ghs_
-const VALID_GH_TOKEN_REGEX = /^(ghp_[a-zA-Z0-9]{36,}|ghs_[a-zA-Z0-9]{36,}|[a-f0-9]{40,})$/;
+const VALID_GH_TOKEN_REGEX = /^(ghp_[a-zA-Z0-9._-]{36,}|ghs_[a-zA-Z0-9._-]{36,}|[a-f0-9]{40,})$/;
 
 // Maximum token length (sanity check)
 const MAX_TOKEN_LENGTH = 256;
