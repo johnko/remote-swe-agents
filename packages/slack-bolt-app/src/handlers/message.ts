@@ -120,10 +120,14 @@ export async function handleMessage(
             slackThreadTs: event.ts,
             firstMessageTs: event.ts,
           },
-        }).catch((e) => {
-          console.error('[slack-identity] Failed to create claim:', e);
-          // Don't block session creation on claim failure
         })
+          .then(() => {
+            // Claim created successfully - void return to match Promise<void>
+          })
+          .catch((e) => {
+            console.error('[slack-identity] Failed to create claim:', e);
+            // Don't block session creation on claim failure
+          })
       );
     }
   }
