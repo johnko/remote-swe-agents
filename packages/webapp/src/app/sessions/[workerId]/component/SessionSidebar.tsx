@@ -473,12 +473,19 @@ export default function SessionSidebar({
                 <TooltipContent>{t('goToSessionList')}</TooltipContent>
               </Tooltip>
             </TooltipProvider>
-            <button
-              onClick={onClose}
-              className="p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 transition-colors lg:hidden cursor-pointer"
-            >
-              <X className="w-4 h-4" />
-            </button>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={onClose}
+                    className="p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 transition-colors lg:hidden cursor-pointer"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent>{t('close')}</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
         </div>
       </aside>
