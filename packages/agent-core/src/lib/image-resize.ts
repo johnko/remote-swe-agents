@@ -54,7 +54,9 @@ export const ensureImageWithinBounds = async (
   return new Uint8Array(resized);
 };
 
-const MIME_TO_FORMAT: Record<string, keyof sharp.FormatEnum> = {
+type SharpFormat = 'png' | 'jpeg' | 'gif' | 'webp';
+
+const MIME_TO_FORMAT: Record<string, SharpFormat> = {
   'image/png': 'png',
   'image/jpeg': 'jpeg',
   'image/jpg': 'jpeg',
@@ -62,14 +64,14 @@ const MIME_TO_FORMAT: Record<string, keyof sharp.FormatEnum> = {
   'image/webp': 'webp',
 };
 
-const resolveSharpFormat = (opts: EnsureImageWithinBoundsOptions): keyof sharp.FormatEnum | undefined => {
+const resolveSharpFormat = (opts: EnsureImageWithinBoundsOptions): SharpFormat | undefined => {
   if (opts.mimeType) {
     return MIME_TO_FORMAT[opts.mimeType];
   }
   if (opts.format) {
     const f = opts.format === 'jpg' ? 'jpeg' : opts.format;
     if (['png', 'jpeg', 'gif', 'webp'].includes(f)) {
-      return f as keyof sharp.FormatEnum;
+      return f as SharpFormat;
     }
   }
   return undefined;
