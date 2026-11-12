@@ -83,13 +83,13 @@ const SESSION_COOKIE_NAME = '__preview_session';
 const SESSION_COOKIE_MAX_AGE = 28800; // 8 hours (matches MicroVM max lifetime)
 
 function signPayload(payload: string, secret: string): string {
-  return createHmac('sha256', secret).update(payload).digest('hex');
+  return createHmac('sha256', secret).update(payload).digest('base64url');
 }
 
 // should-fix 2: Safe comparison that handles length mismatch without throwing
 function safeCompare(a: string, b: string): boolean {
-  const bufA = Buffer.from(a, 'hex');
-  const bufB = Buffer.from(b, 'hex');
+  const bufA = Buffer.from(a, 'base64url');
+  const bufB = Buffer.from(b, 'base64url');
   if (bufA.length !== bufB.length) return false;
   return timingSafeEqual(bufA, bufB);
 }
