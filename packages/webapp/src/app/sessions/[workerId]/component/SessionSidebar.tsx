@@ -358,8 +358,7 @@ export default function SessionSidebar({
         {/* Sidebar header */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700">
           <h2 className="text-sm font-semibold text-gray-900 dark:text-white truncate">{t('title')}</h2>
-          <div className="flex items-center gap-1">
-          </div>
+          <div className="flex items-center gap-1"></div>
         </div>
 
         {/* Session list (exclude completed, sorted by updatedAt desc) */}
