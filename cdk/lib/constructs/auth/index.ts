@@ -105,6 +105,8 @@ Remote SWE Agents Team
         flows: {
           authorizationCodeGrant: true,
         },
+        // NOTE: AWS Cognito validates redirect URIs server-side (exact match required).
+        // The localhost URL is for development only; production is protected by Cognito validation.
         callbackUrls: ['http://localhost/dummy'],
         logoutUrls: ['http://localhost/dummy'],
       },
