@@ -9504,7 +9504,7 @@ exports[`Snapshot test: UsEast1Stack 1`] = `
       },
       "Type": "AWS::Lambda::Function",
     },
-    "PreviewOriginRequestHandlerCurrentVersionC07F9B9C8683ad182d147c8a14b8270624a1c85d": {
+    "PreviewOriginRequestHandlerCurrentVersionC07F9B9C7485b957c68396cf304d2970d445952f": {
       "Metadata": {
         "aws:cdk:do-not-refactor": true,
       },
@@ -9519,7 +9519,7 @@ exports[`Snapshot test: UsEast1Stack 1`] = `
       "Properties": {
         "Type": "String",
         "Value": {
-          "Ref": "PreviewOriginRequestHandlerCurrentVersionC07F9B9C8683ad182d147c8a14b8270624a1c85d",
+          "Ref": "PreviewOriginRequestHandlerCurrentVersionC07F9B9C7485b957c68396cf304d2970d445952f",
         },
       },
       "Type": "AWS::SSM::Parameter",
