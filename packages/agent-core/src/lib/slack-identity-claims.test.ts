@@ -9,10 +9,7 @@ import {
   getApprovedSlackUsersForSession,
   getClaimCounts,
 } from './slack-identity-claims.js';
-import {
-  CLAIM_EXPIRY_MS,
-  CLAIM_MIN_WAIT_MS,
-} from '../schema/slack-identity-claim.js';
+import { CLAIM_EXPIRY_MS, CLAIM_MIN_WAIT_MS } from '../schema/slack-identity-claim.js';
 
 const mockDdbSend = vi.fn();
 const mockTableName = 'test-table';
@@ -338,9 +335,7 @@ describe('slack-identity-claims', () => {
         },
       };
 
-      mockDdbSend
-        .mockResolvedValueOnce({ Item: mockClaim })
-        .mockResolvedValueOnce({});
+      mockDdbSend.mockResolvedValueOnce({ Item: mockClaim }).mockResolvedValueOnce({});
 
       const result = await rejectSlackIdentityClaim({
         slackUserId: 'U12345',

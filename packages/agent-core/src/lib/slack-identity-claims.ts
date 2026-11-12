@@ -10,7 +10,7 @@ import {
 /**
  * Create a new Slack identity claim
  * Called when a Slack user creates or participates in a session
- * 
+ *
  * Uses existing table structure: PK = session-claims#{sessionId}
  * This allows querying by session without requiring a GSI
  */
@@ -192,10 +192,7 @@ export async function rejectSlackIdentityClaim(params: {
  * Check if a Slack user has a linked Cognito identity for a session
  * Returns the Cognito user ID if approved, undefined otherwise
  */
-export async function getLinkedCognitoUserId(
-  slackUserId: string,
-  sessionId: string
-): Promise<string | undefined> {
+export async function getLinkedCognitoUserId(slackUserId: string, sessionId: string): Promise<string | undefined> {
   const claim = await getSlackIdentityClaim(slackUserId, sessionId);
 
   if (claim && claim.status === 'approved' && claim.cognitoUserId) {

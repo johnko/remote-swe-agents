@@ -1,8 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import {
-  getPendingClaimsForSession,
-  getClaimCounts,
-} from '@remote-swe-agents/agent-core/lib';
+import { getPendingClaimsForSession, getClaimCounts } from '@remote-swe-agents/agent-core/lib';
 import { getSession } from '@remote-swe-agents/agent-core/lib';
 
 interface RouteParams {
@@ -42,9 +39,6 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     );
   } catch (error) {
     console.error('[slack-claims API] Error fetching claims:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch claims' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to fetch claims' }, { status: 500 });
   }
 }

@@ -1,15 +1,23 @@
 'use client';
 
 import React, { useState, useCallback } from 'react';
-import { Check, X, HelpCircle, Clock, Shield, RefreshCw, CheckCircle2, XCircle, AlertCircle, MessageSquare } from 'lucide-react';
+import {
+  Check,
+  X,
+  HelpCircle,
+  Clock,
+  Shield,
+  RefreshCw,
+  CheckCircle2,
+  XCircle,
+  AlertCircle,
+  MessageSquare,
+} from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useAction } from 'next-safe-action/hooks';
 import { toast } from 'sonner';
-import {
-  SlackIdentityClaim,
-  SlackIdentityClaimStatus,
-} from '@remote-swe-agents/agent-core/schema';
+import { SlackIdentityClaim, SlackIdentityClaimStatus } from '@remote-swe-agents/agent-core/schema';
 import { formatDateTime } from '@/lib/utils';
 
 interface SlackIdentityClaimsProps {
@@ -32,10 +40,26 @@ interface ClaimCardProps {
 
 function StatusBadge({ status }: { status: SlackIdentityClaimStatus }) {
   const statusConfig = {
-    pending: { icon: Clock, className: 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200', label: 'Pending' },
-    approved: { icon: CheckCircle2, className: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200', label: 'Approved' },
-    rejected: { icon: XCircle, className: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200', label: 'Rejected' },
-    expired: { icon: AlertCircle, className: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200', label: 'Expired' },
+    pending: {
+      icon: Clock,
+      className: 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200',
+      label: 'Pending',
+    },
+    approved: {
+      icon: CheckCircle2,
+      className: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
+      label: 'Approved',
+    },
+    rejected: {
+      icon: XCircle,
+      className: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
+      label: 'Rejected',
+    },
+    expired: {
+      icon: AlertCircle,
+      className: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200',
+      label: 'Expired',
+    },
   };
 
   const config = statusConfig[status];
@@ -67,7 +91,8 @@ function ClaimCard({ claim, onApprove, onReject, isPending, locale }: ClaimCardP
           <StatusBadge status={claim.status} />
         </div>
         <CardDescription className="text-sm">
-          A Slack user is claiming to be you in session <code className="bg-gray-100 dark:bg-gray-800 px-1 rounded">{claim.sessionId}</code>
+          A Slack user is claiming to be you in session{' '}
+          <code className="bg-gray-100 dark:bg-gray-800 px-1 rounded">{claim.sessionId}</code>
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-3 pb-3">
@@ -90,7 +115,9 @@ function ClaimCard({ claim, onApprove, onReject, isPending, locale }: ClaimCardP
           <div className="text-xs text-amber-600 dark:text-amber-400 flex items-center gap-1">
             <Shield className="w-3 h-3" />
             {hoursRemaining > 0 ? (
-              <span>Expires in {hoursRemaining}h {minutesRemaining}m</span>
+              <span>
+                Expires in {hoursRemaining}h {minutesRemaining}m
+              </span>
             ) : (
               <span>Expires in {minutesRemaining}m</span>
             )}
@@ -107,32 +134,12 @@ function ClaimCard({ claim, onApprove, onReject, isPending, locale }: ClaimCardP
 
       {isActionable && (
         <CardFooter className="flex gap-2 pt-0">
-          <Button
-            variant="default"
-            size="sm"
-            className="flex-1"
-            onClick={() => onApprove(claim)}
-            disabled={isPending}
-          >
-            {isPending ? (
-              <RefreshCw className="w-4 h-4 mr-1 animate-spin" />
-            ) : (
-              <Check className="w-4 h-4 mr-1" />
-            )}
+          <Button variant="default" size="sm" className="flex-1" onClick={() => onApprove(claim)} disabled={isPending}>
+            {isPending ? <RefreshCw className="w-4 h-4 mr-1 animate-spin" /> : <Check className="w-4 h-4 mr-1" />}
             Yes, it's me
           </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="flex-1"
-            onClick={() => onReject(claim)}
-            disabled={isPending}
-          >
-            {isPending ? (
-              <RefreshCw className="w-4 h-4 mr-1 animate-spin" />
-            ) : (
-              <HelpCircle className="w-4 h-4 mr-1" />
-            )}
+          <Button variant="outline" size="sm" className="flex-1" onClick={() => onReject(claim)} disabled={isPending}>
+            {isPending ? <RefreshCw className="w-4 h-4 mr-1 animate-spin" /> : <HelpCircle className="w-4 h-4 mr-1" />}
             Can't tell
           </Button>
           <Button
@@ -142,11 +149,7 @@ function ClaimCard({ claim, onApprove, onReject, isPending, locale }: ClaimCardP
             onClick={() => onReject(claim)}
             disabled={isPending}
           >
-            {isPending ? (
-              <RefreshCw className="w-4 h-4 mr-1 animate-spin" />
-            ) : (
-              <X className="w-4 h-4 mr-1" />
-            )}
+            {isPending ? <RefreshCw className="w-4 h-4 mr-1 animate-spin" /> : <X className="w-4 h-4 mr-1" />}
             Not me
           </Button>
         </CardFooter>
@@ -202,9 +205,7 @@ export default function SlackIdentityClaims({
     async (claim: SlackIdentityClaim) => {
       // Optimistic update
       setOptimisticClaims((prev) =>
-        prev.map((c) =>
-          c.slackUserId === claim.slackUserId ? { ...c, status: 'approved' as const } : c
-        )
+        prev.map((c) => (c.slackUserId === claim.slackUserId ? { ...c, status: 'approved' as const } : c))
       );
       executeApprove({ slackUserId: claim.slackUserId, sessionId: claim.sessionId });
     },
@@ -215,9 +216,7 @@ export default function SlackIdentityClaims({
     async (claim: SlackIdentityClaim) => {
       // Optimistic update
       setOptimisticClaims((prev) =>
-        prev.map((c) =>
-          c.slackUserId === claim.slackUserId ? { ...c, status: 'rejected' as const } : c
-        )
+        prev.map((c) => (c.slackUserId === claim.slackUserId ? { ...c, status: 'rejected' as const } : c))
       );
       executeReject({ slackUserId: claim.slackUserId, sessionId: claim.sessionId });
     },

@@ -10,7 +10,7 @@ export type SlackIdentityClaimStatus = z.infer<typeof slackIdentityClaimStatusSc
 /**
  * Schema for Slack identity claim items stored in DynamoDB
  * Used to link Slack user IDs to Cognito user IDs with explicit approval
- * 
+ *
  * Uses existing table structure: PK = session-claims#${sessionId}
  * This allows querying by session without requiring a GSI
  */

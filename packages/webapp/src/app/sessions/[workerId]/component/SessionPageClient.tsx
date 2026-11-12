@@ -355,7 +355,7 @@ function SessionPageClientInner({
 
   // Rewind state: tracks how many messages are hidden
   const [rewindHiddenCount, setRewindHiddenCount] = useState(initialRewindHiddenCount ?? 0);
-  const [locale] = useState(() => typeof navigator !== 'undefined' ? navigator.language : 'en-US');
+  const [locale] = useState(() => (typeof navigator !== 'undefined' ? navigator.language : 'en-US'));
 
   const { execute: executeRewind } = useAction(rewindSessionAction, {
     onSuccess: () => {
