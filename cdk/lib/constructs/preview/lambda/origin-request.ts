@@ -250,6 +250,8 @@ export const handler = async (event: CloudFrontRequestEvent): Promise<CloudFront
     const setCookieHeaders: Array<{ key: string; value: string }> = [
       {
         key: 'Set-Cookie',
+        // SameSite=Lax is required because the handoff flow redirects from webapp (same-origin)
+        // to preview CloudFront (cross-origin). Strict would block cookie on this top-level navigation.
         value: `${SESSION_COOKIE_NAME}=${cookieValue}; Path=/; Max-Age=${SESSION_COOKIE_MAX_AGE}; Secure; HttpOnly; SameSite=Lax`,
       },
       {
