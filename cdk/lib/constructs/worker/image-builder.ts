@@ -20,7 +20,7 @@ export interface WorkerImageBuilderProps {
   amiIdParameterName: string;
   amiIdParameter: IStringParameter;
   sourceBucket: IBucket;
-  sourceAssetHash?: string; // Deprecated: hash is now computed from source files
+  sourceAssetHash: string;
 }
 
 export class WorkerImageBuilder extends Construct {
@@ -86,25 +86,13 @@ export class WorkerImageBuilder extends Construct {
       ],
     };
 
-    // Hash the image recipe config with component version for deterministic key.
-    const recipeContent = JSON.stringify({
-      parentImage: imagePipelineProps.parentImage,
-      subnetId: imagePipelineProps.subnetId,
-      securityGroups: imagePipelineProps.securityGroups,
-      amiIdSsmPath: imagePipelineProps.amiIdSsmPath,
-      instanceTypes: imagePipelineProps.instanceTypes,
-      ebsVolumeConfigurations: imagePipelineProps.ebsVolumeConfigurations,
-      componentHash: componentHash, // Include component hash for dependency tracking
-      sourceAssetHash: sourceAssetHash, // Include asset hash for additional change detection
-    });
-    const recipeHash = createHash('sha256').update(recipeContent).digest('hex');
-
+    // Use sourceAssetHash directly for recipe versioning since it changes reliably
     const recipeVersion = new CustomResource(this, 'ImageRecipeVersion', {
       serviceToken: versioningHandler.functionArn,
       resourceType: 'Custom::ImageBuilderVersioning',
       properties: {
         initialVersion: '0.0.0',
-        key: recipeHash,
+        key: sourceAssetHash,
       },
       serviceTimeout: Duration.seconds(20),
     });
