@@ -7938,7 +7938,7 @@ phases:
           ],
         },
         "initialVersion": "0.0.0",
-        "key": "084f827cd2a8634a1c3a0c621937a7a6bccdf6820c8b2d0d87ae75a2e304e619",
+        "key": "cd36f3f2a595a5ad0896dcee8c901a303fd6befb8c5ca41a26a39f202475be23",
       },
       "Type": "Custom::ImageBuilderVersioning",
       "UpdateReplacePolicy": "Delete",
