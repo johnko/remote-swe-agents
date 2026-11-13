@@ -29,7 +29,7 @@ export class WorkerImageBuilder extends Construct {
   constructor(scope: Construct, id: string, props: WorkerImageBuilderProps) {
     super(scope, id);
 
-    const { vpc, installDependenciesCommand, sourceBucket } = props;
+    const { vpc, installDependenciesCommand, sourceBucket, sourceAssetHash } = props;
 
     const componentTemplateString = readFileSync(
       join(__dirname, 'resources', 'image-component-template.yml')
@@ -95,6 +95,7 @@ export class WorkerImageBuilder extends Construct {
       instanceTypes: imagePipelineProps.instanceTypes,
       ebsVolumeConfigurations: imagePipelineProps.ebsVolumeConfigurations,
       componentHash: componentHash, // Include component hash for dependency tracking
+      sourceAssetHash: sourceAssetHash, // Include asset hash for additional change detection
     });
     const recipeHash = createHash('sha256').update(recipeContent).digest('hex');
 
