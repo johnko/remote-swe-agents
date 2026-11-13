@@ -86,13 +86,16 @@ export class WorkerImageBuilder extends Construct {
       ],
     };
 
-    // Use sourceAssetHash directly for recipe versioning since it changes reliably
     const recipeVersion = new CustomResource(this, 'ImageRecipeVersion', {
       serviceToken: versioningHandler.functionArn,
       resourceType: 'Custom::ImageBuilderVersioning',
       properties: {
         initialVersion: '0.0.0',
-        key: sourceAssetHash,
+        key: JSON.stringify({
+          ...imagePipelineProps,
+          componentsVersion: componentVersion.getAttString('version'),
+          sourceAssetHash: `worker-asset-hash:${sourceAssetHash}`,
+        }),
       },
       serviceTimeout: Duration.seconds(20),
     });
