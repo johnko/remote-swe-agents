@@ -211,6 +211,93 @@ export class Worker extends Construct {
     // To get SHA256: curl -fsSL <url> | sha256sum
     const nvmSha256 = 'a909fdd01765379ebc5983674adafb8bc9de6d928bfa188761309d4a0c36be0f';
 
+    // Tool installation script for Image Builder (AMI creation)
+    // This goes into the AMI and should only include tool installations
+    const toolInstallationCommands = `
+apt-get -o DPkg::Lock::Timeout=-1 update
+apt-get -o DPkg::Lock::Timeout=-1 upgrade -y
+
+# Install python3 and jq
+apt-get -o DPkg::Lock::Timeout=-1 install -y python3-pip unzip jq
+ln -s -f /usr/bin/pip3 /usr/bin/pip
+ln -s -f /usr/bin/python3 /usr/bin/python
+
+# Install docker https://docs.docker.com/engine/install/ubuntu/#set-up-the-repository
+apt-get -o DPkg::Lock::Timeout=-1 install -y ca-certificates curl
+install -m 0755 -d /etc/apt/keyrings
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+chmod a+r /etc/apt/keyrings/docker.asc
+
+echo \
+  "deb [arch=\$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
+  \$(. /etc/os-release && echo "\${UBUNTU_CODENAME:-\$VERSION_CODENAME}") stable" | \
+  tee /etc/apt/sources.list.d/docker.list > /dev/null
+apt-get -o DPkg::Lock::Timeout=-1 update
+apt-get -o DPkg::Lock::Timeout=-1 install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+groupadd docker
+usermod -aG docker ubuntu
+
+# Install Node.js via nvm with SHA-256 verification
+# SECURITY: Verify installer integrity before execution to prevent supply chain attacks
+NVM_INSTALLER_URL="https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.2/install.sh"
+NVM_INSTALLER_PATH="/tmp/nvm-install.sh"
+curl -fsSL "\$NVM_INSTALLER_URL" -o "\$NVM_INSTALLER_PATH"
+# Calculate SHA256 and verify against known good value
+# NOTE: Update this SHA256 when upgrading nvm version
+NVM_SHA256=\$(sha256sum "\$NVM_INSTALLER_PATH" | awk '{print \$1}')
+NVM_EXPECTED_SHA256="\${nvmSha256}"
+if [ -n "\$NVM_EXPECTED_SHA256" ] && [ "\$NVM_SHA256" != "\$NVM_EXPECTED_SHA256" ]; then
+  echo "ERROR: nvm installer SHA256 mismatch! Expected: \$NVM_EXPECTED_SHA256, Got: \$NVM_SHA256" >&2
+  rm -f "\$NVM_INSTALLER_PATH"
+  exit 1
+fi
+sudo -u ubuntu bash "\$NVM_INSTALLER_PATH"
+rm -f "\$NVM_INSTALLER_PATH"
+sudo -u ubuntu bash -c -i "nvm install 22"
+
+# Install AWS CLI
+curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+unzip -q awscliv2.zip
+sudo ./aws/install
+
+# Install Fluent Bit via apt (more secure than curl | sh)
+# Fluent Bit provides signed apt packages - GPG verification happens automatically
+# First add the Fluent Bit repository with GPG key
+curl -fsSL https://packages.fluentbit.io/fluentbit.key | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/fluentbit.gpg
+FLUENT_BIT_CODENAME=\$(. /etc/os-release && echo "\$VERSION_CODENAME")
+echo "deb https://packages.fluentbit.io/ubuntu/\$FLUENT_BIT_CODENAME \$FLUENT_BIT_CODENAME main" | sudo tee /etc/apt/sources.list.d/fluent-bit.list > /dev/null
+apt-get -o DPkg::Lock::Timeout=-1 update
+apt-get -o DPkg::Lock::Timeout=-1 install -y fluent-bit
+
+# Install GitHub CLI via apt with GPG verification
+# SECURITY: Using apt with GPG-signed packages is more secure than curl | sh
+# GitHub CLI provides signed apt packages
+type -p wget >/dev/null || apt-get -o DPkg::Lock::Timeout=-1 install -y wget
+mkdir -p -m 755 /etc/apt/keyrings
+wget -nv -O /etc/apt/keyrings/githubcli-archive-keyring.gpg https://cli.github.com/packages/githubcli-archive-keyring.gpg
+chmod go+r /etc/apt/keyrings/githubcli-archive-keyring.gpg
+echo "deb [arch=\$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | tee /etc/apt/sources.list.d/github-cli.list > /dev/null
+apt-get -o DPkg::Lock::Timeout=-1 update
+apt-get -o DPkg::Lock::Timeout=-1 install -y gh
+
+# Configure Git user for ubuntu
+sudo -u ubuntu bash -c 'git config --global user.name "remote-swe-app[bot]"'
+sudo -u ubuntu bash -c 'git config --global user.email "${
+      props.gitHubApp?.appId ?? '123456'
+    }+remote-swe-app[bot]@users.noreply.github.com"'
+
+# Install uv (Python package manager) via apt instead of curl | sh
+# SECURITY: Use signed packages instead of piping scripts to shell
+# uv provides signed deb packages through GitHub releases
+UV_VERSION="0.7.0"
+UV_DEB_URL="https://github.com/astral-sh/uv/releases/download/\${UV_VERSION}/uv_\${UV_VERSION}_amd64.deb"
+UV_TEMP_DEB="/tmp/uv.deb"
+curl -fsSL "\$UV_DEB_URL" -o "\$UV_TEMP_DEB"
+# dpkg installs the package; apt-get will fix any dependency issues
+dpkg -i "\$UV_TEMP_DEB" || (apt-get -o DPkg::Lock::Timeout=-1 update && apt-get -o DPkg::Lock::Timeout=-1 install -f -y)
+rm -f "\$UV_TEMP_DEB"
+    `.trim();
+
     userData.addCommands(
       `
 apt-get -o DPkg::Lock::Timeout=-1 update
@@ -595,7 +682,7 @@ systemctl start myapp
 
     this.imageBuilder = new WorkerImageBuilder(this, 'ImageBuilder', {
       vpc,
-      installDependenciesCommand,
+      installDependenciesCommand: toolInstallationCommands,
       amiIdParameterName: props.amiIdParameterName,
       amiIdParameter: props.amiIdParameter,
       sourceBucket,
