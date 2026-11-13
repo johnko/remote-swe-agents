@@ -12,7 +12,6 @@ import { AwsCustomResource, AwsCustomResourcePolicy, PhysicalResourceId } from '
 import { IBucket } from 'aws-cdk-lib/aws-s3';
 import { ManagedPolicy, PolicyStatement } from 'aws-cdk-lib/aws-iam';
 import { IStringParameter } from 'aws-cdk-lib/aws-ssm';
-import * as crypto from 'crypto';
 
 export interface WorkerImageBuilderProps {
   vpc: IVpc;
@@ -51,14 +50,12 @@ export class WorkerImageBuilder extends Construct {
 
     const securityGroup = new SecurityGroup(this, 'SecurityGroup', { vpc });
 
-    // Hash the component template to avoid exceeding 16KB CloudFormation custom resource data limit
-    const componentContent = yaml.stringify(componentTemplate, { lineWidth: 0 });
-    const componentHash = crypto.createHash('sha256').update(componentContent).digest('hex');
-
+    // Use sourceAssetHash for change detection since component content contains
+    // non-deterministic CloudFormation tokens. The asset hash changes when source changes.
     const componentVersion = new CustomResource(this, 'WorkerDependenciesVersion', {
       serviceToken: versioningHandler.functionArn,
       resourceType: 'Custom::ImageBuilderVersioning',
-      properties: { initialVersion: '0.0.0', key: componentHash },
+      properties: { initialVersion: '0.0.0', key: `component-${sourceAssetHash}` },
       serviceTimeout: Duration.seconds(20),
     });
 
@@ -85,27 +82,15 @@ export class WorkerImageBuilder extends Construct {
       ],
     };
 
-    // Hash the recipe key to avoid exceeding 16KB CloudFormation custom resource data limit
-    // Only include static config (exclude dynamic values like sourceAssetHash and token-based values)
-    const staticRecipeContent = JSON.stringify({
-      parentImage: imagePipelineProps.parentImage,
-      subnetId: imagePipelineProps.subnetId,
-      securityGroups: imagePipelineProps.securityGroups,
-      amiIdSsmPath: imagePipelineProps.amiIdSsmPath,
-      amiIdSsmAccountId: imagePipelineProps.amiIdSsmAccountId,
-      amiIdSsmRegion: imagePipelineProps.amiIdSsmRegion,
-      instanceTypes: imagePipelineProps.instanceTypes,
-      ebsVolumeConfigurations: imagePipelineProps.ebsVolumeConfigurations,
-      componentsVersion: componentVersion.getAttString('version'),
-    });
-    const recipeHash = crypto.createHash('sha256').update(staticRecipeContent).digest('hex');
+    // Use sourceAssetHash for recipe versioning since the actual content contains
+    // non-deterministic CloudFormation tokens. Asset hash changes reliably on source changes.
 
     const recipeVersion = new CustomResource(this, 'ImageRecipeVersion', {
       serviceToken: versioningHandler.functionArn,
       resourceType: 'Custom::ImageBuilderVersioning',
       properties: {
         initialVersion: '0.0.0',
-        key: recipeHash,
+        key: `recipe-${sourceAssetHash}`,
       },
       serviceTimeout: Duration.seconds(20),
     });
