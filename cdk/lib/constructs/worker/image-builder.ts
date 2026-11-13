@@ -86,12 +86,19 @@ export class WorkerImageBuilder extends Construct {
     };
 
     // Hash the recipe key to avoid exceeding 16KB CloudFormation custom resource data limit
-    const recipeContent = JSON.stringify({
-      ...imagePipelineProps,
+    // Only include static config (exclude dynamic values like sourceAssetHash and token-based values)
+    const staticRecipeContent = JSON.stringify({
+      parentImage: imagePipelineProps.parentImage,
+      subnetId: imagePipelineProps.subnetId,
+      securityGroups: imagePipelineProps.securityGroups,
+      amiIdSsmPath: imagePipelineProps.amiIdSsmPath,
+      amiIdSsmAccountId: imagePipelineProps.amiIdSsmAccountId,
+      amiIdSsmRegion: imagePipelineProps.amiIdSsmRegion,
+      instanceTypes: imagePipelineProps.instanceTypes,
+      ebsVolumeConfigurations: imagePipelineProps.ebsVolumeConfigurations,
       componentsVersion: componentVersion.getAttString('version'),
-      sourceAssetHash: `worker-asset-hash:${sourceAssetHash}`,
     });
-    const recipeHash = crypto.createHash('sha256').update(recipeContent).digest('hex');
+    const recipeHash = crypto.createHash('sha256').update(staticRecipeContent).digest('hex');
 
     const recipeVersion = new CustomResource(this, 'ImageRecipeVersion', {
       serviceToken: versioningHandler.functionArn,
