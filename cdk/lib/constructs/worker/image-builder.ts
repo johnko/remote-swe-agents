@@ -12,6 +12,7 @@ import { AwsCustomResource, AwsCustomResourcePolicy, PhysicalResourceId } from '
 import { IBucket } from 'aws-cdk-lib/aws-s3';
 import { ManagedPolicy, PolicyStatement } from 'aws-cdk-lib/aws-iam';
 import { IStringParameter } from 'aws-cdk-lib/aws-ssm';
+import * as crypto from 'crypto';
 
 export interface WorkerImageBuilderProps {
   vpc: IVpc;
@@ -50,10 +51,14 @@ export class WorkerImageBuilder extends Construct {
 
     const securityGroup = new SecurityGroup(this, 'SecurityGroup', { vpc });
 
+    // Hash the component template to avoid exceeding 16KB CloudFormation custom resource data limit
+    const componentContent = yaml.stringify(componentTemplate, { lineWidth: 0 });
+    const componentHash = crypto.createHash('sha256').update(componentContent).digest('hex');
+
     const componentVersion = new CustomResource(this, 'WorkerDependenciesVersion', {
       serviceToken: versioningHandler.functionArn,
       resourceType: 'Custom::ImageBuilderVersioning',
-      properties: { initialVersion: '0.0.0', key: yaml.stringify(componentTemplate, { lineWidth: 0 }) },
+      properties: { initialVersion: '0.0.0', key: componentHash },
       serviceTimeout: Duration.seconds(20),
     });
 
@@ -80,16 +85,20 @@ export class WorkerImageBuilder extends Construct {
       ],
     };
 
+    // Hash the recipe key to avoid exceeding 16KB CloudFormation custom resource data limit
+    const recipeContent = JSON.stringify({
+      ...imagePipelineProps,
+      componentsVersion: componentVersion.getAttString('version'),
+      sourceAssetHash: `worker-asset-hash:${sourceAssetHash}`,
+    });
+    const recipeHash = crypto.createHash('sha256').update(recipeContent).digest('hex');
+
     const recipeVersion = new CustomResource(this, 'ImageRecipeVersion', {
       serviceToken: versioningHandler.functionArn,
       resourceType: 'Custom::ImageBuilderVersioning',
       properties: {
         initialVersion: '0.0.0',
-        key: JSON.stringify({
-          ...imagePipelineProps,
-          componentsVersion: componentVersion.getAttString('version'),
-          sourceAssetHash: `worker-asset-hash:${sourceAssetHash}`,
-        }),
+        key: recipeHash,
       },
       serviceTimeout: Duration.seconds(20),
     });
