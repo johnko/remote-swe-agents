@@ -51,17 +51,15 @@ export class WorkerImageBuilder extends Construct {
 
     const securityGroup = new SecurityGroup(this, 'SecurityGroup', { vpc });
 
-    // Compute a deterministic hash of the install command for versioning.
-    // This ensures Image Builder creates new AMIs when worker setup changes.
-    const sourceHash = createHash('sha256')
-      .update(installDependenciesCommand)
-      .digest('hex')
-      .slice(0, 16); // Use first 16 chars to keep size small
+    // Hash the component template YAML to create a deterministic versioning key.
+    // Original code passed the full yaml.stringify which exceeded 16KB limit.
+    const componentContent = yaml.stringify(componentTemplate, { lineWidth: 0 });
+    const componentHash = createHash('sha256').update(componentContent).digest('hex');
 
     const componentVersion = new CustomResource(this, 'WorkerDependenciesVersion', {
       serviceToken: versioningHandler.functionArn,
       resourceType: 'Custom::ImageBuilderVersioning',
-      properties: { initialVersion: '0.0.0', key: `component-${sourceHash}` },
+      properties: { initialVersion: '0.0.0', key: componentHash },
       serviceTimeout: Duration.seconds(20),
     });
 
@@ -88,12 +86,24 @@ export class WorkerImageBuilder extends Construct {
       ],
     };
 
+    // Hash the image recipe config with component version for deterministic key.
+    const recipeContent = JSON.stringify({
+      parentImage: imagePipelineProps.parentImage,
+      subnetId: imagePipelineProps.subnetId,
+      securityGroups: imagePipelineProps.securityGroups,
+      amiIdSsmPath: imagePipelineProps.amiIdSsmPath,
+      instanceTypes: imagePipelineProps.instanceTypes,
+      ebsVolumeConfigurations: imagePipelineProps.ebsVolumeConfigurations,
+      componentHash: componentHash, // Include component hash for dependency tracking
+    });
+    const recipeHash = createHash('sha256').update(recipeContent).digest('hex');
+
     const recipeVersion = new CustomResource(this, 'ImageRecipeVersion', {
       serviceToken: versioningHandler.functionArn,
       resourceType: 'Custom::ImageBuilderVersioning',
       properties: {
         initialVersion: '0.0.0',
-        key: `recipe-${sourceHash}`,
+        key: recipeHash,
       },
       serviceTimeout: Duration.seconds(20),
     });
