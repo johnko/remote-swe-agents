@@ -12,6 +12,7 @@ import { AwsCustomResource, AwsCustomResourcePolicy, PhysicalResourceId } from '
 import { IBucket } from 'aws-cdk-lib/aws-s3';
 import { ManagedPolicy, PolicyStatement } from 'aws-cdk-lib/aws-iam';
 import { IStringParameter } from 'aws-cdk-lib/aws-ssm';
+import { createHash } from 'crypto';
 
 export interface WorkerImageBuilderProps {
   vpc: IVpc;
@@ -19,7 +20,7 @@ export interface WorkerImageBuilderProps {
   amiIdParameterName: string;
   amiIdParameter: IStringParameter;
   sourceBucket: IBucket;
-  sourceAssetHash: string;
+  sourceAssetHash?: string; // Deprecated: hash is now computed from source files
 }
 
 export class WorkerImageBuilder extends Construct {
@@ -28,7 +29,7 @@ export class WorkerImageBuilder extends Construct {
   constructor(scope: Construct, id: string, props: WorkerImageBuilderProps) {
     super(scope, id);
 
-    const { vpc, installDependenciesCommand, sourceBucket, sourceAssetHash } = props;
+    const { vpc, installDependenciesCommand, sourceBucket } = props;
 
     const componentTemplateString = readFileSync(
       join(__dirname, 'resources', 'image-component-template.yml')
@@ -50,12 +51,17 @@ export class WorkerImageBuilder extends Construct {
 
     const securityGroup = new SecurityGroup(this, 'SecurityGroup', { vpc });
 
-    // Use sourceAssetHash for change detection since component content contains
-    // non-deterministic CloudFormation tokens. The asset hash changes when source changes.
+    // Compute a deterministic hash of the install command for versioning.
+    // This ensures Image Builder creates new AMIs when worker setup changes.
+    const sourceHash = createHash('sha256')
+      .update(installDependenciesCommand)
+      .digest('hex')
+      .slice(0, 16); // Use first 16 chars to keep size small
+
     const componentVersion = new CustomResource(this, 'WorkerDependenciesVersion', {
       serviceToken: versioningHandler.functionArn,
       resourceType: 'Custom::ImageBuilderVersioning',
-      properties: { initialVersion: '0.0.0', key: `component-${sourceAssetHash}` },
+      properties: { initialVersion: '0.0.0', key: `component-${sourceHash}` },
       serviceTimeout: Duration.seconds(20),
     });
 
@@ -82,15 +88,12 @@ export class WorkerImageBuilder extends Construct {
       ],
     };
 
-    // Use sourceAssetHash for recipe versioning since the actual content contains
-    // non-deterministic CloudFormation tokens. Asset hash changes reliably on source changes.
-
     const recipeVersion = new CustomResource(this, 'ImageRecipeVersion', {
       serviceToken: versioningHandler.functionArn,
       resourceType: 'Custom::ImageBuilderVersioning',
       properties: {
         initialVersion: '0.0.0',
-        key: `recipe-${sourceAssetHash}`,
+        key: `recipe-${sourceHash}`,
       },
       serviceTimeout: Duration.seconds(20),
     });
