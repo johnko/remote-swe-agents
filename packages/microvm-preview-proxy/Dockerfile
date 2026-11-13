@@ -1,4 +1,4 @@
-FROM public.ecr.aws/docker/library/node:24.22.2-slim AS builder
+FROM public.ecr.aws/docker/library/node:24.22.3-slim AS builder
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci --ignore-scripts && npm audit --audit-level=low
@@ -6,7 +6,7 @@ COPY tsconfig.json ./
 COPY src/ ./src/
 RUN npx tsc
 
-FROM public.ecr.aws/docker/library/node:24.22.2-slim
+FROM public.ecr.aws/docker/library/node:24.22.3-slim
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci --omit=dev --ignore-scripts && npm cache clean --force
