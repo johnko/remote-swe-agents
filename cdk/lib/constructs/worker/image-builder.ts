@@ -51,10 +51,11 @@ export class WorkerImageBuilder extends Construct {
 
     const securityGroup = new SecurityGroup(this, 'SecurityGroup', { vpc });
 
-    // Hash the component template YAML to create a deterministic versioning key.
-    // Original code passed the full yaml.stringify which exceeded 16KB limit.
+    // Hash the normalized component content for deterministic versioning.
+    // Replace CloudFormation tokens with placeholders to ensure consistency across environments.
     const componentContent = yaml.stringify(componentTemplate, { lineWidth: 0 });
-    const componentHash = createHash('sha256').update(componentContent).digest('hex');
+    const normalizedContent = componentContent.replace(/\$\{[^}]+\}/g, '${TOKEN}');
+    const componentHash = createHash('sha256').update(normalizedContent).digest('hex');
 
     const componentVersion = new CustomResource(this, 'WorkerDependenciesVersion', {
       serviceToken: versioningHandler.functionArn,
