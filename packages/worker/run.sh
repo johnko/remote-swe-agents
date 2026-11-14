@@ -10,7 +10,7 @@ NODE_BIN=$(which node 2>/dev/null)
 # Verify node binary exists and is executable
 if [ -z "$NODE_BIN" ] || [ ! -x "$NODE_BIN" ]; then
   # Fallback to common locations
-  for path in "/root/.nvm/versions/node/v22.18.0/bin/node" "/usr/bin/node" "/usr/local/bin/node"; do
+  for path in "/root/.nvm/versions/node/v22.23.5/bin/node" "/usr/bin/node" "/usr/local/bin/node"; do
     if [ -x "$path" ]; then
       NODE_BIN="$path"
       break
