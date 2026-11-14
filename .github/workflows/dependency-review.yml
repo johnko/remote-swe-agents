@@ -20,7 +20,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Dependency Review
-        uses: actions/dependency-review-action@3b139cfb5920eb3c6d5d3fcefe123a5eb8c5d8a7 # v4.6.0
+        uses: actions/dependency-review-action@ce3cf9537a52e8119d91fd484ab5b8a807627bf8 # v4.6.0
         with:
           # Fail on moderate or higher severity vulnerabilities
           fail-on-severity: moderate
