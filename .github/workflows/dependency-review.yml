@@ -1,0 +1,34 @@
+name: Dependency Review
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  dependency-review:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Dependency Review
+        uses: actions/dependency-review-action@3b139cfb5920eb3c6d5d3fcefe123a5eb8c5d8a7 # v4.6.0
+        with:
+          # Fail on moderate or higher severity vulnerabilities
+          fail-on-severity: moderate
+          # Allow specific licenses (optional)
+          allow-licenses: MIT, Apache-2.0, BSD-3-Clause, BSD-2-Clause, ISC
+          # Ignore specific vulnerabilities if needed (use advisories URL)
+          # deny-packages: package-name@version
+          # Show openssf scorecard scores
+          show-openssf-scorecard: true
+          # Comment on PR with summary
+          comment-summary-in-pr: true
