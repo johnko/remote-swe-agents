@@ -4,7 +4,7 @@ RUN apt-get update && apt-get install -y
 RUN apt-get install -y curl wget jq
 
 RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.2/install.sh | bash
-ENV NODE_VERSION=22.18.0
+ENV NODE_VERSION=22.23.5
 ENV NVM_DIR=/root/.nvm
 RUN . "$NVM_DIR/nvm.sh" && nvm install ${NODE_VERSION} && nvm use v${NODE_VERSION} && nvm alias default v${NODE_VERSION}
 ENV PATH="/root/.local/bin/:/root/.nvm/versions/node/v${NODE_VERSION}/bin/:${PATH}"
