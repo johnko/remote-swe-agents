@@ -44,6 +44,16 @@ export const createNewSessionTool: ToolDefinition<z.infer<typeof inputSchema>> =
       return 'Error: Could not retrieve current session information.';
     }
 
+    // Authorization check: validate the caller can create sessions of the requested type
+    // - Child sessions: Any session can create child sessions (natural hierarchy extension)
+    // - Successor sessions: Any session can create successor sessions (for handover/context limit handling)
+    // - Independent sessions: Only top-level sessions can create independent top-level sessions
+    const callerIsTopLevel = !currentSession.parentSessionId;
+
+    if (input.role === 'independent' && !callerIsTopLevel) {
+      return 'Permission denied: only top-level sessions (no parent) can create independent sessions.';
+    }
+
     const initiator = currentSession.initiator ?? 'tool';
     let slackMentionUserId: string | undefined;
     if (initiator.startsWith('slack#')) {
@@ -129,6 +139,13 @@ The \`role\` parameter is REQUIRED. Pick the correct one:
 ## Cost awareness:
 - Creating a new session starts a new agent runtime, which incurs additional cost
 - You SHOULD confirm with the user before creating a session (e.g. "Shall I create a new session for this?")
+
+## Permission:
+- **"child"**: Any session can create child sessions — this is the natural hierarchy extension.
+- **"successor"**: Any session can create successor sessions — useful for handover when approaching context limits. For child sessions, the successor becomes a sibling (shares the same parent).
+- **"independent"**: Only top-level sessions (no parent) can create independent sessions.
+
+You can determine whether you are a top-level session by checking the Session Hierarchy section in your context. If there is no Parent session listed, you are top-level.
 
 ## Behavior:
 - The new session inherits the current session's agent configuration (custom agent, runtime type, etc.)
