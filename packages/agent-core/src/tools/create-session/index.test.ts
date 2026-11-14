@@ -130,21 +130,28 @@ describe('createNewSessionTool handler', () => {
     expect(result).toContain('0 existing child session(s)');
   });
 
-  test('role=successor from a child session places successor under the same parent via createSession', async () => {
+  test('role=successor from a child session places successor under the same parent (becomes sibling)', async () => {
+    const childContext = {
+      workerId: 'session-child-123',
+      toolUseId: 'tool-use-1',
+      globalPreferences: {} as GlobalPreferences,
+    };
+
     mockGetSession.mockResolvedValue({
       PK: 'sessions',
-      SK: 'session-parent-123',
-      workerId: 'session-parent-123',
+      SK: 'session-child-123',
+      workerId: 'session-child-123',
       initiator: 'webapp#user-1',
       parentSessionId: 'session-grandparent-000',
     });
-    mockGetChildSessions.mockResolvedValue([{ workerId: 'child-A' }]);
+    mockGetChildSessions.mockResolvedValue([{ workerId: 'grandchild-A' }]);
     mockCreateSession.mockResolvedValue('session-successor-999');
 
-    const result = await createNewSessionTool.handler({ message: 'take over', role: 'successor' }, context);
+    const result = await createNewSessionTool.handler({ message: 'take over', role: 'successor' }, childContext);
 
     expect(mockReparentSessions).toHaveBeenCalledTimes(1);
-    expect(mockReparentSessions).toHaveBeenCalledWith('session-successor-999', ['session-parent-123', 'child-A']);
+    expect(mockReparentSessions).toHaveBeenCalledWith('session-successor-999', ['session-child-123', 'grandchild-A']);
+    // Successor should share the same parent as the caller
     expect(mockCreateSession).toHaveBeenCalledWith(
       expect.objectContaining({ parentSessionId: 'session-grandparent-000' })
     );
@@ -167,5 +174,127 @@ describe('createNewSessionTool handler', () => {
     expect(mockReparentSessions).toHaveBeenCalledTimes(1);
     expect(mockReparentSessions).toHaveBeenCalledWith('session-newparent-789', ['session-parent-123']);
     expect(mockCreateSession).toHaveBeenCalledWith(expect.objectContaining({ parentSessionId: undefined }));
+  });
+
+  describe('authorization checks', () => {
+    test('role=independent denied when caller is not top-level (has parent)', async () => {
+      mockGetSession.mockResolvedValue({
+        PK: 'sessions',
+        SK: 'session-child-123',
+        workerId: 'session-child-123',
+        initiator: 'webapp#user-1',
+        parentSessionId: 'session-parent-000',
+      });
+
+      const childContext = {
+        workerId: 'session-child-123',
+        toolUseId: 'tool-use-1',
+        globalPreferences: {} as GlobalPreferences,
+      };
+
+      const result = await createNewSessionTool.handler({ message: 'new topic', role: 'independent' }, childContext);
+
+      expect(mockCreateSession).not.toHaveBeenCalled();
+      expect(result).toContain('Permission denied');
+      expect(result).toContain('only top-level sessions');
+    });
+
+    test('role=child allowed for non-top-level sessions', async () => {
+      mockGetSession.mockResolvedValue({
+        PK: 'sessions',
+        SK: 'session-child-123',
+        workerId: 'session-child-123',
+        initiator: 'webapp#user-1',
+        parentSessionId: 'session-parent-000',
+      });
+
+      const childContext = {
+        workerId: 'session-child-123',
+        toolUseId: 'tool-use-1',
+        globalPreferences: {} as GlobalPreferences,
+      };
+
+      const result = await createNewSessionTool.handler({ message: 'sub-task', role: 'child' }, childContext);
+
+      expect(mockCreateSession).toHaveBeenCalledTimes(1);
+      expect(result).toContain('session-child-456');
+    });
+
+    test('role=successor allowed for top-level sessions (creates new top-level)', async () => {
+      mockGetSession.mockResolvedValue({
+        PK: 'sessions',
+        SK: 'session-top-123',
+        workerId: 'session-top-123',
+        initiator: 'webapp#user-1',
+        // no parentSessionId means top-level
+      });
+      mockGetChildSessions.mockResolvedValue([]);
+      mockCreateSession.mockResolvedValue('session-successor-789');
+
+      const topContext = {
+        workerId: 'session-top-123',
+        toolUseId: 'tool-use-1',
+        globalPreferences: {} as GlobalPreferences,
+      };
+
+      const result = await createNewSessionTool.handler({ message: 'take over', role: 'successor' }, topContext);
+
+      expect(mockCreateSession).toHaveBeenCalledTimes(1);
+      // Top-level session's successor has no parent
+      expect(mockCreateSession).toHaveBeenCalledWith(expect.objectContaining({ parentSessionId: undefined }));
+      expect(result).toContain('Parent handover complete');
+    });
+
+    test('role=successor allowed for child sessions (for context limit handover)', async () => {
+      mockGetSession.mockResolvedValue({
+        PK: 'sessions',
+        SK: 'session-child-123',
+        workerId: 'session-child-123',
+        initiator: 'webapp#user-1',
+        parentSessionId: 'session-parent-000',
+      });
+      mockGetChildSessions.mockResolvedValue([]);
+      mockCreateSession.mockResolvedValue('session-successor-handover');
+
+      const childContext = {
+        workerId: 'session-child-123',
+        toolUseId: 'tool-use-1',
+        globalPreferences: {} as GlobalPreferences,
+      };
+
+      const result = await createNewSessionTool.handler(
+        { message: 'handover - context limit', role: 'successor' },
+        childContext
+      );
+
+      expect(mockCreateSession).toHaveBeenCalledTimes(1);
+      // Child's successor shares the same parent (becomes a sibling)
+      expect(mockCreateSession).toHaveBeenCalledWith(
+        expect.objectContaining({ parentSessionId: 'session-parent-000' })
+      );
+      expect(result).toContain('Parent handover complete');
+    });
+
+    test('role=independent allowed for top-level sessions', async () => {
+      mockGetSession.mockResolvedValue({
+        PK: 'sessions',
+        SK: 'session-top-123',
+        workerId: 'session-top-123',
+        initiator: 'webapp#user-1',
+        // no parentSessionId means top-level
+      });
+      mockCreateSession.mockResolvedValue('session-independent-789');
+
+      const topContext = {
+        workerId: 'session-top-123',
+        toolUseId: 'tool-use-1',
+        globalPreferences: {} as GlobalPreferences,
+      };
+
+      const result = await createNewSessionTool.handler({ message: 'new topic', role: 'independent' }, topContext);
+
+      expect(mockCreateSession).toHaveBeenCalledTimes(1);
+      expect(result).toContain('New session created successfully');
+    });
   });
 });
