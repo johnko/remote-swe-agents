@@ -29,7 +29,7 @@
     "@aws-sdk/client-ec2": "3.983.0",
     "@aws-sdk/client-secrets-manager": "3.1117.0",
     "@aws-sdk/client-ssm": "3.1130.0",
-    "@cdklabs/deploy-time-build": "0.0.9",
+    "@cdklabs/deploy-time-build": "0.1.16",
     "aws-cdk-lib": "2.275.0",
     "cdk-image-pipeline": "0.5.133",
     "cdk-nag": "2.37.56",
