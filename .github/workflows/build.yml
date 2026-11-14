@@ -234,9 +234,8 @@ jobs:
         run: npm ci
       # Type-check all packages that have TypeScript build scripts
       # This catches type errors before Docker builds fail silently
-      # Note: agent-core must always be built before worker since worker depends on it
       - name: Type-check agent-core
-        if: ${{ needs.changes.outputs.agent_core == 'true' || needs.changes.outputs.worker == 'true' || github.event_name == 'push' || github.event_name == 'workflow_dispatch' }}
+        if: ${{ needs.changes.outputs.agent_core == 'true' || github.event_name == 'push' || github.event_name == 'workflow_dispatch' }}
         run: npm run build -w packages/agent-core
       - name: Type-check worker
         if: ${{ needs.changes.outputs.worker == 'true' || github.event_name == 'push' || github.event_name == 'workflow_dispatch' }}
