@@ -210,6 +210,7 @@ export class Worker extends Construct {
     // Update these values when upgrading versions to prevent supply chain attacks
     // To get SHA256: curl -fsSL <url> | sha256sum
     const nvmSha256 = 'a909fdd01765379ebc5983674adafb8bc9de6d928bfa188761309d4a0c36be0f';
+    const uvSha256 = 'ca1e8196672bf04ccb926519f2071208a8d6c0ce02fb65bc7d0a85be1b684b0f';
 
     // Tool installation script for Image Builder (AMI creation)
     // This goes into the AMI and should only include tool installations
@@ -286,16 +287,29 @@ sudo -u ubuntu bash -c 'git config --global user.email "${
       props.gitHubApp?.appId ?? '123456'
     }+remote-swe-app[bot]@users.noreply.github.com"'
 
-# Install uv (Python package manager) via apt instead of curl | sh
-# SECURITY: Use signed packages instead of piping scripts to shell
-# uv provides signed deb packages through GitHub releases
+# Install uv (Python package manager) from GitHub releases with SHA-256 verification
+# SECURITY: Verify download integrity to prevent supply chain attacks
+# uv provides pre-built binaries as tar.gz archives with SHA256 checksums
 UV_VERSION="0.7.0"
-UV_DEB_URL="https://github.com/astral-sh/uv/releases/download/\${UV_VERSION}/uv_\${UV_VERSION}_amd64.deb"
-UV_TEMP_DEB="/tmp/uv.deb"
-curl -fsSL "\$UV_DEB_URL" -o "\$UV_TEMP_DEB"
-# dpkg installs the package; apt-get will fix any dependency issues
-dpkg -i "\$UV_TEMP_DEB" || (apt-get -o DPkg::Lock::Timeout=-1 update && apt-get -o DPkg::Lock::Timeout=-1 install -f -y)
-rm -f "\$UV_TEMP_DEB"
+UV_TAR_URL="https://github.com/astral-sh/uv/releases/download/\${UV_VERSION}/uv-x86_64-unknown-linux-gnu.tar.gz"
+UV_TEMP_DIR="/tmp/uv-install"
+UV_EXPECTED_SHA256="\${uvSha256}"
+mkdir -p "\$UV_TEMP_DIR"
+curl -fsSL "\$UV_TAR_URL" -o "\$UV_TEMP_DIR/uv.tar.gz"
+# Verify SHA256 if configured (prevents supply chain attacks)
+if [ -n "\$UV_EXPECTED_SHA256" ]; then
+  UV_ACTUAL_SHA256=\$(sha256sum "\$UV_TEMP_DIR/uv.tar.gz" | awk '{print \$1}')
+  if [ "\$UV_ACTUAL_SHA256" != "\$UV_EXPECTED_SHA256" ]; then
+    echo "ERROR: uv tar.gz SHA256 mismatch! Expected: \$UV_EXPECTED_SHA256, Got: \$UV_ACTUAL_SHA256" >&2
+    rm -rf "\$UV_TEMP_DIR"
+    exit 1
+  fi
+fi
+tar -xzf "\$UV_TEMP_DIR/uv.tar.gz" -C "\$UV_TEMP_DIR"
+# Move binaries to /usr/local/bin
+mv "\$UV_TEMP_DIR/uv" /usr/local/bin/
+mv "\$UV_TEMP_DIR/uvx" /usr/local/bin/
+rm -rf "\$UV_TEMP_DIR"
     `.trim();
 
     userData.addCommands(
@@ -372,16 +386,29 @@ sudo -u ubuntu bash -c 'git config --global user.email "${
         props.gitHubApp?.appId ?? '123456'
       }+remote-swe-app[bot]@users.noreply.github.com"'
 
-# Install uv (Python package manager) via apt instead of curl | sh
-# SECURITY: Use signed packages instead of piping scripts to shell
-# uv provides signed deb packages through GitHub releases
+# Install uv (Python package manager) from GitHub releases with SHA-256 verification
+# SECURITY: Verify download integrity to prevent supply chain attacks
+# uv provides pre-built binaries as tar.gz archives with SHA256 checksums
 UV_VERSION="0.7.0"
-UV_DEB_URL="https://github.com/astral-sh/uv/releases/download/\${UV_VERSION}/uv_\${UV_VERSION}_amd64.deb"
-UV_TEMP_DEB="/tmp/uv.deb"
-curl -fsSL "$UV_DEB_URL" -o "$UV_TEMP_DEB"
-# dpkg installs the package; apt-get will fix any dependency issues
-dpkg -i "$UV_TEMP_DEB" || (apt-get -o DPkg::Lock::Timeout=-1 update && apt-get -o DPkg::Lock::Timeout=-1 install -f -y)
-rm -f "$UV_TEMP_DEB"
+UV_TAR_URL="https://github.com/astral-sh/uv/releases/download/\${UV_VERSION}/uv-x86_64-unknown-linux-gnu.tar.gz"
+UV_TEMP_DIR="/tmp/uv-install"
+UV_EXPECTED_SHA256="${uvSha256}"
+mkdir -p "$UV_TEMP_DIR"
+curl -fsSL "$UV_TAR_URL" -o "$UV_TEMP_DIR/uv.tar.gz"
+# Verify SHA256 if configured (prevents supply chain attacks)
+if [ -n "$UV_EXPECTED_SHA256" ]; then
+  UV_ACTUAL_SHA256=$(sha256sum "$UV_TEMP_DIR/uv.tar.gz" | awk '{print $1}')
+  if [ "$UV_ACTUAL_SHA256" != "$UV_EXPECTED_SHA256" ]; then
+    echo "ERROR: uv tar.gz SHA256 mismatch! Expected: $UV_EXPECTED_SHA256, Got: $UV_ACTUAL_SHA256" >&2
+    rm -rf "$UV_TEMP_DIR"
+    exit 1
+  fi
+fi
+tar -xzf "$UV_TEMP_DIR/uv.tar.gz" -C "$UV_TEMP_DIR"
+# Move binaries to /usr/local/bin
+mv "$UV_TEMP_DIR/uv" /usr/local/bin/
+mv "$UV_TEMP_DIR/uvx" /usr/local/bin/
+rm -rf "$UV_TEMP_DIR"
       `.trim()
     );
 

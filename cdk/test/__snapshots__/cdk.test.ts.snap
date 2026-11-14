@@ -7090,16 +7090,29 @@ phases:
               sudo -u ubuntu bash -c 'git config --global user.name "remote-swe-app[bot]"'
               sudo -u ubuntu bash -c 'git config --global user.email "123456+remote-swe-app[bot]@users.noreply.github.com"'
 
-              # Install uv (Python package manager) via apt instead of curl | sh
-              # SECURITY: Use signed packages instead of piping scripts to shell
-              # uv provides signed deb packages through GitHub releases
+              # Install uv (Python package manager) from GitHub releases with SHA-256 verification
+              # SECURITY: Verify download integrity to prevent supply chain attacks
+              # uv provides pre-built binaries as tar.gz archives with SHA256 checksums
               UV_VERSION="0.7.0"
-              UV_DEB_URL="https://github.com/astral-sh/uv/releases/download/\${UV_VERSION}/uv_\${UV_VERSION}_amd64.deb"
-              UV_TEMP_DEB="/tmp/uv.deb"
-              curl -fsSL "$UV_DEB_URL" -o "$UV_TEMP_DEB"
-              # dpkg installs the package; apt-get will fix any dependency issues
-              dpkg -i "$UV_TEMP_DEB" || (apt-get -o DPkg::Lock::Timeout=-1 update && apt-get -o DPkg::Lock::Timeout=-1 install -f -y)
-              rm -f "$UV_TEMP_DEB"
+              UV_TAR_URL="https://github.com/astral-sh/uv/releases/download/\${UV_VERSION}/uv-x86_64-unknown-linux-gnu.tar.gz"
+              UV_TEMP_DIR="/tmp/uv-install"
+              UV_EXPECTED_SHA256="\${uvSha256}"
+              mkdir -p "$UV_TEMP_DIR"
+              curl -fsSL "$UV_TAR_URL" -o "$UV_TEMP_DIR/uv.tar.gz"
+              # Verify SHA256 if configured (prevents supply chain attacks)
+              if [ -n "$UV_EXPECTED_SHA256" ]; then
+                UV_ACTUAL_SHA256=$(sha256sum "$UV_TEMP_DIR/uv.tar.gz" | awk '{print $1}')
+                if [ "$UV_ACTUAL_SHA256" != "$UV_EXPECTED_SHA256" ]; then
+                  echo "ERROR: uv tar.gz SHA256 mismatch! Expected: $UV_EXPECTED_SHA256, Got: $UV_ACTUAL_SHA256" >&2
+                  rm -rf "$UV_TEMP_DIR"
+                  exit 1
+                fi
+              fi
+              tar -xzf "$UV_TEMP_DIR/uv.tar.gz" -C "$UV_TEMP_DIR"
+              # Move binaries to /usr/local/bin
+              mv "$UV_TEMP_DIR/uv" /usr/local/bin/
+              mv "$UV_TEMP_DIR/uvx" /usr/local/bin/
+              rm -rf "$UV_TEMP_DIR"
   - name: validate
     steps:
       - name: ValidateStep
@@ -7458,16 +7471,29 @@ phases:
               sudo -u ubuntu bash -c 'git config --global user.name "remote-swe-app[bot]"'
               sudo -u ubuntu bash -c 'git config --global user.email "123456+remote-swe-app[bot]@users.noreply.github.com"'
 
-              # Install uv (Python package manager) via apt instead of curl | sh
-              # SECURITY: Use signed packages instead of piping scripts to shell
-              # uv provides signed deb packages through GitHub releases
+              # Install uv (Python package manager) from GitHub releases with SHA-256 verification
+              # SECURITY: Verify download integrity to prevent supply chain attacks
+              # uv provides pre-built binaries as tar.gz archives with SHA256 checksums
               UV_VERSION="0.7.0"
-              UV_DEB_URL="https://github.com/astral-sh/uv/releases/download/\${UV_VERSION}/uv_\${UV_VERSION}_amd64.deb"
-              UV_TEMP_DEB="/tmp/uv.deb"
-              curl -fsSL "$UV_DEB_URL" -o "$UV_TEMP_DEB"
-              # dpkg installs the package; apt-get will fix any dependency issues
-              dpkg -i "$UV_TEMP_DEB" || (apt-get -o DPkg::Lock::Timeout=-1 update && apt-get -o DPkg::Lock::Timeout=-1 install -f -y)
-              rm -f "$UV_TEMP_DEB"
+              UV_TAR_URL="https://github.com/astral-sh/uv/releases/download/\${UV_VERSION}/uv-x86_64-unknown-linux-gnu.tar.gz"
+              UV_TEMP_DIR="/tmp/uv-install"
+              UV_EXPECTED_SHA256="\${uvSha256}"
+              mkdir -p "$UV_TEMP_DIR"
+              curl -fsSL "$UV_TAR_URL" -o "$UV_TEMP_DIR/uv.tar.gz"
+              # Verify SHA256 if configured (prevents supply chain attacks)
+              if [ -n "$UV_EXPECTED_SHA256" ]; then
+                UV_ACTUAL_SHA256=$(sha256sum "$UV_TEMP_DIR/uv.tar.gz" | awk '{print $1}')
+                if [ "$UV_ACTUAL_SHA256" != "$UV_EXPECTED_SHA256" ]; then
+                  echo "ERROR: uv tar.gz SHA256 mismatch! Expected: $UV_EXPECTED_SHA256, Got: $UV_ACTUAL_SHA256" >&2
+                  rm -rf "$UV_TEMP_DIR"
+                  exit 1
+                fi
+              fi
+              tar -xzf "$UV_TEMP_DIR/uv.tar.gz" -C "$UV_TEMP_DIR"
+              # Move binaries to /usr/local/bin
+              mv "$UV_TEMP_DIR/uv" /usr/local/bin/
+              mv "$UV_TEMP_DIR/uvx" /usr/local/bin/
+              rm -rf "$UV_TEMP_DIR"
   - name: validate
     steps:
       - name: ValidateStep
@@ -7637,16 +7663,29 @@ apt-get -o DPkg::Lock::Timeout=-1 install -y gh
 sudo -u ubuntu bash -c 'git config --global user.name "remote-swe-app[bot]"'
 sudo -u ubuntu bash -c 'git config --global user.email "123456+remote-swe-app[bot]@users.noreply.github.com"'
 
-# Install uv (Python package manager) via apt instead of curl | sh
-# SECURITY: Use signed packages instead of piping scripts to shell
-# uv provides signed deb packages through GitHub releases
+# Install uv (Python package manager) from GitHub releases with SHA-256 verification
+# SECURITY: Verify download integrity to prevent supply chain attacks
+# uv provides pre-built binaries as tar.gz archives with SHA256 checksums
 UV_VERSION="0.7.0"
-UV_DEB_URL="https://github.com/astral-sh/uv/releases/download/\${UV_VERSION}/uv_\${UV_VERSION}_amd64.deb"
-UV_TEMP_DEB="/tmp/uv.deb"
-curl -fsSL "$UV_DEB_URL" -o "$UV_TEMP_DEB"
-# dpkg installs the package; apt-get will fix any dependency issues
-dpkg -i "$UV_TEMP_DEB" || (apt-get -o DPkg::Lock::Timeout=-1 update && apt-get -o DPkg::Lock::Timeout=-1 install -f -y)
-rm -f "$UV_TEMP_DEB"
+UV_TAR_URL="https://github.com/astral-sh/uv/releases/download/\${UV_VERSION}/uv-x86_64-unknown-linux-gnu.tar.gz"
+UV_TEMP_DIR="/tmp/uv-install"
+UV_EXPECTED_SHA256="ca1e8196672bf04ccb926519f2071208a8d6c0ce02fb65bc7d0a85be1b684b0f"
+mkdir -p "$UV_TEMP_DIR"
+curl -fsSL "$UV_TAR_URL" -o "$UV_TEMP_DIR/uv.tar.gz"
+# Verify SHA256 if configured (prevents supply chain attacks)
+if [ -n "$UV_EXPECTED_SHA256" ]; then
+  UV_ACTUAL_SHA256=$(sha256sum "$UV_TEMP_DIR/uv.tar.gz" | awk '{print $1}')
+  if [ "$UV_ACTUAL_SHA256" != "$UV_EXPECTED_SHA256" ]; then
+    echo "ERROR: uv tar.gz SHA256 mismatch! Expected: $UV_EXPECTED_SHA256, Got: $UV_ACTUAL_SHA256" >&2
+    rm -rf "$UV_TEMP_DIR"
+    exit 1
+  fi
+fi
+tar -xzf "$UV_TEMP_DIR/uv.tar.gz" -C "$UV_TEMP_DIR"
+# Move binaries to /usr/local/bin
+mv "$UV_TEMP_DIR/uv" /usr/local/bin/
+mv "$UV_TEMP_DIR/uvx" /usr/local/bin/
+rm -rf "$UV_TEMP_DIR"
 aws ssm get-parameter     --name /remote-swe/github/app-private-key     --query "Parameter.Value"     --output text > /opt/private-key.pem
 # SECURITY: Download gh-token binary with version pinning
 GH_TOKEN_VERSION="2.0.4"
