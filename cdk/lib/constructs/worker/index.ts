@@ -324,7 +324,7 @@ if [ -n "\$UV_EXPECTED_SHA256" ]; then
     exit 1
   fi
 fi
-tar -xzf "\$UV_TEMP_DIR/uv.tar.gz" -C "\$UV_TEMP_DIR"
+tar -xzf "\$UV_TEMP_DIR/uv.tar.gz" -C "\$UV_TEMP_DIR" --strip-components=1
 # Move binaries to /usr/local/bin
 mv "\$UV_TEMP_DIR/uv" /usr/local/bin/
 mv "\$UV_TEMP_DIR/uvx" /usr/local/bin/
@@ -423,7 +423,7 @@ if [ -n "$UV_EXPECTED_SHA256" ]; then
     exit 1
   fi
 fi
-tar -xzf "$UV_TEMP_DIR/uv.tar.gz" -C "$UV_TEMP_DIR"
+tar -xzf "$UV_TEMP_DIR/uv.tar.gz" -C "$UV_TEMP_DIR" --strip-components=1
 # Move binaries to /usr/local/bin
 mv "$UV_TEMP_DIR/uv" /usr/local/bin/
 mv "$UV_TEMP_DIR/uvx" /usr/local/bin/
