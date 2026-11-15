@@ -244,7 +244,7 @@ jobs:
 
   Build-and-Test-Dockerfiles:
     needs: [changes, Type-Check-Packages]
-    if: ${{ needs.changes.outputs.dockerfiles == 'true' || needs.changes.outputs.slack_bolt_app == 'true' || needs.changes.outputs.agent_core == 'true' || (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'workflow_dispatch' }}
+    if: ${{ needs.changes.outputs.dockerfiles == 'true' || needs.changes.outputs.slack_bolt_app == 'true' || needs.changes.outputs.webapp == 'true' || needs.changes.outputs.agent_core == 'true' || (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
