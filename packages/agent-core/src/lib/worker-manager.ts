@@ -4,13 +4,12 @@ import {
   StartInstancesCommand,
   StopInstancesCommand,
 } from '@aws-sdk/client-ec2';
-import { GetParameterCommand, ParameterNotFound } from '@aws-sdk/client-ssm';
 import {
   BedrockAgentCoreClient,
   InvokeAgentRuntimeCommand,
   StopRuntimeSessionCommand,
 } from '@aws-sdk/client-bedrock-agentcore';
-import { ec2, ssm } from './aws/index.js';
+import { ec2 } from './aws/index.js';
 import { sendWebappEvent } from './events.js';
 import { getSession, updateSession } from './sessions.js';
 import { InstanceStatus, RuntimeType } from '../schema/index.js';
@@ -18,7 +17,6 @@ import { InstanceStatus, RuntimeType } from '../schema/index.js';
 const agentCore = new BedrockAgentCoreClient();
 
 const LaunchTemplateId = process.env.WORKER_LAUNCH_TEMPLATE_ID!;
-const WorkerAmiParameterName = process.env.WORKER_AMI_PARAMETER_NAME ?? '';
 const SubnetIdList = process.env.SUBNET_ID_LIST?.split(',') ?? [];
 
 /**
@@ -92,47 +90,19 @@ async function restartWorkerInstance(instanceId: string) {
   }
 }
 
-async function fetchWorkerAmiId(workerAmiParameterName: string): Promise<string | undefined> {
-  try {
-    const result = await ssm.send(
-      new GetParameterCommand({
-        Name: workerAmiParameterName,
-      })
-    );
-    return result.Parameter?.Value;
-  } catch (e) {
-    if (e instanceof ParameterNotFound) {
-      return;
-    }
-    throw e;
-  }
-}
-
 async function createWorkerInstance(
   workerId: string,
   launchTemplateId: string,
-  workerAmiParameterName: string,
   subnetId: string
-): Promise<{ instanceId: string; usedCache: boolean }> {
-  const imageId = await fetchWorkerAmiId(workerAmiParameterName);
-
+): Promise<{ instanceId: string }> {
   const runInstancesCommand = new RunInstancesCommand({
     LaunchTemplate: {
       LaunchTemplateId: launchTemplateId,
       Version: '$Latest',
     },
-    ImageId: imageId,
     MinCount: 1,
     MaxCount: 1,
     SubnetId: subnetId,
-    // Remove UserData if launching from our AMI, where all the dependencies are already installed.
-    UserData: imageId
-      ? Buffer.from(
-          `
-#!/bin/bash
-    `.trim()
-        ).toString('base64')
-      : undefined,
     TagSpecifications: [
       {
         ResourceType: 'instance',
@@ -149,7 +119,7 @@ async function createWorkerInstance(
   try {
     const response = await ec2.send(runInstancesCommand);
     if (response.Instances && response.Instances.length > 0 && response.Instances[0].InstanceId) {
-      return { instanceId: response.Instances[0].InstanceId, usedCache: !!imageId };
+      return { instanceId: response.Instances[0].InstanceId };
     }
     throw new Error('Failed to create EC2 instance');
   } catch (error) {
@@ -161,7 +131,7 @@ async function createWorkerInstance(
 export async function getOrCreateWorkerInstance(
   workerId: string,
   workerType: 'agent-core' | 'ec2' = 'ec2'
-): Promise<{ instanceId: string; oldStatus: 'stopped' | 'terminated' | 'running'; usedCache?: boolean }> {
+): Promise<{ instanceId: string; oldStatus: 'stopped' | 'terminated' | 'running' }> {
   if (workerType == 'agent-core') {
     // Only set 'starting' if the session is not already running
     const session = await getSession(workerId);
@@ -203,13 +173,8 @@ export async function getOrCreateWorkerInstance(
   const subnetId = SubnetIdList[Math.floor(Math.random() * SubnetIdList.length)];
   // If no instance exists, create a new one
   await updateInstanceStatus(workerId, 'starting');
-  const { instanceId, usedCache } = await createWorkerInstance(
-    workerId,
-    LaunchTemplateId,
-    WorkerAmiParameterName,
-    subnetId
-  );
-  return { instanceId, oldStatus: 'terminated', usedCache };
+  const { instanceId } = await createWorkerInstance(workerId, LaunchTemplateId, subnetId);
+  return { instanceId, oldStatus: 'terminated' };
 }
 
 /**
