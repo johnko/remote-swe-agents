@@ -7104,7 +7104,7 @@ phases:
                   exit 1
                 fi
               fi
-              tar -xzf "$UV_TEMP_DIR/uv.tar.gz" -C "$UV_TEMP_DIR"
+              tar -xzf "$UV_TEMP_DIR/uv.tar.gz" -C "$UV_TEMP_DIR" --strip-components=1
               # Move binaries to /usr/local/bin
               mv "$UV_TEMP_DIR/uv" /usr/local/bin/
               mv "$UV_TEMP_DIR/uvx" /usr/local/bin/
@@ -7119,6 +7119,8 @@ phases:
             - docker --version || exit 1
             - python --version || exit 1
             - gh --version || exit 1
+            - /usr/local/bin/uv --version || exit 1
+            - /usr/local/bin/uvx --version || exit 1
             - sudo -u ubuntu bash -i -c "node --version" || exit 1
             - sudo -u ubuntu bash -i -c "npm --version" || exit 1
             - sudo -u ubuntu bash -i -c "npx --version" || exit 1
@@ -7132,6 +7134,8 @@ phases:
             - docker --version || exit 1
             - python --version || exit 1
             - gh --version || exit 1
+            - /usr/local/bin/uv --version || exit 1
+            - /usr/local/bin/uvx --version || exit 1
             - sudo -u ubuntu bash -i -c "node --version" || exit 1
             - sudo -u ubuntu bash -i -c "npm --version" || exit 1
             - sudo -u ubuntu bash -i -c "npx --version" || exit 1
@@ -7481,7 +7485,7 @@ phases:
                   exit 1
                 fi
               fi
-              tar -xzf "$UV_TEMP_DIR/uv.tar.gz" -C "$UV_TEMP_DIR"
+              tar -xzf "$UV_TEMP_DIR/uv.tar.gz" -C "$UV_TEMP_DIR" --strip-components=1
               # Move binaries to /usr/local/bin
               mv "$UV_TEMP_DIR/uv" /usr/local/bin/
               mv "$UV_TEMP_DIR/uvx" /usr/local/bin/
@@ -7496,6 +7500,8 @@ phases:
             - docker --version || exit 1
             - python --version || exit 1
             - gh --version || exit 1
+            - /usr/local/bin/uv --version || exit 1
+            - /usr/local/bin/uvx --version || exit 1
             - sudo -u ubuntu bash -i -c "node --version" || exit 1
             - sudo -u ubuntu bash -i -c "npm --version" || exit 1
             - sudo -u ubuntu bash -i -c "npx --version" || exit 1
@@ -7509,6 +7515,8 @@ phases:
             - docker --version || exit 1
             - python --version || exit 1
             - gh --version || exit 1
+            - /usr/local/bin/uv --version || exit 1
+            - /usr/local/bin/uvx --version || exit 1
             - sudo -u ubuntu bash -i -c "node --version" || exit 1
             - sudo -u ubuntu bash -i -c "npm --version" || exit 1
             - sudo -u ubuntu bash -i -c "npx --version" || exit 1
@@ -7678,7 +7686,7 @@ if [ -n "$UV_EXPECTED_SHA256" ]; then
     exit 1
   fi
 fi
-tar -xzf "$UV_TEMP_DIR/uv.tar.gz" -C "$UV_TEMP_DIR"
+tar -xzf "$UV_TEMP_DIR/uv.tar.gz" -C "$UV_TEMP_DIR" --strip-components=1
 # Move binaries to /usr/local/bin
 mv "$UV_TEMP_DIR/uv" /usr/local/bin/
 mv "$UV_TEMP_DIR/uvx" /usr/local/bin/
