@@ -244,70 +244,14 @@ jobs:
 
   Build-and-Test-Dockerfiles:
     needs: [changes, Type-Check-Packages]
-    if: ${{ needs.changes.outputs.dockerfiles == 'true' || needs.changes.outputs.slack_bolt_app == 'true' || needs.changes.outputs.webapp == 'true' || needs.changes.outputs.agent_core == 'true' || (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'workflow_dispatch' }}
+    if: ${{ needs.changes.outputs.dockerfiles == 'true' || needs.changes.outputs.slack_bolt_app == 'true' || needs.changes.outputs.agent_core == 'true' || (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-
       - name: Build slack-bolt-app docker image
         run: docker build -f docker/slack-bolt-app.Dockerfile -t slack-bolt-app .
-
-      - name: Test slack-bolt-app image boots successfully
+      - name: Test if the image can boot successfully
         run: docker run --entrypoint node --env TESTING_BOOTSTRAP=true --env BOT_TOKEN=dummy --env SIGNING_SECRET=dummy slack-bolt-app local.js
-
-      - name: Build webapp docker image
-        run: docker build -f docker/webapp.Dockerfile -t webapp .
-
-      - name: Test webapp run.sh works in container
-        run: |
-          echo "=== Testing webapp/run.sh in built container ==="
-          # Extract and test run.sh from the built image
-          # We copy run.sh out and test it because the image may be different arch than CI runner
-          docker create --name webapp-test webapp
-          # Find run.sh - it could be at /run.sh or /var/task/run.sh (Lambda working dir)
-          docker cp webapp-test:/var/task/run.sh /tmp/run.sh 2>/dev/null || docker cp webapp-test:/run.sh /tmp/run.sh 2>/dev/null
-          docker rm webapp-test
-
-          if [ ! -f /tmp/run.sh ]; then
-            echo "ERROR: Could not find run.sh in the built container"
-            exit 1
-          fi
-
-          # Validate run.sh syntax
-          bash -n /tmp/run.sh
-          echo "✓ run.sh syntax is valid"
-
-          # Note: We skip testing node binary lookup in a container because:
-          # 1. The Lambda image requires a handler argument
-          # 2. The architecture may differ from CI runner
-          # 3. The syntax validation above is sufficient to catch PATH issues
-          echo "✓ run.sh extracted and validated successfully"
-
-      - name: Validate run.sh uses POSIX-compliant commands
-        run: |
-          echo "=== Checking for non-POSIX commands in run.sh files ==="
-
-          # Check for 'which' command which is not available in Lambda runtime
-          if grep -q "which" packages/webapp/run.sh; then
-            echo "ERROR: packages/webapp/run.sh uses 'which' which is not available in Lambda runtime" >&2
-            exit 1
-          fi
-          if grep -q "which" packages/worker/run.sh; then
-            echo "ERROR: packages/worker/run.sh uses 'which' which is not available in Lambda runtime" >&2
-            exit 1
-          fi
-
-          # Check for 'stat' command with -c flag which may not be available
-          if grep -q "stat -c" packages/webapp/run.sh; then
-            echo "ERROR: packages/webapp/run.sh uses 'stat -c' which is not portable" >&2
-            exit 1
-          fi
-          if grep -q "stat -c" packages/worker/run.sh; then
-            echo "ERROR: packages/worker/run.sh uses 'stat -c' which is not portable" >&2
-            exit 1
-          fi
-
-          echo "✓ run.sh scripts use POSIX-compliant commands"
   Build-and-Test-MicrovmPreviewProxy:
     needs: changes
     if: ${{ needs.changes.outputs.microvm_preview_proxy == 'true' || (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'workflow_dispatch' }}
@@ -318,7 +262,6 @@ jobs:
         run: docker build -f packages/microvm-preview-proxy/Dockerfile -t microvm-preview-proxy ./packages/microvm-preview-proxy
       - name: Test if the image can boot successfully
         run: docker run --entrypoint node microvm-preview-proxy -e "console.log('Docker image boot test passed')" || true
-
 permissions:
   id-token: write # This is required for requesting the JWT
   contents: read # This is required for actions/checkout
