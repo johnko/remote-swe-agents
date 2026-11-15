@@ -222,7 +222,7 @@ jobs:
         run: npm run build -w packages/github-actions
   Type-Check-Packages:
     needs: changes
-    if: ${{ needs.changes.outputs.agent_core == 'true' || needs.changes.outputs.worker == 'true' || needs.changes.outputs.webapp == 'true' || (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'workflow_dispatch' }}
+    if: ${{ needs.changes.outputs.agent_core == 'true' || needs.changes.outputs.worker == 'true' || needs.changes.outputs.webapp == 'true' || needs.changes.outputs.dockerfiles == 'true' || (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -236,10 +236,10 @@ jobs:
       # This catches type errors before Docker builds fail silently
       # Note: agent-core must always be built before worker since worker depends on it
       - name: Type-check agent-core
-        if: ${{ needs.changes.outputs.agent_core == 'true' || needs.changes.outputs.worker == 'true' || github.event_name == 'push' || github.event_name == 'workflow_dispatch' }}
+        if: ${{ needs.changes.outputs.agent_core == 'true' || needs.changes.outputs.worker == 'true' || needs.changes.outputs.dockerfiles == 'true' || github.event_name == 'push' || github.event_name == 'workflow_dispatch' }}
         run: npm run build -w packages/agent-core
       - name: Type-check worker
-        if: ${{ needs.changes.outputs.worker == 'true' || github.event_name == 'push' || github.event_name == 'workflow_dispatch' }}
+        if: ${{ needs.changes.outputs.worker == 'true' || needs.changes.outputs.dockerfiles == 'true' || github.event_name == 'push' || github.event_name == 'workflow_dispatch' }}
         run: npm run build -w packages/worker
 
   Build-and-Test-Dockerfiles:
