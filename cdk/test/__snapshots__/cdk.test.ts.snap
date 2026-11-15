@@ -90,10 +90,6 @@ exports[`Snapshot test: MainStack 1`] = `
       "Description": "Version of the CDK Bootstrap resources in this environment, automatically retrieved from SSM Parameter Store. [cdk:skip]",
       "Type": "AWS::SSM::Parameter::Value<String>",
     },
-    "SsmParameterValueawsservicecanonicalubuntuserver2404stablecurrentamd64hvmebsgp3amiidC96584B6F00A464EAD1953AFF4B05118Parameter": {
-      "Default": "/aws/service/canonical/ubuntu/server/24.04/stable/current/amd64/hvm/ebs-gp3/ami-id",
-      "Type": "AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>",
-    },
   },
   "Resources": {
     "AWS679f53fac002430cb0da5b7982bd22872D164C4C": {
@@ -7547,7 +7543,16 @@ phases:
             },
           },
           "ImageId": {
-            "Ref": "SsmParameterValueawsservicecanonicalubuntuserver2404stablecurrentamd64hvmebsgp3amiidC96584B6F00A464EAD1953AFF4B05118Parameter",
+            "Fn::Join": [
+              "",
+              [
+                "{{resolve:ssm:",
+                {
+                  "Ref": "WorkerAmiId428C377C",
+                },
+                "}}",
+              ],
+            ],
           },
           "InstanceType": "t3.large",
           "MetadataOptions": {

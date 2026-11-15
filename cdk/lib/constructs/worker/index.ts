@@ -184,9 +184,18 @@ export class Worker extends Construct {
     });
 
     const launchTemplate = new ec2.LaunchTemplate(this, 'LaunchTemplate', {
-      machineImage: ec2.MachineImage.fromSsmParameter(
-        '/aws/service/canonical/ubuntu/server/24.04/stable/current/amd64/hvm/ebs-gp3/ami-id'
-      ),
+      // Use the pre-built worker AMI from ImageBuilder instead of the base Ubuntu AMI.
+      // The worker AMI has all dependencies (Docker, Node.js, AWS CLI, etc.) pre-installed.
+      // We use the CfnLaunchTemplate construct directly to avoid CDK's machine image lookup
+      // which can't handle path-based SSM parameter names properly in this version.
+      // The ImageId will be set via override below to use the SSM parameter.
+      machineImage: ec2.MachineImage.genericLinux({
+        // Placeholder - will be overridden with actual SSM parameter value
+        'us-east-1': 'ami-placeholder',
+        'us-east-2': 'ami-placeholder',
+        'us-west-1': 'ami-placeholder',
+        'us-west-2': 'ami-placeholder',
+      }),
       instanceType: ec2.InstanceType.of(ec2.InstanceClass.T3, ec2.InstanceSize.LARGE),
       blockDevices: [
         {
@@ -204,6 +213,16 @@ export class Worker extends Construct {
         vpc,
       }),
     });
+
+    // Override the ImageId to use the worker AMI from SSM parameter.
+    // This avoids the CDK issue where fromSsmParameter can't determine the ARN separator
+    // for path-based parameter names (like "/StackName/worker-ami-id").
+    // Use the SSM parameter name directly with the {{resolve:ssm-secure:...}} syntax.
+    (launchTemplate.node.defaultChild as ec2.CfnLaunchTemplate).addPropertyOverride(
+      'LaunchTemplateData.ImageId',
+      `{{resolve:ssm:${props.amiIdParameterName}}}`
+    );
+
     const userData = launchTemplate.userData!;
 
     // SECURITY: SHA-256 checksums for external downloads
