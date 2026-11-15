@@ -7123,6 +7123,8 @@ phases:
             - docker --version || exit 1
             - python --version || exit 1
             - gh --version || exit 1
+            - /usr/local/bin/uv --version || exit 1
+            - /usr/local/bin/uvx --version || exit 1
             - sudo -u ubuntu bash -i -c "node --version" || exit 1
             - sudo -u ubuntu bash -i -c "npm --version" || exit 1
             - sudo -u ubuntu bash -i -c "npx --version" || exit 1
@@ -7133,9 +7135,9 @@ phases:
         inputs:
           commands:
             - aws --version || exit 1
-            - docker --version || exit 1
-            - python --version || exit 1
             - gh --version || exit 1
+            - /usr/local/bin/uv --version || exit 1
+            - /usr/local/bin/uvx --version || exit 1
             - sudo -u ubuntu bash -i -c "node --version" || exit 1
             - sudo -u ubuntu bash -i -c "npm --version" || exit 1
             - sudo -u ubuntu bash -i -c "npx --version" || exit 1
