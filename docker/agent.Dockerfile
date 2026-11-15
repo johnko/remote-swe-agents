@@ -52,6 +52,10 @@ COPY ./ ./
 # Build and validate agent-core (catches ESM import issues early)
 RUN cd packages/agent-core && npm run build:validate
 
+# Create .build-version file for version tracking
+# Use the package.json version with a "docker-" prefix for Docker builds
+RUN cat packages/worker/package.json | grep '"version"' | head -1 | awk -F: '{ print $2 }' | sed 's/[",}]//g' | tr -d '[:space:]' | xargs -I {} echo "docker-{}" > packages/worker/.build-version
+
 WORKDIR /app/packages/worker
 EXPOSE 8080
 CMD ["./run.sh"]
