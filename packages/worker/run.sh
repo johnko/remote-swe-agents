@@ -4,12 +4,13 @@
 #   - aws cli
 
 # Security: Set a restricted PATH to prevent PATH manipulation attacks
-export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+# Include Lambda-specific paths (/var/lang/bin) and standard system paths
+export PATH="/var/lang/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 
 # Security: Find node binary explicitly to avoid PATH manipulation
-# Check known system locations first, avoiding user-writable directories
+# Check known system locations first, including Lambda-specific paths
 NODE_BIN=""
-for path in "$NVM_DIR/versions/node/v${NODE_VERSION}/bin/node" "/usr/bin/node" "/usr/local/bin/node"; do
+for path in "/var/lang/bin/node" "$NVM_DIR/versions/node/v${NODE_VERSION}/bin/node" "/usr/bin/node" "/usr/local/bin/node"; do
   if [ -x "$path" ]; then
     NODE_BIN="$path"
     break

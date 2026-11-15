@@ -293,9 +293,9 @@ jobs:
               bash -n /var/task/run.sh || { echo "ERROR: run.sh has syntax errors"; exit 1; }
               echo "✓ run.sh syntax valid"
 
-              # Test node binary lookup logic (same as run.sh)
+              # Test node binary lookup logic (same as run.sh uses for Lambda)
               NODE_BIN=""
-              for path in "/usr/bin/node" "/usr/local/bin/node"; do
+              for path in "/var/lang/bin/node" "/usr/bin/node" "/usr/local/bin/node"; do
                 if [ -x "$path" ]; then
                   NODE_BIN="$path"
                   break
