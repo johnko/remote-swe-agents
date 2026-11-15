@@ -248,9 +248,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
       - name: Build slack-bolt-app docker image
         run: docker build -f docker/slack-bolt-app.Dockerfile -t slack-bolt-app .
-      - name: Test if the image can boot successfully
+
+      - name: Test slack-bolt-app image boots successfully
         run: docker run --entrypoint node --env TESTING_BOOTSTRAP=true --env BOT_TOKEN=dummy --env SIGNING_SECRET=dummy slack-bolt-app local.js
   Build-and-Test-MicrovmPreviewProxy:
     needs: changes
