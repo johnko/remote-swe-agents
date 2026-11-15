@@ -56,7 +56,7 @@ export const handler: Handler<unknown> = async (rawEvent, context) => {
             await app.client.chat.postMessage({
               channel: event.slackChannelId,
               thread_ts: event.slackThreadTs,
-              text: `Preparing for a new instance${res.usedCache ? ' (using a cached AMI)' : ''}...`,
+              text: `Preparing for a new instance...`,
             });
           }
         },

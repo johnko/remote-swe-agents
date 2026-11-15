@@ -90,8 +90,6 @@ async function restartWorkerInstance(instanceId: string) {
   }
 }
 
-
-
 async function createWorkerInstance(
   workerId: string,
   launchTemplateId: string,
