@@ -18,7 +18,7 @@ export * from './confirm-send-file-to-user';
 export * from './child-guard';
 export * from './think';
 export * from './wait-for';
-export * from './read-image';
+export * from './read-picture';
 export * from './todo';
 export * from './session-title';
 export * from './complete-session';
@@ -50,7 +50,7 @@ import { sendToAgentTool } from './send-to-agent';
 import { acknowledgeAgentTool } from './acknowledge-agent';
 import { confirmSendToUserTool } from './confirm-send-to-user';
 import { confirmSendFileToUserTool } from './confirm-send-file-to-user';
-import { readImageTool } from './read-image';
+import { readLocalPictureTool } from './read-picture';
 import { todoInitTool, todoUpdateTool } from './todo';
 import { getSessionTitleTool, updateSessionTitleTool } from './session-title';
 import { waitForConditionTool } from './wait-for';
@@ -121,7 +121,7 @@ export const optionalTools = [
   commandExecutionTool,
   waitForConditionTool,
   fileEditTool,
-  readImageTool,
+  readLocalPictureTool,
   createNewSessionTool,
   sendToAgentTool,
   sendFileToAgentTool,

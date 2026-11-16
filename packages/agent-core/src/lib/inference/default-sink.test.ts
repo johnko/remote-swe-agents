@@ -120,13 +120,13 @@ describe('defaultToolEventSink', () => {
   test('emitToolResultEvent includes imageKeys when provided', async () => {
     await defaultToolEventSink.emitToolResultEvent('w1', {
       toolUseId: 't1',
-      toolName: 'read_local_image',
+      toolName: 'read_local_picture',
       output: 'image data',
       imageKeys: ['w1/image1.png'],
     });
     expect(sendWebappEvent).toHaveBeenCalledWith('w1', {
       type: 'toolResult',
-      toolName: 'read_local_image',
+      toolName: 'read_local_picture',
       toolUseId: 't1',
       output: 'image data',
       imageKeys: ['w1/image1.png'],
