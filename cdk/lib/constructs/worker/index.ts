@@ -2,6 +2,7 @@ import { Construct } from 'constructs';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import { WorkerBus } from './bus';
+import { createInvokeModelPolicy, createTroubleshootingPolicyStatement } from './worker-shared';
 import { BlockPublicAccess, Bucket, IBucket } from 'aws-cdk-lib/aws-s3';
 import { AssetHashType, DockerImage, RemovalPolicy, Stack, ILocalBundling, BundlingOptions } from 'aws-cdk-lib';
 import { BucketDeployment, Source } from 'aws-cdk-lib/aws-s3-deployment';
@@ -736,12 +737,7 @@ systemctl start myapp
     });
 
     props.webappOriginSourceParameter.grantRead(role);
-    role.addToPrincipalPolicy(
-      new iam.PolicyStatement({
-        actions: ['bedrock:InvokeModel', 'sts:GetCallerIdentity'],
-        resources: ['*'],
-      })
-    );
+    role.addToPrincipalPolicy(createInvokeModelPolicy());
     if (props.loadBalancing) {
       role.addToPrincipalPolicy(
         new iam.PolicyStatement({
@@ -762,36 +758,8 @@ systemctl start myapp
         },
       })
     );
-    // Add troubleshooting permissions for AWS environment diagnostics.
-    // Keep in sync with AgentCoreRuntime troubleshooting permissions in agent-core-runtime.ts
-    role.addToPrincipalPolicy(
-      new iam.PolicyStatement({
-        actions: [
-          'bedrock:ListFoundationModels',
-          'ce:GetCostAndUsage',
-          'ce:GetCostForecast',
-          'ce:GetUsageForecast',
-          'cloudformation:ContinueUpdateRollback',
-          'cloudformation:DescribeStackEvents',
-          'cloudformation:DescribeStackResource',
-          'ecr:DescribeImages',
-          'ecr:DescribeRepositories',
-          'lambda:GetFunction',
-          'lambda:GetFunctionCode',
-          'logs:DescribeLogStreams',
-          'logs:DescribeLogGroups',
-          'logs:GetLogEvents',
-          'logs:FilterLogEvents',
-          's3:ListBucket',
-          'logs:GetLogEvents',
-          's3:GetBucketLocation',
-          's3:GetBucketVersioning',
-          's3:ListBucket',
-          'ssm:DescribeParameters',
-        ],
-        resources: ['*'],
-      })
-    );
+    // Add troubleshooting permissions for AWS environment diagnostics
+    role.addToPrincipalPolicy(createTroubleshootingPolicyStatement());
     sourceBucket.grantRead(role);
     props.storageTable.grantReadWriteData(role);
     props.imageBucket.grantReadWrite(role);
