@@ -289,7 +289,12 @@ export async function toStrandsTool<Input>(def: RemoteSweToolLike<Input>, deps: 
         if (session) {
           try {
             const contextData: HookContextData = { toolName: sanitizedName };
-            const hookResult = await executeHooksForEventWithSession(session, 'postToolUse', process.cwd(), contextData);
+            const hookResult = await executeHooksForEventWithSession(
+              session,
+              'postToolUse',
+              process.cwd(),
+              contextData
+            );
             if (hookResult.combinedOutput) {
               hookOutput = hookResult.combinedOutput;
             }
@@ -304,7 +309,12 @@ export async function toStrandsTool<Input>(def: RemoteSweToolLike<Input>, deps: 
         if (session) {
           try {
             const contextData: HookContextData = { toolName: sanitizedName };
-            const hookResult = await executeHooksForEventWithSession(session, 'postToolUseFailure', process.cwd(), contextData);
+            const hookResult = await executeHooksForEventWithSession(
+              session,
+              'postToolUseFailure',
+              process.cwd(),
+              contextData
+            );
             if (hookResult.combinedOutput) {
               hookOutput = hookResult.combinedOutput;
             }

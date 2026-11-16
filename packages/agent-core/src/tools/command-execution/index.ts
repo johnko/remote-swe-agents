@@ -375,10 +375,15 @@ const handler = async (
   let hookOutput = '';
   if (session) {
     try {
-      const hookResult = await executeHooksForEventWithSession(session, 'afterShellExecution', input.cwd || process.cwd(), {
-        command: input.command,
-        exitCode: res.exitCode,
-      });
+      const hookResult = await executeHooksForEventWithSession(
+        session,
+        'afterShellExecution',
+        input.cwd || process.cwd(),
+        {
+          command: input.command,
+          exitCode: res.exitCode,
+        }
+      );
       if (hookResult.combinedOutput) {
         hookOutput = hookResult.combinedOutput;
       }

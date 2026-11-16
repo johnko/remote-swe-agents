@@ -107,7 +107,12 @@ export const updateSessionAgentStatus = async (workerId: string, agentStatus: Ag
       // Fire subagentStop if this is a child session
       if (session.parentSessionId) {
         const subagentContextData: HookContextData = { sessionId: workerId, subagentId: workerId };
-        const subagentHookResult = await executeHooksForEventWithSession(session, 'subagentStop', process.cwd(), subagentContextData);
+        const subagentHookResult = await executeHooksForEventWithSession(
+          session,
+          'subagentStop',
+          process.cwd(),
+          subagentContextData
+        );
         if (subagentHookResult.combinedOutput) {
           console.log(`[subagentStop] Hook output for ${workerId}: ${subagentHookResult.combinedOutput}`);
         }
