@@ -125,7 +125,6 @@ export class AgentCoreRuntime extends Construct implements IGrantable {
       slackBotTokenParameter: props.slackBotTokenParameter,
       bus: props.bus,
     });
-    props.gitHubAppPrivateKeyParameter?.grantRead(role);
     props.webappOriginSourceParameter.grantRead(role);
 
     // Lambda MicroVMs permissions for preview functionality
