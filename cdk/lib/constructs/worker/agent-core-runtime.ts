@@ -18,6 +18,7 @@ import { Construct } from 'constructs';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import { WorkerBus } from './bus';
+import { createInvokeModelPolicy, createTroubleshootingPolicyStatement } from './worker-shared';
 import { VapidKeys } from '../vapid-keys';
 import { EventTrigger } from './event-trigger';
 import { grantWorkerLaunchCapability } from './grant-worker-launch';
@@ -110,41 +111,10 @@ export class AgentCoreRuntime extends Construct implements IGrantable {
         resources: ['*'],
       })
     );
-    role.addToPrincipalPolicy(
-      new PolicyStatement({
-        actions: ['bedrock:InvokeModel', 'sts:GetCallerIdentity'],
-        resources: ['*'],
-      })
-    );
+    role.addToPrincipalPolicy(createInvokeModelPolicy());
 
     // Add troubleshooting permissions for AWS environment diagnostics
-    // Keep in sync with Worker troubleshooting permissions in index.ts
-    role.addToPrincipalPolicy(
-      new PolicyStatement({
-        actions: [
-          'bedrock:ListFoundationModels',
-          'ce:GetCostAndUsage',
-          'ce:GetCostForecast',
-          'ce:GetUsageForecast',
-          'cloudformation:ContinueUpdateRollback',
-          'cloudformation:DescribeStackEvents',
-          'cloudformation:DescribeStackResource',
-          'ecr:DescribeImages',
-          'ecr:DescribeRepositories',
-          'lambda:GetFunction',
-          'lambda:GetFunctionCode',
-          'logs:DescribeLogStreams',
-          'logs:DescribeLogGroups',
-          'logs:FilterLogEvents',
-          'logs:GetLogEvents',
-          's3:GetBucketLocation',
-          's3:GetBucketVersioning',
-          's3:ListBucket',
-          'ssm:DescribeParameters',
-        ],
-        resources: ['*'],
-      })
-    );
+    role.addToPrincipalPolicy(createTroubleshootingPolicyStatement());
     props.storageTable.grantReadWriteData(role);
     props.imageBucket.grantReadWrite(role);
     props.skillBucket.grantReadWrite(role);
