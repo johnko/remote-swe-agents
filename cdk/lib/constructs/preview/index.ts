@@ -201,7 +201,7 @@ export class Preview extends Construct {
     });
 
     const distribution = new Distribution(this, 'Distribution', {
-      comment: 'DO NOT DELETE - Required during stack deployment',
+      comment: 'Preview distribution - Auto-recreated 2026-11-16',
       defaultBehavior: {
         origin: dummyOrigin,
         viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
