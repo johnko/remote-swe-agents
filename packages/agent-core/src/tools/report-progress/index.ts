@@ -64,9 +64,10 @@ export const sendMessageToUser = async (workerId: string, message: string) => {
     const title = agentDisplayName;
     const body = `${sessionLabel}\n${message.slice(0, 200)}`;
 
-    if (session?.initiator?.startsWith('webapp#')) {
-      const userId = session.initiator.replace('webapp#', '');
+    // Use senderUserId (email) if available, otherwise fall back to initiator
+    const userId = session?.senderUserId || (session?.initiator?.startsWith('webapp#') ? session.initiator.replace('webapp#', '') : undefined);
 
+    if (userId) {
       await incrementUnread(userId, workerId);
 
       await sendPushNotificationToUser(userId, {
@@ -76,7 +77,7 @@ export const sendMessageToUser = async (workerId: string, message: string) => {
         workerId,
       });
 
-      await notifyOtherParticipants(workerId, userId, { title, body });
+      await notifyOtherParticipants(workerId, session?.senderUserId, { title, body });
     } else {
       await notifyOtherParticipants(workerId, undefined, { title, body });
     }

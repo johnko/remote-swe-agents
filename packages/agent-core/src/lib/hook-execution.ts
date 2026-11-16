@@ -176,12 +176,27 @@ const executeHookCommand = async (
 };
 
 /**
- * Extracts user ID from a session's initiator field.
- * If initiator includes '#', takes the part after it (e.g. 'slack#user123' => 'user123')
- * Otherwise returns the initiator as-is (e.g. cognito email).
+ * Extracts user ID from a session for user-scoped resources (hooks, lessons).
+ * Priority:
+ * 1. senderUserId - the email/identifier of the session creator (e.g. 'johntko+rswea0')
+ * 2. initiator - if it doesn't contain '#', returns as-is (e.g. cognito email)
+ * 3. initiator - if it contains '#', takes the part after it (e.g. 'slack#user123' => 'user123')
+ *
+ * We prioritize senderUserId because:
+ * - webapp sessions use 'webapp#{cognito_sub}' which changes per user session
+ * - senderUserId is the stable email identifier (e.g. 'johntko+rswea0')
+ * - This ensures hooks/lessons are consistently scoped to the user
  */
 export const extractUserIdFromSession = (session: SessionItem | undefined): string | undefined => {
-  if (!session?.initiator) {
+  if (!session) {
+    return undefined;
+  }
+  // Priority 1: senderUserId (stable email identifier)
+  if (session.senderUserId) {
+    return session.senderUserId;
+  }
+  // Priority 2: initiator (falls back to legacy behavior)
+  if (!session.initiator) {
     return undefined;
   }
   return session.initiator.includes('#') ? session.initiator.split('#').pop() : session.initiator;

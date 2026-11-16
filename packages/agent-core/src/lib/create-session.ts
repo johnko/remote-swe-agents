@@ -259,6 +259,7 @@ export const createSession = async (params: CreateSessionParams): Promise<string
               ...(inferenceMode ? { inferenceMode } : {}),
               ...(bedrockDefaultModel ? { bedrockDefaultModel } : {}),
               ...(handoverSourceSessionId ? { handoverSourceSessionId } : {}),
+              ...(senderUserId ? { senderUserId } : {}),
             } satisfies SessionItem,
           },
         },

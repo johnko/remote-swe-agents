@@ -7,7 +7,7 @@ import { mkdirSync, writeFileSync, unlinkSync } from 'fs';
 import { z } from 'zod';
 import { CancellationToken, ToolDefinition, truncate, zodToJsonSchemaBody } from '../../private/common/lib.js';
 import { generateSuggestion } from './suggestion.js';
-import { getSession, executeHooksForEventWithSession, executePermissionHooks } from '../../lib/index.js';
+import { getSession, executeHooksForEventWithSession, executePermissionHooks, extractUserIdFromSession } from '../../lib/index.js';
 import {
   logToolExecution,
   logPermissionDenied,
@@ -296,7 +296,7 @@ const handler = async (
   // Execute permission hooks for beforeShellExecution
   if (session) {
     try {
-      const userId = session.initiator?.includes('#') ? session.initiator.split('#').pop()! : session.initiator || '';
+      const userId = extractUserIdFromSession(session) || '';
 
       const permissionResult = await executePermissionHooks({
         sessionId: context.workerId || 'unknown',
