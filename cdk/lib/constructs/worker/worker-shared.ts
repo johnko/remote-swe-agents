@@ -33,6 +33,7 @@ export function createTroubleshootingPolicyStatement(): PolicyStatement {
       's3:ListBucket',
       'ssm:DescribeParameters',
       'ssm:GetServiceSetting',
+      'ssm:ListTagsForResource',
     ],
     resources: ['*'],
   });
