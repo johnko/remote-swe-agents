@@ -68,9 +68,7 @@ export const CROSS_ACCOUNT_AGENT_ROLE_ACCOUNTS = [
 export function createAssumeCrossAccountAgentRolePolicyStatement(): PolicyStatement {
   return new PolicyStatement({
     actions: ['sts:AssumeRole'],
-    resources: CROSS_ACCOUNT_AGENT_ROLE_ACCOUNTS.map(
-      (account) => `arn:aws:iam::${account}:role/CrossAccountAgentRole`
-    ),
+    resources: CROSS_ACCOUNT_AGENT_ROLE_ACCOUNTS.map((account) => `arn:aws:iam::${account}:role/CrossAccountAgentRole`),
   });
 }
 

@@ -18,7 +18,12 @@ import { Construct } from 'constructs';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import { WorkerBus } from './bus';
-import { createAssumeCrossAccountAgentRolePolicyStatement, createInvokeModelPolicy, createTroubleshootingPolicyStatement, grantCommonResources } from './worker-shared';
+import {
+  createAssumeCrossAccountAgentRolePolicyStatement,
+  createInvokeModelPolicy,
+  createTroubleshootingPolicyStatement,
+  grantCommonResources,
+} from './worker-shared';
 import { VapidKeys } from '../vapid-keys';
 import { EventTrigger } from './event-trigger';
 import { grantWorkerLaunchCapability } from './grant-worker-launch';
