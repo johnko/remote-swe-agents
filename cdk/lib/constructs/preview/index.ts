@@ -173,7 +173,8 @@ export class Preview extends Construct {
     );
 
     // Dummy origin - will be overridden by L@E origin-request
-    const dummyOrigin = new HttpOrigin('example.com', {
+    // Using placeholder origin - this forces distribution replacement if changed
+    const dummyOrigin = new HttpOrigin('placeholder.remote-swe.internal', {
       protocolPolicy: OriginProtocolPolicy.HTTPS_ONLY,
     });
 
