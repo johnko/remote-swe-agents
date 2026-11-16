@@ -2,7 +2,7 @@ import { Construct } from 'constructs';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import { WorkerBus } from './bus';
-import { createInvokeModelPolicy, createTroubleshootingPolicyStatement } from './worker-shared';
+import { createInvokeModelPolicy, createTroubleshootingPolicyStatement, grantCommonResources } from './worker-shared';
 import { BlockPublicAccess, Bucket, IBucket } from 'aws-cdk-lib/aws-s3';
 import { AssetHashType, DockerImage, RemovalPolicy, Stack, ILocalBundling, BundlingOptions } from 'aws-cdk-lib';
 import { BucketDeployment, Source } from 'aws-cdk-lib/aws-s3-deployment';
@@ -761,17 +761,18 @@ systemctl start myapp
     // Add troubleshooting permissions for AWS environment diagnostics
     role.addToPrincipalPolicy(createTroubleshootingPolicyStatement());
     sourceBucket.grantRead(role);
-    props.storageTable.grantReadWriteData(role);
-    props.imageBucket.grantReadWrite(role);
-    props.skillBucket.grantReadWrite(role);
-    privateKey?.grantRead(role);
-    props.githubPersonalAccessTokenParameter?.grantRead(role);
-    props.slackBotTokenParameter?.grantRead(role);
-    props.vapidKeys.grantRead(role);
+    grantCommonResources(role, {
+      storageTable: props.storageTable,
+      imageBucket: props.imageBucket,
+      skillBucket: props.skillBucket,
+      vapidKeys: props.vapidKeys,
+      gitHubAppPrivateKeyParameter: privateKey,
+      githubPersonalAccessTokenParameter: props.githubPersonalAccessTokenParameter,
+      slackBotTokenParameter: props.slackBotTokenParameter,
+      bus: bus,
+    });
 
     this.ec2Role = role;
-    bus.api.grantPublishAndSubscribe(role);
-    bus.api.grantConnect(role);
 
     // Grant event trigger management permissions to EC2 worker role
     eventTrigger.grantManage(role);

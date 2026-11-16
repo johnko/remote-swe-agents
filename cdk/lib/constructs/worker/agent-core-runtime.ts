@@ -18,7 +18,7 @@ import { Construct } from 'constructs';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import { WorkerBus } from './bus';
-import { createInvokeModelPolicy, createTroubleshootingPolicyStatement } from './worker-shared';
+import { createInvokeModelPolicy, createTroubleshootingPolicyStatement, grantCommonResources } from './worker-shared';
 import { VapidKeys } from '../vapid-keys';
 import { EventTrigger } from './event-trigger';
 import { grantWorkerLaunchCapability } from './grant-worker-launch';
@@ -115,16 +115,17 @@ export class AgentCoreRuntime extends Construct implements IGrantable {
 
     // Add troubleshooting permissions for AWS environment diagnostics
     role.addToPrincipalPolicy(createTroubleshootingPolicyStatement());
-    props.storageTable.grantReadWriteData(role);
-    props.imageBucket.grantReadWrite(role);
-    props.skillBucket.grantReadWrite(role);
-    props.gitHubAppPrivateKeyParameter?.grantRead(role);
-    props.githubPersonalAccessTokenParameter?.grantRead(role);
-    props.slackBotTokenParameter?.grantRead(role);
+    grantCommonResources(role, {
+      storageTable: props.storageTable,
+      imageBucket: props.imageBucket,
+      skillBucket: props.skillBucket,
+      vapidKeys: props.vapidKeys,
+      gitHubAppPrivateKeyParameter: props.gitHubAppPrivateKeyParameter,
+      githubPersonalAccessTokenParameter: props.githubPersonalAccessTokenParameter,
+      slackBotTokenParameter: props.slackBotTokenParameter,
+      bus: props.bus,
+    });
     props.webappOriginSourceParameter.grantRead(role);
-    props.vapidKeys.grantRead(role);
-    props.bus.api.grantPublishAndSubscribe(role);
-    props.bus.api.grantConnect(role);
 
     // Lambda MicroVMs permissions for preview functionality
     role.addToPrincipalPolicy(

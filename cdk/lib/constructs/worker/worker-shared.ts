@@ -1,4 +1,9 @@
-import { PolicyStatement } from 'aws-cdk-lib/aws-iam';
+import { PolicyStatement, IRole } from 'aws-cdk-lib/aws-iam';
+import { ITableV2 } from 'aws-cdk-lib/aws-dynamodb';
+import { IBucket } from 'aws-cdk-lib/aws-s3';
+import { IStringParameter } from 'aws-cdk-lib/aws-ssm';
+import { VapidKeys } from '../vapid-keys';
+import { WorkerBus } from './bus';
 
 /**
  * Shared troubleshooting permissions for worker roles.
@@ -42,4 +47,32 @@ export function createInvokeModelPolicy(): PolicyStatement {
     actions: ['bedrock:InvokeModel', 'sts:GetCallerIdentity'],
     resources: ['*'],
   });
+}
+
+/**
+ * Common grants for shared resources across both AgentCore and Worker.
+ * Grants read/write access to storage, images, skills, optional parameters, and event bus.
+ */
+export function grantCommonResources(
+  role: IRole,
+  resources: {
+    storageTable: ITableV2;
+    imageBucket: IBucket;
+    skillBucket: IBucket;
+    vapidKeys: VapidKeys;
+    gitHubAppPrivateKeyParameter?: IStringParameter;
+    githubPersonalAccessTokenParameter?: IStringParameter;
+    slackBotTokenParameter?: IStringParameter;
+    bus?: WorkerBus;
+  }
+): void {
+  resources.storageTable.grantReadWriteData(role);
+  resources.imageBucket.grantReadWrite(role);
+  resources.skillBucket.grantReadWrite(role);
+  resources.vapidKeys.grantRead(role);
+  resources.gitHubAppPrivateKeyParameter?.grantRead(role);
+  resources.githubPersonalAccessTokenParameter?.grantRead(role);
+  resources.slackBotTokenParameter?.grantRead(role);
+  resources.bus?.api.grantPublishAndSubscribe(role);
+  resources.bus?.api.grantConnect(role);
 }
