@@ -12,6 +12,11 @@ interface UsEast1StackProps extends cdk.StackProps {
   allowedIpV6AddressRanges?: string[];
   allowedCountryCodes?: string[];
   previewConfigParameterName?: string;
+  /**
+   * Exclude allowed IPv4 address ranges from WAF rate limiting
+   * @default false
+   */
+  excludeAllowedIpsFromRateLimit?: boolean;
 }
 
 export class UsEast1Stack extends cdk.Stack {
@@ -86,6 +91,7 @@ export class UsEast1Stack extends cdk.Stack {
         allowedIpV4AddressRanges: props.allowedIpV4AddressRanges,
         allowedIpV6AddressRanges: props.allowedIpV6AddressRanges,
         allowedCountryCodes: props.allowedCountryCodes,
+        excludeAllowedIpsFromRateLimit: props.excludeAllowedIpsFromRateLimit,
       });
 
       this.webAclArn = webAcl.webAclArn;

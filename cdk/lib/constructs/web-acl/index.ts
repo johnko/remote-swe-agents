@@ -12,6 +12,11 @@ export interface CommonWebAclProps {
    * @default 1000 requests per 5 minutes per IP
    */
   rateLimit?: number;
+  /**
+   * Exclude allowed IPv4 address ranges from rate limiting
+   * @default false
+   */
+  excludeAllowedIpsFromRateLimit?: boolean;
 }
 
 export class CommonWebAcl extends Construct {
@@ -75,6 +80,9 @@ export class CommonWebAcl extends Construct {
     const hasAllowedIpV6 = props.allowedIpV6AddressRanges && props.allowedIpV6AddressRanges.length > 0;
     const hasAllowedCountryCodes = props.allowedCountryCodes && props.allowedCountryCodes.length > 0;
 
+    // Track IPv4 IPSet ARN for potential use in rate limit exclusion
+    let wafIPv4SetArn: string | undefined;
+
     // Define rules for IP v4 and v6 separately
     if (hasAllowedIpV4) {
       const wafIPv4Set = new CfnIPSet(this, 'IPv4Set', {
@@ -82,6 +90,7 @@ export class CommonWebAcl extends Construct {
         scope: props.scope,
         addresses: props.allowedIpV4AddressRanges ?? [],
       });
+      wafIPv4SetArn = wafIPv4Set.attrArn;
       if (hasAllowedCountryCodes) {
         // For geo restrictions, create AND condition with IP restriction
         rules.push(
@@ -124,15 +133,32 @@ export class CommonWebAcl extends Construct {
     // SECURITY FIX: Add rate-based rule to protect against DDoS and brute force
     // Priority 0 must come before IP/geo rules
     const rateLimit = props.rateLimit ?? 1000;
+    const excludeAllowedIpsFromRateLimit = props.excludeAllowedIpsFromRateLimit ?? false;
+
+    const rateBasedStatement: CfnWebACL.RateBasedStatementProperty = {
+      limit: rateLimit,
+      evaluationWindowSec: 300, // 5 minute window
+      aggregateKeyType: 'IP',
+    };
+
+    // If enabled and IPv4 IPSet exists, exclude allowed IPs from rate limiting
+    if (excludeAllowedIpsFromRateLimit && wafIPv4SetArn) {
+      (rateBasedStatement as any).scopeDownStatement = {
+        notStatement: {
+          statement: {
+            ipSetReferenceStatement: {
+              arn: wafIPv4SetArn,
+            },
+          },
+        },
+      };
+    }
+
     rules.unshift({
       priority: 0,
       name: 'RateLimitRule',
       statement: {
-        rateBasedStatement: {
-          limit: rateLimit,
-          evaluationWindowSec: 300, // 5 minute window
-          aggregateKeyType: 'IP',
-        },
+        rateBasedStatement,
       },
       action: { block: {} },
       visibilityConfig: {
