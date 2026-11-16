@@ -2,7 +2,12 @@ import { Construct } from 'constructs';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import { WorkerBus } from './bus';
-import { createInvokeModelPolicy, createTroubleshootingPolicyStatement, grantCommonResources } from './worker-shared';
+import {
+  createAssumeCrossAccountAgentRolePolicyStatement,
+  createInvokeModelPolicy,
+  createTroubleshootingPolicyStatement,
+  grantCommonResources,
+} from './worker-shared';
 import { BlockPublicAccess, Bucket, IBucket } from 'aws-cdk-lib/aws-s3';
 import { AssetHashType, DockerImage, RemovalPolicy, Stack, ILocalBundling, BundlingOptions } from 'aws-cdk-lib';
 import { BucketDeployment, Source } from 'aws-cdk-lib/aws-s3-deployment';
@@ -761,6 +766,10 @@ systemctl start myapp
     );
     // Add troubleshooting permissions for AWS environment diagnostics
     role.addToPrincipalPolicy(createTroubleshootingPolicyStatement());
+
+    // Add cross-account agent role assumption permissions
+    role.addToPrincipalPolicy(createAssumeCrossAccountAgentRolePolicyStatement());
+
     sourceBucket.grantRead(role);
     grantCommonResources(role, {
       storageTable: props.storageTable,

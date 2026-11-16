@@ -18,7 +18,12 @@ import { Construct } from 'constructs';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import { WorkerBus } from './bus';
-import { createInvokeModelPolicy, createTroubleshootingPolicyStatement, grantCommonResources } from './worker-shared';
+import {
+  createAssumeCrossAccountAgentRolePolicyStatement,
+  createInvokeModelPolicy,
+  createTroubleshootingPolicyStatement,
+  grantCommonResources,
+} from './worker-shared';
 import { VapidKeys } from '../vapid-keys';
 import { EventTrigger } from './event-trigger';
 import { grantWorkerLaunchCapability } from './grant-worker-launch';
@@ -115,6 +120,10 @@ export class AgentCoreRuntime extends Construct implements IGrantable {
 
     // Add troubleshooting permissions for AWS environment diagnostics
     role.addToPrincipalPolicy(createTroubleshootingPolicyStatement());
+
+    // Add cross-account agent role assumption permissions
+    role.addToPrincipalPolicy(createAssumeCrossAccountAgentRolePolicyStatement());
+
     grantCommonResources(role, {
       storageTable: props.storageTable,
       imageBucket: props.imageBucket,
