@@ -594,6 +594,7 @@ StandardError=journal
 SyslogIdentifier=myapp
 # Static environment variables
 Environment=WORKER_RUNTIME=ec2
+Environment="PATH=/root/.nvm/versions/node/v22.23.5/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 Environment=AWS_REGION=${Stack.of(this).region}
 Environment=EVENT_HTTP_ENDPOINT=${bus.httpEndpoint}
 Environment=GITHUB_APP_PRIVATE_KEY_PATH=${privateKey ? '/opt/private-key.pem' : ''}
