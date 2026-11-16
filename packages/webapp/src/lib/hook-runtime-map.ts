@@ -12,7 +12,6 @@ export type RuntimeType = 'agentcore';
 export const hookRuntimeMap: Record<HookEventType, RuntimeType[]> = {
   // Session lifecycle
   sessionStart: ['agentcore'],
-  sessionEnd: ['agentcore'],
 
   // Tool use hooks
   preToolUse: ['agentcore'],
@@ -21,7 +20,6 @@ export const hookRuntimeMap: Record<HookEventType, RuntimeType[]> = {
 
   // Subagent lifecycle
   subagentStart: ['agentcore'],
-  subagentStop: ['agentcore'],
 
   // Shell/command execution
   beforeShellExecution: ['agentcore'],
@@ -30,9 +28,6 @@ export const hookRuntimeMap: Record<HookEventType, RuntimeType[]> = {
   // File operations
   beforeReadFile: ['agentcore'],
   afterFileEdit: ['agentcore'],
-
-  // Context management
-  stop: ['agentcore'],
 };
 
 export const getHookRuntimes = (eventType: HookEventType): RuntimeType[] => {
