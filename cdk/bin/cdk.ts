@@ -31,6 +31,7 @@ const virginia = new UsEast1Stack(app, `RemoteSweUsEast1Stack-${targetEnv}`, {
   allowedIpV4AddressRanges,
   allowedIpV6AddressRanges,
   allowedCountryCodes,
+  excludeAllowedIpsFromRateLimit: true,
 });
 
 if (process.env.BEDROCK_CRI_REGION_OVERRIDE) {
