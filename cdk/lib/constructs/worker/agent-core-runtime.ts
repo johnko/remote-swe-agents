@@ -120,6 +120,7 @@ export class AgentCoreRuntime extends Construct implements IGrantable {
       imageBucket: props.imageBucket,
       skillBucket: props.skillBucket,
       vapidKeys: props.vapidKeys,
+      gitHubAppPrivateKeyParameter: props.gitHubAppPrivateKeyParameter,
       githubPersonalAccessTokenParameter: props.githubPersonalAccessTokenParameter,
       slackBotTokenParameter: props.slackBotTokenParameter,
       bus: props.bus,

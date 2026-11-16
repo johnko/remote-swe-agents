@@ -60,6 +60,7 @@ export function grantCommonResources(
     imageBucket: IBucket;
     skillBucket: IBucket;
     vapidKeys: VapidKeys;
+    gitHubAppPrivateKeyParameter: IStringParameter;
     githubPersonalAccessTokenParameter?: IStringParameter;
     slackBotTokenParameter?: IStringParameter;
     bus?: WorkerBus;
@@ -69,6 +70,7 @@ export function grantCommonResources(
   resources.imageBucket.grantReadWrite(role);
   resources.skillBucket.grantReadWrite(role);
   resources.vapidKeys.grantRead(role);
+  resources.gitHubAppPrivateKeyParameter?.grantRead(role);
   resources.githubPersonalAccessTokenParameter?.grantRead(role);
   resources.slackBotTokenParameter?.grantRead(role);
   resources.bus?.api.grantPublishAndSubscribe(role);

@@ -766,6 +766,7 @@ systemctl start myapp
       imageBucket: props.imageBucket,
       skillBucket: props.skillBucket,
       vapidKeys: props.vapidKeys,
+      gitHubAppPrivateKeyParameter: props.gitHubAppPrivateKeyParameter,
       githubPersonalAccessTokenParameter: props.githubPersonalAccessTokenParameter,
       slackBotTokenParameter: props.slackBotTokenParameter,
       bus: bus,
