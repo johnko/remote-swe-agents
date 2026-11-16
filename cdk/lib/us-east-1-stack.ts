@@ -86,6 +86,7 @@ export class UsEast1Stack extends cdk.Stack {
         allowedIpV4AddressRanges: props.allowedIpV4AddressRanges,
         allowedIpV6AddressRanges: props.allowedIpV6AddressRanges,
         allowedCountryCodes: props.allowedCountryCodes,
+        rateLimit: 10000,
       });
 
       this.webAclArn = webAcl.webAclArn;
