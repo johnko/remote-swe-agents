@@ -5573,6 +5573,17 @@ exports.handler = async (event) => {
               "Resource": "*",
             },
             {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Resource": [
+                "arn:aws:iam::034259613105:role/CrossAccountAgentRole",
+                "arn:aws:iam::082114243833:role/CrossAccountAgentRole",
+                "arn:aws:iam::083792476388:role/CrossAccountAgentRole",
+                "arn:aws:iam::764858776402:role/CrossAccountAgentRole",
+                "arn:aws:iam::987988470805:role/CrossAccountAgentRole",
+              ],
+            },
+            {
               "Action": [
                 "dynamodb:BatchGetItem",
                 "dynamodb:BatchWriteItem",
@@ -8183,6 +8194,17 @@ systemctl start myapp",
               },
               "Effect": "Allow",
               "Resource": "*",
+            },
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Resource": [
+                "arn:aws:iam::034259613105:role/CrossAccountAgentRole",
+                "arn:aws:iam::082114243833:role/CrossAccountAgentRole",
+                "arn:aws:iam::083792476388:role/CrossAccountAgentRole",
+                "arn:aws:iam::764858776402:role/CrossAccountAgentRole",
+                "arn:aws:iam::987988470805:role/CrossAccountAgentRole",
+              ],
             },
             {
               "Action": [
