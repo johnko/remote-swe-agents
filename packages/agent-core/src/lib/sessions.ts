@@ -13,7 +13,6 @@ import { AgentStatus, SessionItem, sessionItemSchema } from '../schema/index.js'
 import { deleteAllEventTriggers } from './event-triggers.js';
 import { deleteUnreadByWorkerId } from './unread.js';
 import { sendWebappEvent } from './events.js';
-import { executeHooksForEventWithSession, HookContextData } from './hook-execution.js';
 
 /**
  * Get session information from DynamoDB
@@ -93,33 +92,6 @@ export const getSessions = async (
  * @param agentStatus New agent status
  */
 export const updateSessionAgentStatus = async (workerId: string, agentStatus: AgentStatus): Promise<void> => {
-  // Execute hooks before updating status to 'completed'
-  if (agentStatus === 'completed') {
-    const session = await getSession(workerId);
-    if (session) {
-      // Fire sessionEnd for all sessions
-      const contextData: HookContextData = { sessionId: workerId };
-      const hookResult = await executeHooksForEventWithSession(session, 'sessionEnd', process.cwd(), contextData);
-      if (hookResult.combinedOutput) {
-        console.log(`[sessionEnd] Hook output for ${workerId}: ${hookResult.combinedOutput}`);
-      }
-
-      // Fire subagentStop if this is a child session
-      if (session.parentSessionId) {
-        const subagentContextData: HookContextData = { sessionId: workerId, subagentId: workerId };
-        const subagentHookResult = await executeHooksForEventWithSession(
-          session,
-          'subagentStop',
-          process.cwd(),
-          subagentContextData
-        );
-        if (subagentHookResult.combinedOutput) {
-          console.log(`[subagentStop] Hook output for ${workerId}: ${subagentHookResult.combinedOutput}`);
-        }
-      }
-    }
-  }
-
   await updateSession(workerId, { agentStatus });
 };
 

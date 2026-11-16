@@ -24,22 +24,18 @@ export const MAX_HOOK_SCRIPT_LENGTH = 10000;
 export const hookEventTypeSchema = z.enum([
   // Session lifecycle
   'sessionStart',
-  'sessionEnd',
   // Tool use hooks
   'preToolUse',
   'postToolUse',
   'postToolUseFailure',
   // Subagent lifecycle
   'subagentStart',
-  'subagentStop',
   // Shell/command execution
   'beforeShellExecution',
   'afterShellExecution',
   // File operations
   'beforeReadFile',
   'afterFileEdit',
-  // Context management
-  'stop',
 ]);
 export type HookEventType = z.infer<typeof hookEventTypeSchema>;
 
