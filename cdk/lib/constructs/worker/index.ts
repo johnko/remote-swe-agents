@@ -766,11 +766,11 @@ systemctl start myapp
       imageBucket: props.imageBucket,
       skillBucket: props.skillBucket,
       vapidKeys: props.vapidKeys,
+      gitHubAppPrivateKeyParameter: privateKey,
       githubPersonalAccessTokenParameter: props.githubPersonalAccessTokenParameter,
       slackBotTokenParameter: props.slackBotTokenParameter,
       bus: bus,
     });
-    privateKey?.grantRead(role);
 
     this.ec2Role = role;
 
