@@ -84,17 +84,21 @@ const editFile = async (input: z.infer<typeof inputSchema>, context?: { workerId
     writeFileSync(filePath, newString);
 
     // Execute afterFileEdit hook on file creation
+    let hookOutput = '';
     if (session) {
       try {
         const contextData: HookContextData = { filePath };
-        await executeHooksForEventWithSession(session, 'afterFileEdit', process.cwd(), contextData);
+        const hookResult = await executeHooksForEventWithSession(session, 'afterFileEdit', process.cwd(), contextData);
+        if (hookResult.combinedOutput) {
+          hookOutput = hookResult.combinedOutput;
+        }
       } catch (e) {
         console.error('[file-editor] afterFileEdit hook failed:', e);
         // Don't throw - hook errors don't affect file write
       }
     }
 
-    return 'successfully created the file.';
+    return hookOutput ? `successfully created the file.\n\n${hookOutput}` : 'successfully created the file.';
   }
 
   // When oldString is empty and file already exists, prevent overwriting existing files
@@ -126,17 +130,21 @@ const editFile = async (input: z.infer<typeof inputSchema>, context?: { workerId
   writeFileSync(filePath, updatedContents);
 
   // Execute afterFileEdit hook after file modification
+  let hookOutput = '';
   if (session) {
     try {
       const contextData: HookContextData = { filePath };
-      await executeHooksForEventWithSession(session, 'afterFileEdit', process.cwd(), contextData);
+      const hookResult = await executeHooksForEventWithSession(session, 'afterFileEdit', process.cwd(), contextData);
+      if (hookResult.combinedOutput) {
+        hookOutput = hookResult.combinedOutput;
+      }
     } catch (e) {
       console.error('[file-editor] afterFileEdit hook failed:', e);
       // Don't throw - hook errors don't affect file write result
     }
   }
 
-  return 'successfully edited the file.';
+  return hookOutput ? `successfully edited the file.\n\n${hookOutput}` : 'successfully edited the file.';
 };
 
 const isSingleOccurrence = (str: string, substr: string) => {

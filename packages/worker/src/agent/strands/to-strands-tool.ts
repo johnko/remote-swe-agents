@@ -275,6 +275,7 @@ export async function toStrandsTool<Input>(def: RemoteSweToolLike<Input>, deps: 
       let result: string | ToolResultContentBlock[];
       const toolExecStart = Date.now();
       let toolSuccess = true;
+      let hookOutput = '';
       try {
         // Execute the actual tool
         result = await def.handler(input as Input, {
@@ -288,7 +289,15 @@ export async function toStrandsTool<Input>(def: RemoteSweToolLike<Input>, deps: 
         if (session) {
           try {
             const contextData: HookContextData = { toolName: sanitizedName };
-            await executeHooksForEventWithSession(session, 'postToolUse', process.cwd(), contextData);
+            const hookResult = await executeHooksForEventWithSession(
+              session,
+              'postToolUse',
+              process.cwd(),
+              contextData
+            );
+            if (hookResult.combinedOutput) {
+              hookOutput = hookResult.combinedOutput;
+            }
           } catch (e) {
             console.error(`[toStrandsTool] postToolUse hook failed for tool "${sanitizedName}":`, e);
             // Don't throw - hook errors don't affect tool result
@@ -300,7 +309,15 @@ export async function toStrandsTool<Input>(def: RemoteSweToolLike<Input>, deps: 
         if (session) {
           try {
             const contextData: HookContextData = { toolName: sanitizedName };
-            await executeHooksForEventWithSession(session, 'postToolUseFailure', process.cwd(), contextData);
+            const hookResult = await executeHooksForEventWithSession(
+              session,
+              'postToolUseFailure',
+              process.cwd(),
+              contextData
+            );
+            if (hookResult.combinedOutput) {
+              hookOutput = hookResult.combinedOutput;
+            }
           } catch (e) {
             console.error(`[toStrandsTool] postToolUseFailure hook failed for tool "${sanitizedName}":`, e);
             // Don't throw - hook errors don't affect error handling
@@ -309,13 +326,16 @@ export async function toStrandsTool<Input>(def: RemoteSweToolLike<Input>, deps: 
         // Return error as string result instead of throwing
         const errorMsg = toolError instanceof Error ? toolError.message : String(toolError);
         result = `[Tool Error] ${sanitizedName} failed: ${errorMsg}`;
-      } finally {
-        // Log tool execution result
-        const durationMs = Date.now() - toolExecStart;
-        logToolExecution(workerId, sanitizedName, toolSuccess, {
-          durationMs,
-          toolUseId,
-        });
+      }
+
+      // Append hook output to result if present
+      if (hookOutput) {
+        if (typeof result === 'string') {
+          result = `${result}\n\n${hookOutput}`;
+        } else {
+          // For content blocks, append a text block with hook output
+          result = [...result, { text: hookOutput }];
+        }
       }
 
       // forceReport timer — reset on communication tools

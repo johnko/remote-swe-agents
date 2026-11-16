@@ -372,12 +372,21 @@ const handler = async (
   });
 
   // Execute afterShellExecution hook after command completes (whether successful or failed)
+  let hookOutput = '';
   if (session) {
     try {
-      await executeHooksForEventWithSession(session, 'afterShellExecution', input.cwd || process.cwd(), {
-        command: input.command,
-        exitCode: res.exitCode,
-      });
+      const hookResult = await executeHooksForEventWithSession(
+        session,
+        'afterShellExecution',
+        input.cwd || process.cwd(),
+        {
+          command: input.command,
+          exitCode: res.exitCode,
+        }
+      );
+      if (hookResult.combinedOutput) {
+        hookOutput = hookResult.combinedOutput;
+      }
     } catch (e) {
       console.error('[command-execution] afterShellExecution hook failed:', e);
       logSecurityError(context.workerId || 'unknown', 'permission_hook_after_shell', e, {
@@ -388,7 +397,11 @@ const handler = async (
     }
   }
 
-  return JSON.stringify(res, undefined, 1);
+  let result = JSON.stringify(res, undefined, 1);
+  if (hookOutput) {
+    result = `${result}\n\n${hookOutput}`;
+  }
+  return result;
 };
 
 const name = 'execute_command';
