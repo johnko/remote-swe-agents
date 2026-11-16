@@ -1,4 +1,4 @@
-import { Arn, ArnFormat, CfnOutput, CfnResource, RemovalPolicy, Size, Stack } from 'aws-cdk-lib';
+import { Arn, ArnFormat, CfnOutput, RemovalPolicy, Size, Stack } from 'aws-cdk-lib';
 import {
   CachePolicy,
   Distribution,
@@ -201,6 +201,7 @@ export class Preview extends Construct {
     });
 
     const distribution = new Distribution(this, 'Distribution', {
+      comment: 'DO NOT DELETE - Required during preview stack deployment',
       defaultBehavior: {
         origin: dummyOrigin,
         viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
@@ -221,9 +222,7 @@ export class Preview extends Construct {
       ...(props.webAclArn ? { webAclId: props.webAclArn } : {}),
     });
 
-    // Ensure CloudFront distribution is deleted when the stack is destroyed
-    const cfnDistribution = distribution.node.defaultChild as CfnResource;
-    cfnDistribution.applyRemovalPolicy(RemovalPolicy.DESTROY);
+    // NOTE: Do not delete - this distribution is required during deploy
 
     this.distributionDomainName = distribution.distributionDomainName;
     this.previewUrl = `https://${distribution.distributionDomainName}`;
