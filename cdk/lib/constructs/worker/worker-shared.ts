@@ -60,7 +60,7 @@ export function grantCommonResources(
     imageBucket: IBucket;
     skillBucket: IBucket;
     vapidKeys: VapidKeys;
-    gitHubAppPrivateKeyParameter: IStringParameter;
+    gitHubAppPrivateKeyParameter?: IStringParameter;
     githubPersonalAccessTokenParameter?: IStringParameter;
     slackBotTokenParameter?: IStringParameter;
     bus?: WorkerBus;
