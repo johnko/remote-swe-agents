@@ -52,6 +52,9 @@ export const sessionItemSchema = z.object({
   // local file on worker startup. Set during successor (handover) session
   // creation so the new worker can provide full prior-session context.
   handoverSourceSessionId: z.string().optional(),
+  // Email/user identifier of the session creator (e.g. 'johntko+rswea0@...').
+  // Used for user-scoped resources like hooks and lessons.
+  senderUserId: z.string().optional(),
 });
 
 export type SessionItem = z.infer<typeof sessionItemSchema>;

@@ -54,19 +54,34 @@ function createMockChildProcess(stdout: string = '', stderr: string = '', exitCo
 }
 
 describe('extractUserIdFromSession', () => {
-  test('extracts userId from slack#user123 format', () => {
+  test('prioritizes senderUserId over initiator when both present', () => {
+    const session = { senderUserId: 'user@example.com', initiator: 'webapp#abc-123' } as SessionItem;
+    expect(extractUserIdFromSession(session)).toBe('user@example.com');
+  });
+
+  test('extracts userId from slack#user123 format when senderUserId absent', () => {
     const session = { initiator: 'slack#user123' } as SessionItem;
     expect(extractUserIdFromSession(session)).toBe('user123');
   });
 
-  test('returns initiator as-is when no # present', () => {
+  test('returns initiator as-is when no # present and no senderUserId', () => {
     const session = { initiator: 'user@example.com' } as SessionItem;
     expect(extractUserIdFromSession(session)).toBe('user@example.com');
   });
 
-  test('returns undefined when session has no initiator', () => {
+  test('falls back to initiator when only senderUserId is empty string', () => {
+    const session = { senderUserId: '', initiator: 'webapp#user-123' } as SessionItem;
+    expect(extractUserIdFromSession(session)).toBe('user-123');
+  });
+
+  test('returns undefined when session has no initiator and no senderUserId', () => {
     const session = {} as SessionItem;
     expect(extractUserIdFromSession(session)).toBeUndefined();
+  });
+
+  test('returns senderUserId when only senderUserId present (webapp case)', () => {
+    const session = { senderUserId: 'johntko+rswea0@example.com' } as SessionItem;
+    expect(extractUserIdFromSession(session)).toBe('johntko+rswea0@example.com');
   });
 
   test('returns undefined for undefined session', () => {
