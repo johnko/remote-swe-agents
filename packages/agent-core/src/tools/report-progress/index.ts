@@ -65,7 +65,9 @@ export const sendMessageToUser = async (workerId: string, message: string) => {
     const body = `${sessionLabel}\n${message.slice(0, 200)}`;
 
     // Use senderUserId (email) if available, otherwise fall back to initiator
-    const userId = session?.senderUserId || (session?.initiator?.startsWith('webapp#') ? session.initiator.replace('webapp#', '') : undefined);
+    const userId =
+      session?.senderUserId ||
+      (session?.initiator?.startsWith('webapp#') ? session.initiator.replace('webapp#', '') : undefined);
 
     if (userId) {
       await incrementUnread(userId, workerId);

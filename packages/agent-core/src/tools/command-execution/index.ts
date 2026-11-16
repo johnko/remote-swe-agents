@@ -7,7 +7,12 @@ import { mkdirSync, writeFileSync, unlinkSync } from 'fs';
 import { z } from 'zod';
 import { CancellationToken, ToolDefinition, truncate, zodToJsonSchemaBody } from '../../private/common/lib.js';
 import { generateSuggestion } from './suggestion.js';
-import { getSession, executeHooksForEventWithSession, executePermissionHooks, extractUserIdFromSession } from '../../lib/index.js';
+import {
+  getSession,
+  executeHooksForEventWithSession,
+  executePermissionHooks,
+  extractUserIdFromSession,
+} from '../../lib/index.js';
 import {
   logToolExecution,
   logPermissionDenied,
