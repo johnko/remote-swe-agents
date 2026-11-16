@@ -201,7 +201,7 @@ export class Preview extends Construct {
       queryStringBehavior: OriginRequestQueryStringBehavior.all(),
     });
 
-    const distribution = new Distribution(this, 'Distribution', {
+    const distribution = new Distribution(this, 'DistributionV2', {
       comment: 'DO NOT DELETE - Required during stack deployment - Preview distribution',
       defaultBehavior: {
         origin: dummyOrigin,
