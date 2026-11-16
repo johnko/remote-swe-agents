@@ -296,13 +296,49 @@ export const createSession = async (params: CreateSessionParams): Promise<string
     // Fire sessionStart hook for all sessions before worker starts
     if (newSession) {
       const contextData: HookContextData = { sessionId: workerId };
-      await executeHooksForEventWithSession(newSession, 'sessionStart', process.cwd(), contextData);
+      const hookResult = await executeHooksForEventWithSession(newSession, 'sessionStart', process.cwd(), contextData);
+      if (hookResult.combinedOutput) {
+        const notifyContent = [
+          {
+            text: renderSystemNotification({
+              message: `Hook output (sessionStart): ${hookResult.combinedOutput}`,
+            }),
+          },
+        ];
+        const notifyItem: MessageItem = {
+          PK: `message-${workerId}`,
+          SK: String(Date.now()).padStart(15, '0'),
+          content: JSON.stringify(notifyContent),
+          role: 'user',
+          tokenCount: 0,
+          messageType: 'systemNotification',
+        };
+        await ddb.send(new PutCommand({ TableName, Item: notifyItem }));
+      }
     }
 
     // Fire subagentStart hook for child sessions before worker starts
     if (parentSessionId && newSession) {
       const contextData: HookContextData = { sessionId: workerId, subagentId: workerId };
-      await executeHooksForEventWithSession(newSession, 'subagentStart', process.cwd(), contextData);
+      const hookResult = await executeHooksForEventWithSession(newSession, 'subagentStart', process.cwd(), contextData);
+      if (hookResult.combinedOutput) {
+        const notifyContent = [
+          {
+            text: renderSystemNotification({
+              message: `Hook output (subagentStart): ${hookResult.combinedOutput}`,
+            }),
+          },
+        ];
+        const notifyItem: MessageItem = {
+          PK: `message-${workerId}`,
+          SK: String(Date.now()).padStart(15, '0'),
+          content: JSON.stringify(notifyContent),
+          role: 'user',
+          tokenCount: 0,
+          messageType: 'systemNotification',
+        };
+        await ddb.send(new PutCommand({ TableName, Item: notifyItem }));
+      }
     }
 
     // Track the session creator as a participant (webapp users only)

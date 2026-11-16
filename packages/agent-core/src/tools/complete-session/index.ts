@@ -60,7 +60,10 @@ export const completeSessionTool: ToolDefinition<z.infer<typeof inputSchema>> = 
     // Execute stop hook before session completion
     try {
       const contextData = { sessionId: targetSessionId };
-      await executeHooksForEventWithSession(targetSession, 'stop', process.cwd(), contextData);
+      const hookResult = await executeHooksForEventWithSession(targetSession, 'stop', process.cwd(), contextData);
+      if (hookResult.combinedOutput) {
+        console.log(`[completeSession] stop hook output for ${targetSessionId}: ${hookResult.combinedOutput}`);
+      }
     } catch (e) {
       console.error('[completeSession] stop hook failed:', e);
       // Don't throw - hook errors don't prevent session completion
