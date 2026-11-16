@@ -9,7 +9,7 @@ const inputSchema = z.object({
   imagePath: z.string().describe('The local file system path (absolute) to the image.'),
 });
 
-const name = 'read_local_image';
+const name = 'read_local_picture';
 
 // Allowed base directories for file operations
 const ALLOWED_BASE_DIRS = [resolve(homedir()), resolve(tmpdir()), '/tmp', '/var/tmp'];
@@ -54,7 +54,7 @@ const validateFilePath = (filePath: string, operationDescription: string = 'file
   return resolvedPath;
 };
 
-export const readImageTool: ToolDefinition<z.infer<typeof inputSchema>> = {
+export const readLocalPictureTool: ToolDefinition<z.infer<typeof inputSchema>> = {
   name,
   handler: async (input: z.infer<typeof inputSchema>) => {
     // SECURITY: Validate path to prevent directory traversal attacks
@@ -79,7 +79,7 @@ export const readImageTool: ToolDefinition<z.infer<typeof inputSchema>> = {
   schema: inputSchema,
   toolSpec: async () => ({
     name,
-    description: `Read an image in the local file system. Use this tool to get the visual details of an image. You cannot pass an Internet URL here; you must download the image locally first.`,
+    description: `Read a picture in the local file system. Use this tool to get the visual details of an image. You cannot pass an Internet URL here; you must download the image locally first.`,
     inputSchema: {
       json: zodToJsonSchemaBody(inputSchema),
     },

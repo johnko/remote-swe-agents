@@ -782,7 +782,7 @@ describe('postProcessMessageContent image handling (non-forUi)', () => {
     expect(content[0].text).toBe('look at this');
     expect(content[1].text).toContain('the image "photo.png" is available as a resized preview at');
     expect(content[1].text).toContain('s3://test-bucket/w1/photo.png');
-    expect(content[1].text).toContain('read_local_image');
+    expect(content[1].text).toContain('read_local_picture');
     expect(content[1].text).toContain('preview');
     expect(content[1].image).toBeUndefined();
   });

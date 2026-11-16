@@ -741,7 +741,7 @@ const postProcessMessageContent = async (content: string, forUi = false, isTopLe
           flattenedArray.push({
             text:
               `the image "${fileName}" is available as a resized preview at ${previewPath} (original: ${s3Uri})\n` +
-              `to view this image, use the read_local_image tool on the preview path`,
+              `to view this image, use the read_local_picture tool on the preview path`,
           });
         } catch (e) {
           const msg = e instanceof Error ? e.message : String(e);
