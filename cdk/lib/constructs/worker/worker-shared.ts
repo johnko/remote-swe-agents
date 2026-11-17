@@ -19,6 +19,8 @@ export function createTroubleshootingPolicyStatement(): PolicyStatement {
       'cloudformation:ContinueUpdateRollback',
       'cloudformation:DescribeStackEvents',
       'cloudformation:DescribeStackResource',
+      'cloudformation:DescribeStackResources',
+      'cloudformation:GetTemplate',
       'ecr:DescribeImages',
       'ecr:DescribeRepositories',
       'lambda:GetFunction',
