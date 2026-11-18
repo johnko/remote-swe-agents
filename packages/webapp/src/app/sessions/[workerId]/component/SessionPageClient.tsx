@@ -158,6 +158,7 @@ export default function SessionPageClient({
   initialRewindHiddenCount,
   slackClaims,
   slackClaimCounts,
+  systemPrompt,
 }: SessionPageClientProps) {
   return (
     <PortMappingProvider initialMapping={initialPortMapping ?? null}>
