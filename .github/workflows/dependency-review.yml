@@ -4,9 +4,6 @@ on:
   pull_request:
     branches:
       - main
-  push:
-    branches:
-      - main
 
 permissions:
   contents: read
@@ -31,4 +28,4 @@ jobs:
           # Show openssf scorecard scores
           show-openssf-scorecard: true
           # Comment on PR with summary
-          comment-summary-in-pr: true
+          comment-summary-in-pr: always
