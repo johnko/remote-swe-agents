@@ -18,5 +18,11 @@
   "dependencies": {
     "patch-package": "8.0.1",
     "zod": "4.6.7"
+  },
+  "overrides": {
+    "katex": "^0.16.21",
+    "picomatch": "^4.0.7",
+    "minimatch": "^5.1.6",
+    "micromatch": "^4.0.8"
   }
 }
