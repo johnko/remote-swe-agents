@@ -56,6 +56,7 @@ import { isPreviewRendered } from './message-consistency';
 import { raiseMissedEvents, clearMissedEvents } from '@/lib/missed-events-signal';
 import SlackIdentityClaims from '@/components/SlackIdentityClaims';
 import { SlackIdentityClaim } from '@remote-swe-agents/agent-core/schema';
+import { SystemPromptRenderer } from './SystemPromptRenderer';
 
 /**
  * Grace window after a `lastMessageUpdate` whose preview has no matching
@@ -128,6 +129,11 @@ interface SessionPageClientProps {
   initialRewindHiddenCount?: number;
   slackClaims?: SlackIdentityClaim[];
   slackClaimCounts?: { pending: number; approved: number; rejected: number };
+  /**
+   * The custom agent's system prompt, if one was used to create this session.
+   * Displayed as a collapsible section for transparency and debugging.
+   */
+  systemPrompt?: string;
 }
 
 export default function SessionPageClient({
@@ -176,6 +182,7 @@ export default function SessionPageClient({
         initialRewindHiddenCount={initialRewindHiddenCount}
         slackClaims={slackClaims}
         slackClaimCounts={slackClaimCounts}
+        systemPrompt={systemPrompt}
       />
     </PortMappingProvider>
   );
@@ -202,6 +209,7 @@ function SessionPageClientInner({
   initialRewindHiddenCount,
   slackClaims = [],
   slackClaimCounts,
+  systemPrompt,
 }: Omit<SessionPageClientProps, 'initialPortMapping'>) {
   const setPortMapping = usePortMappingSetter();
   const t = useTranslations('sessions');
@@ -1108,6 +1116,13 @@ function SessionPageClientInner({
                 }}
                 locale={locale}
               />
+            </div>
+          )}
+
+          {/* System Prompt */}
+          {systemPrompt && (
+            <div className="max-w-4xl mx-auto px-4 py-2">
+              <SystemPromptRenderer systemPrompt={systemPrompt} agentName={agentName} />
             </div>
           )}
 

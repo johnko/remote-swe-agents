@@ -455,6 +455,7 @@ export default async function SessionPage({ params }: { params: Promise<{ worker
         initialRewindHiddenCount={rewindedCount}
         slackClaims={slackClaims}
         slackClaimCounts={slackClaimCounts}
+        systemPrompt={customAgent?.systemPrompt}
       />
       <RefreshOnFocus />
     </>
