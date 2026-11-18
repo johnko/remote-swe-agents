@@ -20,7 +20,7 @@
     "zod": "4.6.7"
   },
   "overrides": {
-    "katex": "0.16.47",
+    "katex": "0.18.2",
     "picomatch": "4.0.7",
     "minimatch": "5.1.6",
     "micromatch": "4.0.8"
