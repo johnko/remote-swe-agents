@@ -7,7 +7,6 @@ on:
 
 permissions:
   contents: read
-  pull-requests: write
 
 jobs:
   dependency-review:
@@ -28,4 +27,4 @@ jobs:
           # Show openssf scorecard scores
           show-openssf-scorecard: true
           # Comment on PR with summary
-          comment-summary-in-pr: always
+          comment-summary-in-pr: never
