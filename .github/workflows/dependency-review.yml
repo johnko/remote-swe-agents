@@ -22,6 +22,8 @@ jobs:
           fail-on-severity: moderate
           # Allow specific licenses (optional)
           allow-licenses: MIT, Apache-2.0, BSD-3-Clause, BSD-2-Clause, ISC
+          # Allow specific packages with incompatible licenses (transitive dependencies)
+          allow-dependencies-licenses: pkg:npm/caniuse-lite@1.0.30001826, pkg:npm/graceful-fs@4.2.12
           # Ignore specific vulnerabilities if needed (use advisories URL)
           # deny-packages: package-name@version
           # Show openssf scorecard scores
