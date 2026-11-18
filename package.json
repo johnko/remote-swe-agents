@@ -21,7 +21,6 @@
   },
   "overrides": {
     "katex": "0.18.2",
-    "picomatch": "4.0.7",
     "minimatch": "5.1.6",
     "micromatch": "4.0.8"
   }
