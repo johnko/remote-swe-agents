@@ -68,6 +68,8 @@
     "noSessionsFound": "セッションが見つかりません",
     "createSessionToStart": "AIエージェントとチャットするには新規セッションを作成してください",
     "usingTool": "ツール使用",
+    "systemPrompt": "システムプロンプト",
+    "systemPromptFor": "システムプロンプト: {agentName}",
     "eventTriggerFired": "イベント検知",
     "executing": "実行中...",
     "showRawJson": "JSONを表示",
