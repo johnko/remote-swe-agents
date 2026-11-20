@@ -53,6 +53,9 @@ const updateHookSchema = z.object({
   event: hookEventTypeSchema.optional().describe('New event type.'),
   command: z.string().min(1).max(MAX_HOOK_COMMAND_LENGTH).optional().describe('New command.'),
   script: z.string().max(MAX_HOOK_SCRIPT_LENGTH).optional().describe('New script content.'),
+  // NOTE: isEnabled is intentionally omitted. Hooks are intentionally created disabled.
+  // This prevents an agent from accidentally enabling a hook via update_hook that was
+  // disabled for safety reasons. Enablement requires explicit user action in the UI/API.
 });
 const deleteHookSchema = z.object({
   hookId: z.string().describe('The ID of the hook to delete.'),
