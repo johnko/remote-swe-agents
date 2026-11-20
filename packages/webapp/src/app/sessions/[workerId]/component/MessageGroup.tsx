@@ -109,11 +109,16 @@ export const MessageGroupComponent = React.memo(function MessageGroupComponent({
     ? 'mb-2'
     : `mb-3 ${isChildSessionMessage ? 'ml-4 border-l-2 border-blue-200 dark:border-blue-800 pl-3' : ''}`;
 
-  const floatStyle =
-    floatUserMessages && isUserMessage ? { float: 'right' as const, clear: 'both' as const } : undefined;
+  // When floatUserMessages is enabled and it's a user message, apply right alignment
+  // Use width: fit-content with margin-left: auto for proper right alignment
+  // without breaking the layout flow
+  const userMessageStyle =
+    floatUserMessages && isUserMessage
+      ? ({ marginLeft: 'auto', width: 'fit-content', maxWidth: '80%' } as React.CSSProperties)
+      : undefined;
 
   return (
-    <div className={containerClass} style={floatStyle}>
+    <div className={containerClass} style={userMessageStyle}>
       {/* Hide the full header for agent messages (the renderer handles display) */}
       {!isAgentMessage && (
         <div className="flex items-center gap-3 mb-2">
