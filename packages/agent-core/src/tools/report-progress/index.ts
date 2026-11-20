@@ -64,7 +64,7 @@ export const sendMessageToUser = async (workerId: string, message: string) => {
     const title = agentDisplayName;
     const body = `${sessionLabel}\n${message.slice(0, 200)}`;
 
-    // Use senderUserId (email) if available, otherwise fall back to initiator
+    // Use senderUserId (Cognito sub) if available, otherwise fall back to initiator
     const userId =
       session?.senderUserId ||
       (session?.initiator?.startsWith('webapp#') ? session.initiator.replace('webapp#', '') : undefined);
