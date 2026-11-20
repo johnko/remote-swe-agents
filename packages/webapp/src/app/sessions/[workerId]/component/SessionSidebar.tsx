@@ -412,11 +412,18 @@ export default function SessionSidebar({
             className={`flex items-center gap-2 pr-3 py-2 mx-1 rounded-md transition-colors text-left`}
             style={{ paddingLeft: `${paddingLeft * 4}px` }}
           >
-            <span
-              className={`inline-block w-1.5 h-1.5 rounded-full flex-shrink-0 ${childStatus.color} ${
-                isChildCurrent ? '' : ''
-              }`}
-            />
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span
+                    className={`inline-block w-1.5 h-1.5 rounded-full flex-shrink-0 ${childStatus.color} ${
+                      isChildCurrent ? '' : ''
+                    }`}
+                  />
+                </TooltipTrigger>
+                <TooltipContent>{child.agentStatus || 'unknown'}</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
             <SessionStatusButtons
               workerId={child.workerId}
               agentStatus={child.agentStatus}
@@ -523,7 +530,14 @@ export default function SessionSidebar({
                           : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
                       }`}
                     >
-                      <span className={`inline-block w-2 h-2 rounded-full flex-shrink-0 ${status.color}`} />
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span className={`inline-block w-2 h-2 rounded-full flex-shrink-0 ${status.color}`} />
+                          </TooltipTrigger>
+                          <TooltipContent>{session.agentStatus || 'unknown'}</TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
                       <SessionStatusButtons
                         workerId={session.workerId}
                         agentStatus={session.agentStatus}
