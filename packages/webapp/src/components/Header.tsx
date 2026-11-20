@@ -2,7 +2,19 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { Menu, Languages, LogOut, Check, Key, Settings, Bot, Puzzle, Brain, FishingHook } from 'lucide-react';
+import {
+  Menu,
+  Languages,
+  LogOut,
+  Check,
+  Key,
+  Settings,
+  Bot,
+  Puzzle,
+  Brain,
+  FishingHook,
+  AlignRight,
+} from 'lucide-react';
 import ThemeToggle from './ThemeToggle';
 import {
   DropdownMenu,
@@ -17,10 +29,12 @@ import {
   DropdownMenuPortal,
 } from './ui/dropdown-menu';
 import { Button } from './ui/button';
-import { useTransition } from 'react';
+import { useTransition, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { setUserLocale } from '@/i18n/db';
+
+const FLOAT_USER_MESSAGES_KEY = 'float-user-messages';
 
 export default function Header({
   hasCustomIcon,
@@ -31,6 +45,23 @@ export default function Header({
 } = {}) {
   const t = useTranslations('header');
   const { localeOptions, currentLocale, changeLocale } = useLanguageSwitcher();
+  const [floatUserMessages, setFloatUserMessages] = useState(false);
+
+  // Load initial state from localStorage
+  useEffect(() => {
+    const stored = localStorage.getItem(FLOAT_USER_MESSAGES_KEY);
+    if (stored) {
+      setFloatUserMessages(stored === 'true');
+    }
+  }, []);
+
+  const toggleFloatUserMessages = () => {
+    const newValue = !floatUserMessages;
+    setFloatUserMessages(newValue);
+    localStorage.setItem(FLOAT_USER_MESSAGES_KEY, String(newValue));
+    // Dispatch custom event to notify MessageGroup components
+    window.dispatchEvent(new StorageEvent('storage', { key: FLOAT_USER_MESSAGES_KEY }));
+  };
 
   return (
     <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 shadow-sm fixed top-0 left-0 right-0 z-40">
@@ -54,6 +85,16 @@ export default function Header({
             </Link>
           </div>
           <div className="flex items-center gap-1 sm:gap-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggleFloatUserMessages}
+              aria-label="Toggle float user messages"
+              title="Toggle float user messages"
+              className={floatUserMessages ? 'bg-gray-100 dark:bg-gray-800' : ''}
+            >
+              <AlignRight className="h-5 w-5" />
+            </Button>
             <ThemeToggle />
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
