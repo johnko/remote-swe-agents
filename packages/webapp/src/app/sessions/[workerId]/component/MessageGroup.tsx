@@ -121,13 +121,19 @@ export const MessageGroupComponent = React.memo(function MessageGroupComponent({
   // When floatUserMessages is enabled and it's a user message, apply right alignment
   // Use width: fit-content with margin-left: auto for proper right alignment
   // without breaking the layout flow
+  // For assistant messages, apply corresponding left alignment
   const userMessageStyle =
     floatUserMessages && isUserMessage
       ? ({ marginLeft: 'auto', width: 'fit-content', maxWidth: '80%' } as React.CSSProperties)
       : undefined;
 
+  const nonUserMessageStyle =
+    floatUserMessages && !isUserMessage
+      ? ({ marginRight: 'auto', width: 'fit-content', maxWidth: '80%' } as React.CSSProperties)
+      : undefined;
+
   return (
-    <div className={containerClass} style={userMessageStyle}>
+    <div className={containerClass} style={userMessageStyle ?? nonUserMessageStyle}>
       {/* Hide the full header for agent messages (the renderer handles display) */}
       {!isAgentMessage && (
         <div className="flex items-center gap-3 mb-2">
