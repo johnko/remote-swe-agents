@@ -1,12 +1,14 @@
 'use client';
 
-import React, { useMemo, useState, useCallback } from 'react';
+import React, { useMemo, useState, useCallback, useEffect } from 'react';
 import { Bot, ChevronUp } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useEffect, useRef } from 'react';
+import { useRef } from 'react';
 import { useScrollPosition } from '@/hooks/use-scroll-position';
 import { MessageGroupComponent } from './MessageGroup';
 import { ModelType } from '@remote-swe-agents/agent-core/schema';
+
+const FLOAT_USER_MESSAGES_KEY = 'float-user-messages';
 
 export type MessageView = {
   id: string;
@@ -118,6 +120,29 @@ type MessageListProps = {
   onRewind?: (messageSK: string) => void;
 };
 
+function useFloatUserMessages() {
+  const [floatUserMessages, setFloatUserMessages] = useState(false);
+
+  useEffect(() => {
+    const stored = localStorage.getItem(FLOAT_USER_MESSAGES_KEY);
+    if (stored) {
+      setFloatUserMessages(stored === 'true');
+    }
+
+    const handleStorage = () => {
+      const stored = localStorage.getItem(FLOAT_USER_MESSAGES_KEY);
+      if (stored) {
+        setFloatUserMessages(stored === 'true');
+      }
+    };
+
+    window.addEventListener('storage', handleStorage);
+    return () => window.removeEventListener('storage', handleStorage);
+  }, []);
+
+  return floatUserMessages;
+}
+
 export default function MessageList({
   messages,
   instanceStatus,
@@ -129,6 +154,7 @@ export default function MessageList({
   onRewind,
 }: MessageListProps) {
   const t = useTranslations('sessions');
+  const floatUserMessages = useFloatUserMessages();
   const { userScrolledUp } = useScrollPosition();
   const [showAll, setShowAll] = useState(false);
 
@@ -313,7 +339,10 @@ export default function MessageList({
 
   return (
     <div className="flex-1 overflow-y-auto">
-      <div className="max-w-4xl mx-auto px-4 py-2">
+      <div
+        className="mx-auto px-4 py-2"
+        style={floatUserMessages ? { marginRight: '0px', maxWidth: '75%' } : { maxWidth: '56rem' }}
+      >
         <div>
           {/* "Show older messages" button - Twitter-style inline */}
           {hiddenCount > 0 && (
@@ -355,7 +384,10 @@ export default function MessageList({
       {/* Typing indicator - shown near the input area like Slack's "is typing..." */}
       {showLoadingIndicator && (
         <div className="sticky bottom-0 bg-gray-50 dark:bg-gray-900">
-          <div className="max-w-4xl mx-auto px-4 py-1.5">
+          <div
+            className="mx-auto px-4 py-1.5"
+            style={floatUserMessages ? { marginRight: '0px', maxWidth: '75%' } : { maxWidth: '56rem' }}
+          >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <div
