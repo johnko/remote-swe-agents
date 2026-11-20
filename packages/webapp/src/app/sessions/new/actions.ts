@@ -25,7 +25,7 @@ export const createNewWorker = authActionClient
       customAgentId: customAgentId || undefined,
       imageKeys,
       fileKeys,
-      senderUserId: userId,
+      senderUserId: email,
       senderType: 'webapp',
       ...(displayName ? { senderDisplayName: displayName } : {}),
       bedrockDefaultModel: effectiveBedrockDefault,
