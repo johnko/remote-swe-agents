@@ -63,5 +63,9 @@ export const authActionClient = actionClient.use(async ({ next }) => {
   const email = typeof emailClaim === 'string' ? emailClaim : undefined;
   const displayName = deriveDisplayName(email, currentUser.userId);
 
-  return next({ ctx: { userId: currentUser.userId, email, displayName } });
+  // Use email as userId for consistent user identification across webapp and agent.
+  // The agent uses session.senderUserId (email) as the primary user identifier.
+  const userId = email || currentUser.userId;
+
+  return next({ ctx: { userId, email, displayName } });
 });
