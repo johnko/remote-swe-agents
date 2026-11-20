@@ -32,20 +32,15 @@ export async function getSession() {
   if (session.userSub == null || session.tokens?.idToken == null || session.tokens?.accessToken == null) {
     throw new Error('session not found');
   }
-  const cognitoSub = session.userSub;
+  const userId = session.userSub;
   const email = session.tokens.idToken.payload.email;
   if (typeof email != 'string') {
-    throw new Error(`invalid email ${cognitoSub}.`);
+    throw new Error(`invalid email ${userId}.`);
   }
-
-  // Use email as userId for consistent user identification across webapp and agent.
-  // The agent uses session.senderUserId (email) as the primary user identifier.
-  const userId = email || cognitoSub;
-
   return {
     userId,
     email,
-    displayName: deriveDisplayName(email, cognitoSub),
+    displayName: deriveDisplayName(email, userId),
     accessToken: session.tokens.accessToken.toString(),
   };
 }
