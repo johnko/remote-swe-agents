@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Bot, User, Brain, GitBranch } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -6,6 +6,8 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { MessageView, MessageGroup } from './MessageList';
 import { MessageItem } from './MessageItem';
 import LocalDateTime from '@/components/LocalDateTime';
+
+const FLOAT_USER_MESSAGES_KEY = 'float-user-messages';
 
 type MessageGroupProps = {
   group: MessageGroup;
@@ -15,6 +17,29 @@ type MessageGroupProps = {
   isRewindDisabled?: boolean;
 };
 
+function useFloatUserMessages() {
+  const [floatUserMessages, setFloatUserMessages] = useState(false);
+
+  useEffect(() => {
+    const stored = localStorage.getItem(FLOAT_USER_MESSAGES_KEY);
+    if (stored) {
+      setFloatUserMessages(stored === 'true');
+    }
+
+    const handleStorage = () => {
+      const stored = localStorage.getItem(FLOAT_USER_MESSAGES_KEY);
+      if (stored) {
+        setFloatUserMessages(stored === 'true');
+      }
+    };
+
+    window.addEventListener('storage', handleStorage);
+    return () => window.removeEventListener('storage', handleStorage);
+  }, []);
+
+  return floatUserMessages;
+}
+
 export const MessageGroupComponent = React.memo(function MessageGroupComponent({
   group,
   agentIconUrl,
@@ -23,6 +48,7 @@ export const MessageGroupComponent = React.memo(function MessageGroupComponent({
   isRewindDisabled,
 }: MessageGroupProps) {
   const t = useTranslations('sessions');
+  const floatUserMessages = useFloatUserMessages();
   const firstMessage = group.messages[0];
   const firstMessageDate = new Date(firstMessage.timestamp);
   const isChildSessionMessage = !!firstMessage.agentName;
@@ -76,13 +102,18 @@ export const MessageGroupComponent = React.memo(function MessageGroupComponent({
     );
   };
 
+  const isUserMessage = group.role === 'user' && !isChildSessionMessage;
+
   // For agent messages, use a more compact style (both parent and child views)
   const containerClass = isAgentMessage
     ? 'mb-2'
     : `mb-3 ${isChildSessionMessage ? 'ml-4 border-l-2 border-blue-200 dark:border-blue-800 pl-3' : ''}`;
 
+  const floatStyle =
+    floatUserMessages && isUserMessage ? { float: 'right' as const, clear: 'both' as const } : undefined;
+
   return (
-    <div className={containerClass}>
+    <div className={containerClass} style={floatStyle}>
       {/* Hide the full header for agent messages (the renderer handles display) */}
       {!isAgentMessage && (
         <div className="flex items-center gap-3 mb-2">
