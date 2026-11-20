@@ -5,13 +5,13 @@ export const resolveUserId = async (workerId: string): Promise<string> => {
   if (!session) {
     throw new Error('Could not determine user identity from session.');
   }
-  // Priority 1: senderUserId (stable email identifier)
+  // Priority 1: initiator (Cognito sub - stable identifier, not affected by email changes)
+  if (session.initiator) {
+    return session.initiator.includes('#') ? session.initiator.split('#').pop()! : session.initiator;
+  }
+  // Priority 2: senderUserId (email - fallback for legacy sessions that may lack initiator)
   if (session.senderUserId) {
     return session.senderUserId;
   }
-  // Priority 2: initiator (falls back to legacy behavior)
-  if (!session.initiator) {
-    throw new Error('Could not determine user identity from session.');
-  }
-  return session.initiator.includes('#') ? session.initiator.split('#').pop()! : session.initiator;
+  throw new Error('Could not determine user identity from session.');
 };
