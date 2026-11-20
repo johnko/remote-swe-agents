@@ -2,8 +2,8 @@
 
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useState, useRef } from 'react';
-import { Plus, X, List, CheckCheck, EyeOff as EyeOffIcon } from 'lucide-react';
-import { webappEventSchema } from '@remote-swe-agents/agent-core/schema';
+import { Plus, X, List, CheckCheck, EyeOff as EyeOffIcon, Check, Circle, Square } from 'lucide-react';
+import { webappEventSchema, AgentStatus, InstanceStatus } from '@remote-swe-agents/agent-core/schema';
 import type { SessionListItem } from '@/lib/session-list';
 import { getUnifiedStatus } from '@/utils/session-status';
 import { useTranslations } from 'next-intl';
@@ -13,6 +13,9 @@ import type { UnreadMap } from '@remote-swe-agents/agent-core/lib';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { getUnreadBadge } from '@/lib/unread-display';
 import { useBodyScrollLock } from '@/hooks/use-body-scroll-lock';
+import { useAction } from 'next-safe-action/hooks';
+import { updateAgentStatus, stopSession } from '../actions';
+import { toast } from 'sonner';
 
 type SortKey = 'createdAt' | 'updatedAt' | 'lastMessageAt' | 'sessionCost';
 type SortOrder = 'desc' | 'asc';
@@ -37,6 +40,118 @@ interface SessionSidebarProps {
   onUnreadUpdate?: (workerId: string, data: { unreadCount: number; hasPending: boolean }) => void;
   onMarkAllRead?: () => void;
   isMarkingAllRead?: boolean;
+}
+
+// Status indicator button component
+function SessionStatusButtons({
+  workerId,
+  agentStatus,
+  instanceStatus,
+  onStatusUpdate,
+}: {
+  workerId: string;
+  agentStatus?: AgentStatus;
+  instanceStatus?: InstanceStatus;
+  onStatusUpdate?: (workerId: string, agentStatus: AgentStatus, instanceStatus?: InstanceStatus) => void;
+}) {
+  const t = useTranslations('sessions');
+  const [localAgentStatus, setLocalAgentStatus] = useState(agentStatus);
+  const [localInstanceStatus, setLocalInstanceStatus] = useState(instanceStatus);
+
+  // Update local state when props change
+  useEffect(() => {
+    setLocalAgentStatus(agentStatus);
+    setLocalInstanceStatus(instanceStatus);
+  }, [agentStatus, instanceStatus]);
+
+  const { execute: executeUpdateStatus, isExecuting: isUpdatingStatus } = useAction(updateAgentStatus, {
+    onSuccess: ({ input }) => {
+      setLocalAgentStatus(input.status);
+      if (input.status === 'completed') {
+        setLocalInstanceStatus('stopped');
+      }
+      onStatusUpdate?.(workerId, input.status, localInstanceStatus);
+    },
+    onError: () => {
+      toast.error(t('statusUpdateError'));
+    },
+  });
+
+  const { execute: executeStopSession } = useAction(stopSession, {
+    onSuccess: () => {
+      setLocalInstanceStatus('stopped');
+      onStatusUpdate?.(workerId, localAgentStatus ?? 'pending', 'stopped');
+      toast.success(t('stopSessionSuccess'));
+    },
+    onError: () => {
+      toast.error(t('stopSessionError'));
+    },
+  });
+
+  const handleToggleComplete = () => {
+    const newStatus = localAgentStatus === 'completed' ? 'pending' : 'completed';
+    executeUpdateStatus({ workerId, status: newStatus });
+  };
+
+  const handleStop = () => {
+    executeStopSession({ workerId });
+  };
+
+  // Only show buttons if there's a status to display
+  if (!localInstanceStatus && !localAgentStatus) return null;
+
+  const status = getUnifiedStatus(localAgentStatus, localInstanceStatus);
+
+  return (
+    <div className="flex items-center gap-0.5">
+      {/* Toggle Complete/Active button */}
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              onClick={handleToggleComplete}
+              disabled={isUpdatingStatus}
+              className={`p-1 rounded transition-colors ${
+                localAgentStatus === 'completed'
+                  ? 'text-blue-500 hover:bg-blue-100 dark:hover:bg-blue-900/30'
+                  : 'text-green-500 hover:bg-green-100 dark:hover:bg-green-900/30'
+              } disabled:opacity-50`}
+              title={localAgentStatus === 'completed' ? t('markAsIncomplete') : t('markAsCompleted')}
+            >
+              {isUpdatingStatus ? (
+                <span className="block w-3 h-3 rounded-full border border-current border-t-transparent animate-spin" />
+              ) : localAgentStatus === 'completed' ? (
+                <Circle className="w-3 h-3" />
+              ) : (
+                <Check className="w-3 h-3" />
+              )}
+            </button>
+          </TooltipTrigger>
+          <TooltipContent>
+            {localAgentStatus === 'completed' ? t('markAsIncomplete') : t('markAsCompleted')}
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+
+      {/* Stop Session button - only show if not stopped and not completed */}
+      {localInstanceStatus !== 'stopped' && localAgentStatus !== 'completed' && (
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                onClick={handleStop}
+                className="p-1 rounded transition-colors text-purple-500 hover:bg-purple-100 dark:hover:bg-purple-900/30"
+                title={t('stopSession')}
+              >
+                <Square className="w-3 h-3" />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent>{t('stopSession')}</TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      )}
+    </div>
+  );
 }
 
 export default function SessionSidebar({
@@ -302,6 +417,24 @@ export default function SessionSidebar({
                 isChildCurrent ? '' : ''
               }`}
             />
+            <SessionStatusButtons
+              workerId={child.workerId}
+              agentStatus={child.agentStatus}
+              instanceStatus={child.instanceStatus}
+              onStatusUpdate={(id, agentStatus, instanceStatus) => {
+                // Update the local sessions state
+                setSessions((prev) =>
+                  prev.map((s) => {
+                    if (s.workerId !== id) return s;
+                    const updates: Partial<SessionListItem> = { agentStatus };
+                    if (instanceStatus) {
+                      updates.instanceStatus = instanceStatus;
+                    }
+                    return { ...s, ...updates };
+                  })
+                );
+              }}
+            />
             <span
               className={`text-xs truncate flex-1 ${
                 isChildCurrent
@@ -391,6 +524,11 @@ export default function SessionSidebar({
                       }`}
                     >
                       <span className={`inline-block w-2 h-2 rounded-full flex-shrink-0 ${status.color}`} />
+                      <SessionStatusButtons
+                        workerId={session.workerId}
+                        agentStatus={session.agentStatus}
+                        instanceStatus={session.instanceStatus}
+                      />
                       <span className="text-sm truncate flex-1">{session.title || session.SK}</span>
                       {(() => {
                         const badge = getUnreadBadge(unreadMap[session.workerId]);
