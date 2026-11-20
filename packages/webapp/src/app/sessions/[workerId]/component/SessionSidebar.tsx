@@ -111,11 +111,11 @@ function SessionStatusButtons({
             <button
               onClick={handleToggleComplete}
               disabled={isUpdatingStatus}
-              className={`p-1 rounded transition-colors ${
+              className={`p-1 rounded transition-colors cursor-pointer ${
                 localAgentStatus === 'completed'
                   ? 'text-blue-500 hover:bg-blue-100 dark:hover:bg-blue-900/30'
                   : 'text-green-500 hover:bg-green-100 dark:hover:bg-green-900/30'
-              } disabled:opacity-50`}
+              } disabled:opacity-50 disabled:cursor-not-allowed`}
               title={localAgentStatus === 'completed' ? t('markAsIncomplete') : t('markAsCompleted')}
             >
               {isUpdatingStatus ? (
@@ -140,7 +140,7 @@ function SessionStatusButtons({
             <TooltipTrigger asChild>
               <button
                 onClick={handleStop}
-                className="p-1 rounded transition-colors text-purple-500 hover:bg-purple-100 dark:hover:bg-purple-900/30"
+                className="p-1 rounded transition-colors cursor-pointer text-purple-500 hover:bg-purple-100 dark:hover:bg-purple-900/30"
                 title={t('stopSession')}
               >
                 <Square className="w-3 h-3" />
