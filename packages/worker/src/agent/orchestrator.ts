@@ -450,6 +450,12 @@ export const buildTurnContext = async (
     senderUserId,
   });
 
+  // Store the assembled system prompt in metadata on first turn so the
+  // webapp can display the full, complete prompt that was used to run this session.
+  if (hookContext !== undefined) {
+    await writeMetadata('systemPrompt', { content: systemPrompt }, workerId);
+  }
+
   await refreshSession(workerId);
 
   // Design B: dynamic environment block telling the model its own context-window

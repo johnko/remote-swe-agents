@@ -409,6 +409,8 @@ export default async function SessionPage({ params }: { params: Promise<{ worker
   // present for EC2-runtime sessions where `openPort` has been invoked.
   // Also checks for MicroVM preview sessions (previewSession metadata).
   const rawPortMetadata = (await readMetadata('openedPorts', workerId)) as PortMapping | undefined;
+  const rawSystemPromptMetadata = (await readMetadata('systemPrompt', workerId)) as
+    { content?: string } | undefined;
   const rawPreviewMetadata = (await readMetadata('previewSession', workerId)) as
     { previewUrl?: string; localPort?: number; startedAt?: number } | undefined;
   let initialPortMapping: PortMapping | null = null;
@@ -458,7 +460,7 @@ export default async function SessionPage({ params }: { params: Promise<{ worker
         initialRewindHiddenCount={rewindedCount}
         slackClaims={slackClaims}
         slackClaimCounts={slackClaimCounts}
-        systemPrompt={customAgent?.systemPrompt || additionalSystemPrompt || undefined}
+        systemPrompt={rawSystemPromptMetadata?.content || customAgent?.systemPrompt || additionalSystemPrompt || undefined}
       />
       <RefreshOnFocus />
     </>
