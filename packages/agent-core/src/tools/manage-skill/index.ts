@@ -8,16 +8,8 @@ import {
   deleteSkillRecord,
 } from '../../lib/skills.js';
 import { deleteSkillFiles } from '../../lib/skill-s3.js';
-import { getSession } from '../../lib/sessions.js';
+import { resolveUserId } from '../../lib/user.js';
 import { SKILL_NAME_PATTERN, MAX_SKILL_NAME_LENGTH } from '../../schema/skill.js';
-
-const resolveUserId = async (workerId: string): Promise<string> => {
-  const session = await getSession(workerId);
-  if (!session?.initiator) {
-    throw new Error('Could not determine user identity from session.');
-  }
-  return session.initiator.includes('#') ? session.initiator.split('#').pop()! : session.initiator;
-};
 
 const skillFileSchema = z
   .object({

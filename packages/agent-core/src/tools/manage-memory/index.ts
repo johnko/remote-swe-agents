@@ -1,29 +1,13 @@
 import { z } from 'zod';
 import { ToolDefinition, zodToJsonSchemaBody } from '../../private/common/lib.js';
 import { listLessons, getLesson, createLesson, updateLesson, deleteLesson } from '../../lib/lessons.js';
-import { getSession } from '../../lib/sessions.js';
+import { resolveUserId } from '../../lib/user.js';
 import {
   MAX_LESSON_CONTENT_LENGTH,
   MAX_LESSON_CATEGORY_LENGTH,
   MAX_LESSONS_PER_USER,
   lessonStatusSchema,
 } from '../../schema/lesson.js';
-
-const resolveUserId = async (workerId: string): Promise<string> => {
-  const session = await getSession(workerId);
-  if (!session) {
-    throw new Error('Could not determine user identity from session.');
-  }
-  // Priority 1: senderUserId (stable email identifier)
-  if (session.senderUserId) {
-    return session.senderUserId;
-  }
-  // Priority 2: initiator (falls back to legacy behavior)
-  if (!session.initiator) {
-    throw new Error('Could not determine user identity from session.');
-  }
-  return session.initiator.includes('#') ? session.initiator.split('#').pop()! : session.initiator;
-};
 
 const memoryManagementDescription = `Manage the durable lesson memory: list, get, create, update, or delete lessons.
 

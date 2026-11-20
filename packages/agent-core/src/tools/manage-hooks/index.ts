@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { ToolDefinition, zodToJsonSchemaBody } from '../../private/common/lib.js';
 import { listHooks, getHook, createHook, updateHook, deleteHook } from '../../lib/hooks.js';
-import { getSession } from '../../lib/sessions.js';
+import { resolveUserId } from '../../lib/user.js';
 import {
   MAX_HOOK_NAME_LENGTH,
   MAX_HOOK_DESCRIPTION_LENGTH,
@@ -10,22 +10,6 @@ import {
   MAX_HOOKS_PER_USER,
   hookEventTypeSchema,
 } from '../../schema/hook.js';
-
-const resolveUserId = async (workerId: string): Promise<string> => {
-  const session = await getSession(workerId);
-  if (!session) {
-    throw new Error('Could not determine user identity from session.');
-  }
-  // Priority 1: senderUserId (stable email identifier)
-  if (session.senderUserId) {
-    return session.senderUserId;
-  }
-  // Priority 2: initiator (falls back to legacy behavior)
-  if (!session.initiator) {
-    throw new Error('Could not determine user identity from session.');
-  }
-  return session.initiator.includes('#') ? session.initiator.split('#').pop()! : session.initiator;
-};
 
 const hooksManagementDescription = `Manage user hooks: list, get, create, update, or delete hooks.
 
