@@ -105,9 +105,18 @@ export const MessageGroupComponent = React.memo(function MessageGroupComponent({
   const isUserMessage = group.role === 'user' && !isChildSessionMessage;
 
   // For agent messages, use a more compact style (both parent and child views)
-  const containerClass = isAgentMessage
+  let containerClass = isAgentMessage
     ? 'mb-2'
     : `mb-3 ${isChildSessionMessage ? 'ml-4 border-l-2 border-blue-200 dark:border-blue-800 pl-3' : ''}`;
+
+  // When floatUserMessages is enabled, add background colors and rounded corners
+  if (floatUserMessages && !isAgentMessage && !isChildSessionMessage) {
+    if (group.role === 'assistant') {
+      containerClass += ' border border-gray-200 dark:border-gray-700 rounded-lg p-3 bg-gray-50 dark:bg-gray-800';
+    } else if (isUserMessage) {
+      containerClass += ' rounded-lg p-3 bg-secondary';
+    }
+  }
 
   // When floatUserMessages is enabled and it's a user message, apply right alignment
   // Use width: fit-content with margin-left: auto for proper right alignment
