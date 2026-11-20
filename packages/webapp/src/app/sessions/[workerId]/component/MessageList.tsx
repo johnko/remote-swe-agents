@@ -341,7 +341,7 @@ export default function MessageList({
     <div className="flex-1 overflow-y-auto">
       <div
         className="mx-auto px-4 py-2"
-        style={floatUserMessages ? { marginLeft: '20em', marginRight: '0px', maxWidth: '75%' } : { maxWidth: '56rem' }}
+        style={floatUserMessages ? { marginLeft: '20em', marginRight: '0px', maxWidth: '80%' } : { maxWidth: '56rem' }}
       >
         <div>
           {/* "Show older messages" button - Twitter-style inline */}
@@ -386,7 +386,7 @@ export default function MessageList({
         <div className="sticky bottom-0 bg-gray-50 dark:bg-gray-900">
           <div
             className="mx-auto px-4 py-1.5"
-            style={floatUserMessages ? { marginLeft: '20em', marginRight: '0px', maxWidth: '75%' } : { maxWidth: '56rem' }}
+            style={floatUserMessages ? { marginLeft: '20em', marginRight: '0px', maxWidth: '80%' } : { maxWidth: '56rem' }}
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
