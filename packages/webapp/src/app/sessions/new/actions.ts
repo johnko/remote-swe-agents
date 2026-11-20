@@ -16,7 +16,7 @@ export const createNewWorker = authActionClient
       customAgentId = '',
       bedrockDefaultModel,
     } = parsedInput;
-    const { userId, displayName } = ctx;
+    const { userId, email, displayName } = ctx;
 
     const effectiveBedrockDefault = bedrockDefaultModel ?? modelOverride;
     const workerId = await createSession({

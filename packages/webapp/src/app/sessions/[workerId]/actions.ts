@@ -105,7 +105,7 @@ export const sendMessageToAgent = authActionClient
       // Per-message model overrides are deprecated — model selection is now
       // session-level only (bedrockDefaultModel).
       // Legacy read-side fallbacks remain for pre-migration sessions.
-      senderUserId: ctx.userId,
+      senderUserId: ctx.email,
       ...(ctx.displayName ? { senderDisplayName: ctx.displayName } : {}),
       senderType: 'webapp',
     };
@@ -142,7 +142,7 @@ export const sendMessageToAgent = authActionClient
       role: 'user',
       message,
       messageSK: item.SK,
-      senderUserId: ctx.userId,
+      senderUserId: ctx.email,
       senderDisplayName: ctx.displayName,
       senderType: 'webapp',
       ...(clientId ? { clientId } : {}),
@@ -381,7 +381,7 @@ export const handoverSession = authActionClient
       agentName: session.agentName,
       slackChannelId: session.slackChannelId,
       slackMentionUserId,
-      senderUserId: ctx.userId,
+      senderUserId: ctx.email,
       senderType: 'webapp',
       ...(ctx.displayName ? { senderDisplayName: ctx.displayName } : {}),
       bedrockDefaultModel: session.bedrockDefaultModel,
