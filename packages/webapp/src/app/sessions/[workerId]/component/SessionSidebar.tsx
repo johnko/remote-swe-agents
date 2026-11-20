@@ -421,7 +421,7 @@ export default function SessionSidebar({
                     }`}
                   />
                 </TooltipTrigger>
-                <TooltipContent>{child.agentStatus || 'unknown'}</TooltipContent>
+                <TooltipContent>{t(childStatus.i18nKey)}</TooltipContent>
               </Tooltip>
             </TooltipProvider>
             <SessionStatusButtons
@@ -535,7 +535,7 @@ export default function SessionSidebar({
                           <TooltipTrigger asChild>
                             <span className={`inline-block w-2 h-2 rounded-full flex-shrink-0 ${status.color}`} />
                           </TooltipTrigger>
-                          <TooltipContent>{session.agentStatus || 'unknown'}</TooltipContent>
+                          <TooltipContent>{t(status.i18nKey)}</TooltipContent>
                         </Tooltip>
                       </TooltipProvider>
                       <SessionStatusButtons
