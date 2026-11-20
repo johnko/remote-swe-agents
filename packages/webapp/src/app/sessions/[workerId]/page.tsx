@@ -20,6 +20,7 @@ import {
   MSG_TOOLS,
   getPendingClaimsForSession,
   getClaimCounts,
+  readCommonPrompt,
 } from '@remote-swe-agents/agent-core/lib';
 import { toolNameInSet } from '@remote-swe-agents/agent-core/tool-name-utils';
 import SessionPageClient from './component/SessionPageClient';
@@ -42,6 +43,8 @@ export default async function SessionPage({ params }: { params: Promise<{ worker
   }
 
   const preferences = await getPreferences();
+  const commonPromptData = await readCommonPrompt();
+  const additionalSystemPrompt = commonPromptData?.additionalSystemPrompt || '';
   // Load conversation history from DynamoDB.
   // Use `includeAll: true` so sibling-to-sibling agent communication logs
   // (messageType === 'communicationLog') are included in the UI view.
@@ -455,7 +458,7 @@ export default async function SessionPage({ params }: { params: Promise<{ worker
         initialRewindHiddenCount={rewindedCount}
         slackClaims={slackClaims}
         slackClaimCounts={slackClaimCounts}
-        systemPrompt={customAgent?.systemPrompt}
+        systemPrompt={customAgent?.systemPrompt || additionalSystemPrompt || undefined}
       />
       <RefreshOnFocus />
     </>
