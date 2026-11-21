@@ -124,6 +124,14 @@ export class MainStack extends cdk.Stack {
           ],
         });
 
+    // Store VPC ID in SSM Parameter for cross-account IAM role trust policy
+    // This allows CrossAccountAgentRole to verify requests come from this VPC
+    new StringParameter(this, 'WorkerVpcIdParameter', {
+      parameterName: `/${this.stackName}/worker-vpc-id`,
+      stringValue: vpc.vpcId,
+      description: 'VPC ID where rswea workers run - used for CrossAccountAgentRole security',
+    });
+
     const storage = new Storage(this, 'Storage', { accessLogBucket });
 
     const auth = new Auth(this, 'Auth', {
