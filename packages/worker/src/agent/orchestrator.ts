@@ -456,7 +456,11 @@ export const buildTurnContext = async (
 
   // Store the assembled system prompt in metadata on first turn so the
   // webapp can display the full, complete prompt that was used to run this session.
-  if (hookContext !== undefined) {
+  // First turn is when there's exactly one user message and no previous assistant messages.
+  const userMessageCount = filteredItems.filter((item) => item.role === 'user').length;
+  const assistantMessageCount = filteredItems.filter((item) => item.role === 'assistant').length;
+  const isFirstTurn = userMessageCount === 1 && assistantMessageCount === 0;
+  if (isFirstTurn) {
     await writeMetadata('systemPrompt', { content: finalSystemPrompt }, workerId);
   }
 
