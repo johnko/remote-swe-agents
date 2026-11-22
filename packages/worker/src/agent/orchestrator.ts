@@ -450,10 +450,14 @@ export const buildTurnContext = async (
     senderUserId,
   });
 
+  // Inject hook context as a system message block if provided
+  const hookContextBlock = buildHookContextBlock(hookContext);
+  const finalSystemPrompt = hookContextBlock ? `${systemPrompt}\n\n${hookContextBlock}` : systemPrompt;
+
   // Store the assembled system prompt in metadata on first turn so the
   // webapp can display the full, complete prompt that was used to run this session.
   if (hookContext !== undefined) {
-    await writeMetadata('systemPrompt', { content: systemPrompt }, workerId);
+    await writeMetadata('systemPrompt', { content: finalSystemPrompt }, workerId);
   }
 
   await refreshSession(workerId);
@@ -470,7 +474,7 @@ export const buildTurnContext = async (
     session,
     customAgent,
     history: filteredItems,
-    systemPrompt,
+    systemPrompt: finalSystemPrompt,
     cwd,
     userMessage,
     slackUserId,
