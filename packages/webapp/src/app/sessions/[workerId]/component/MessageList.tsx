@@ -340,8 +340,8 @@ export default function MessageList({
   return (
     <div className="flex-1 overflow-y-auto">
       <div
-        className="mx-auto px-4 py-2"
-        style={floatUserMessages ? { marginLeft: '20em', marginRight: '0px', maxWidth: '80%' } : { maxWidth: '56rem' }}
+        className={`mx-auto px-4 py-2 ${floatUserMessages ? 'ml-0 mr-0 max-w-[100%] lg:ml-[20em] lg:mr-0 lg:max-w-[80%]' : ''}`}
+        style={floatUserMessages ? undefined : { maxWidth: '56rem' }}
       >
         <div>
           {/* "Show older messages" button - Twitter-style inline */}
@@ -384,10 +384,7 @@ export default function MessageList({
       {/* Typing indicator - shown near the input area like Slack's "is typing..." */}
       {showLoadingIndicator && (
         <div className="sticky bottom-0 bg-gray-50 dark:bg-gray-900">
-          <div
-            className={`mx-auto px-4 py-1.5 ${floatUserMessages ? 'ml-0 mr-0 max-w-[100%] lg:ml-[20em] lg:mr-0 lg:max-w-[80%]' : ''}`}
-            style={floatUserMessages ? undefined : { maxWidth: '56rem' }}
-          >
+          <div className="max-w-4xl mx-auto px-4 py-1.5">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <div
