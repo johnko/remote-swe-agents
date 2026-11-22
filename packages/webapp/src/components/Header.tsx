@@ -13,7 +13,7 @@ import {
   Puzzle,
   Brain,
   FishingHook,
-  AlignRight,
+  MessagesSquare,
 } from 'lucide-react';
 import ThemeToggle from './ThemeToggle';
 import {
@@ -93,7 +93,7 @@ export default function Header({
               title="Toggle float user messages"
               className={floatUserMessages ? 'bg-gray-100 dark:bg-gray-800' : ''}
             >
-              <AlignRight className="h-5 w-5" />
+              <MessagesSquare className="h-5 w-5" />
             </Button>
             <ThemeToggle />
             <DropdownMenu>
