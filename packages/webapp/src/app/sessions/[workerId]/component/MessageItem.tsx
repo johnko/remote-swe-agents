@@ -109,7 +109,7 @@ export const MessageItem = React.memo(function MessageItem({
             {message.fileKeys && message.fileKeys.length > 0 && <FileViewer fileKeys={message.fileKeys} />}
           </div>
         ) : (
-          <div className="text-gray-900 dark:text-white pb-2 break-all">
+          <div className="text-gray-900 dark:text-white pb-2 break-word">
             <div className="flex items-start">
               <div className="flex-1 min-w-0">
                 {message.reasoningText && (
