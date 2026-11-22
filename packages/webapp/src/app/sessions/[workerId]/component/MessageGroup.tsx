@@ -124,12 +124,12 @@ export const MessageGroupComponent = React.memo(function MessageGroupComponent({
   // For assistant messages, apply corresponding left alignment
   const userMessageStyle =
     floatUserMessages && isUserMessage
-      ? ({ marginLeft: 'auto', width: 'fit-content', maxWidth: '80%' } as React.CSSProperties)
+      ? ({ marginLeft: 'auto', width: 'fit-content', maxWidth: '90%' } as React.CSSProperties)
       : undefined;
 
   const nonUserMessageStyle =
     floatUserMessages && !isUserMessage
-      ? ({ marginRight: 'auto', width: 'fit-content', maxWidth: '80%' } as React.CSSProperties)
+      ? ({ marginRight: 'auto', width: 'fit-content', maxWidth: '90%' } as React.CSSProperties)
       : undefined;
 
   return (
