@@ -114,7 +114,7 @@ export const MessageGroupComponent = React.memo(function MessageGroupComponent({
     if (group.role === 'assistant') {
       containerClass += ' border border-gray-200 dark:border-gray-700 rounded-lg p-3 bg-gray-50 dark:bg-gray-800';
     } else if (isUserMessage) {
-      containerClass += ' rounded-lg p-3 bg-blue-600';
+      containerClass += ' rounded-lg p-3 bg-secondary dark:bg-blue-600';
     }
   }
 
