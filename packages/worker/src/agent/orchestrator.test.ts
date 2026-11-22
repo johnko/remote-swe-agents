@@ -2027,7 +2027,14 @@ describe('buildTurnContext cwd fallback on compute hop', () => {
 
     expect(ctx).toBeDefined();
     expect(ctx!.cwd).toBe(`${process.env.HOME || '/root'}/.remote-swe-workspace/existing-repo`);
-    expect(mocks.writeMetadata).not.toHaveBeenCalled();
+    // First turn writes systemPrompt metadata but NOT repo metadata (repoDirectory exists)
+    expect(mocks.writeMetadata).toHaveBeenCalledTimes(1);
+    expect(mocks.writeMetadata).toHaveBeenCalledWith(
+      'systemPrompt',
+      expect.objectContaining({ content: expect.any(String) }),
+      'w1'
+    );
+    expect(mocks.writeMetadata).not.toHaveBeenCalledWith('repo', expect.anything(), 'w1');
   });
 
   test('uses default cwd when no repoDirectory in metadata', async () => {
@@ -2038,7 +2045,13 @@ describe('buildTurnContext cwd fallback on compute hop', () => {
 
     expect(ctx).toBeDefined();
     expect(ctx!.cwd).toBe(join(homedir(), '.remote-swe-workspace'));
-    expect(mocks.writeMetadata).not.toHaveBeenCalled();
+    // First turn writes systemPrompt metadata
+    expect(mocks.writeMetadata).toHaveBeenCalledTimes(1);
+    expect(mocks.writeMetadata).toHaveBeenCalledWith(
+      'systemPrompt',
+      expect.objectContaining({ content: expect.any(String) }),
+      'w1'
+    );
   });
 });
 
@@ -2145,5 +2158,135 @@ describe('buildTurnContext injects session title into system prompt', () => {
     const match = ctx!.systemPrompt.match(/Session title: "([^"]+)"/);
     expect(match).toBeTruthy();
     expect(match![1]!.length).toBeLessThanOrEqual(100);
+  });
+});
+
+describe('buildTurnContext writes system prompt to metadata on first turn', () => {
+  const cancellable = { isCancelled: false, onCancel: () => () => {} };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.existsSync.mockReturnValue(false);
+    mocks.getSession.mockResolvedValue({});
+    mocks.getCustomAgent.mockResolvedValue(undefined);
+    mocks.readCommonPrompt.mockResolvedValue(undefined);
+    mocks.readMetadata.mockResolvedValue(undefined);
+    mocks.repairDanglingToolUse.mockResolvedValue([]);
+  });
+
+  test('writes systemPrompt metadata on first turn (1 user message, 0 assistant)', async () => {
+    mocks.getConversationHistory.mockResolvedValue({
+      items: [
+        {
+          PK: 'message-w1',
+          SK: '000000000001000',
+          role: 'user',
+          messageType: 'userMessage',
+          content: JSON.stringify([{ text: 'hello' }]),
+          tokenCount: 0,
+        },
+      ],
+      slackUserId: undefined,
+    });
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await buildTurnContext('w1', cancellable as any, undefined);
+
+    expect(mocks.writeMetadata).toHaveBeenCalledTimes(1);
+    expect(mocks.writeMetadata).toHaveBeenCalledWith(
+      'systemPrompt',
+      expect.objectContaining({ content: expect.any(String) }),
+      'w1'
+    );
+  });
+
+  test('does NOT write systemPrompt metadata on second turn (1 user, 1 assistant)', async () => {
+    mocks.getConversationHistory.mockResolvedValue({
+      items: [
+        {
+          PK: 'message-w1',
+          SK: '000000000001000',
+          role: 'user',
+          messageType: 'userMessage',
+          content: JSON.stringify([{ text: 'hello' }]),
+          tokenCount: 0,
+        },
+        {
+          PK: 'message-w1',
+          SK: '000000000002000',
+          role: 'assistant',
+          messageType: 'assistant',
+          content: JSON.stringify([{ text: 'hi' }]),
+          tokenCount: 0,
+        },
+        {
+          PK: 'message-w1',
+          SK: '000000000003000',
+          role: 'user',
+          messageType: 'userMessage',
+          content: JSON.stringify([{ text: 'second message' }]),
+          tokenCount: 0,
+        },
+      ],
+      slackUserId: undefined,
+    });
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await buildTurnContext('w1', cancellable as any, undefined);
+
+    expect(mocks.writeMetadata).not.toHaveBeenCalledWith('systemPrompt', expect.anything(), 'w1');
+  });
+
+  test('includes hookContext in finalSystemPrompt when provided on first turn', async () => {
+    mocks.getConversationHistory.mockResolvedValue({
+      items: [
+        {
+          PK: 'message-w1',
+          SK: '000000000001000',
+          role: 'user',
+          messageType: 'userMessage',
+          content: JSON.stringify([{ text: 'hello' }]),
+          tokenCount: 0,
+        },
+      ],
+      slackUserId: undefined,
+    });
+
+    const hookContext = 'Hook output: some pre-execution context';
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const ctx = await buildTurnContext('w1', cancellable as any, undefined, hookContext);
+
+    expect(ctx).toBeDefined();
+    expect(ctx!.systemPrompt).toContain('## Hook Execution Output');
+    expect(ctx!.systemPrompt).toContain('Hook output: some pre-execution context');
+    expect(mocks.writeMetadata).toHaveBeenCalledWith(
+      'systemPrompt',
+      expect.objectContaining({ content: expect.stringContaining('Hook Execution Output') }),
+      'w1'
+    );
+  });
+
+  test('first turn with hook context writes metadata correctly', async () => {
+    mocks.getConversationHistory.mockResolvedValue({
+      items: [
+        {
+          PK: 'message-w1',
+          SK: '000000000001000',
+          role: 'user',
+          messageType: 'userMessage',
+          content: JSON.stringify([{ text: 'hello' }]),
+          tokenCount: 0,
+        },
+      ],
+      slackUserId: undefined,
+    });
+
+    // Build context with hook context
+    const hookContext = 'Some hook output';
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await buildTurnContext('w1', cancellable as any, undefined, hookContext);
+
+    // Should write metadata because it's first turn
+    expect(mocks.writeMetadata).toHaveBeenCalledTimes(1);
   });
 });
