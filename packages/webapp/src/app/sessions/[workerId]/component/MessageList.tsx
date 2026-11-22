@@ -385,10 +385,8 @@ export default function MessageList({
       {showLoadingIndicator && (
         <div className="sticky bottom-0 bg-gray-50 dark:bg-gray-900">
           <div
-            className="mx-auto px-4 py-1.5"
-            style={
-              floatUserMessages ? { marginLeft: '20em', marginRight: '0px', maxWidth: '80%' } : { maxWidth: '56rem' }
-            }
+            className={`mx-auto px-4 py-1.5 ${floatUserMessages ? 'ml-0 mr-0 max-w-[100%] lg:ml-[20em] lg:mr-0 lg:max-w-[80%]' : ''}`}
+            style={floatUserMessages ? undefined : { maxWidth: '56rem' }}
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
