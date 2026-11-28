@@ -32,7 +32,7 @@
     "@cdklabs/deploy-time-build": "0.1.16",
     "aws-cdk-lib": "2.275.0",
     "cdk-image-pipeline": "0.5.133",
-    "cdk-nag": "2.38.2",
+    "cdk-nag": "3.1.0",
     "constructs": "10.8.1",
     "tsx": "4.23.15",
     "yaml": "2.9.1"
