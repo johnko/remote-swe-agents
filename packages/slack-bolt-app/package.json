@@ -21,7 +21,7 @@
     "@aws-sdk/client-lambda": "3.1165.0",
     "@aws-sdk/client-s3": "3.1165.0",
     "@aws-sdk/client-ssm": "3.1165.0",
-    "@aws-sdk/credential-provider-node": "3.972.95",
+    "@aws-sdk/credential-provider-node": "3.972.98",
     "@aws-sdk/lib-dynamodb": "3.1165.0",
     "@remote-swe-agents/agent-core": "file:../agent-core",
     "@slack/bolt": "4.7.3",
